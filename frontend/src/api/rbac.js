@@ -10,12 +10,4 @@ export async function getRoleApi(roleId) {
   return res.data
 }
 
-export async function listPermissionsApi() {
-  const res = await http.get('/api/permissions')
-  return res.data
-}
 
-export async function setRolePermissionsApi(roleId, permissionCodes) {
-  const res = await http.put(`/api/roles/${roleId}/permissions`, { permissionCodes })
-  return res.data
-}
