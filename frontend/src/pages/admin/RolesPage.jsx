@@ -78,5 +78,101 @@ export default function RolesPage({ me }) {
     }
   };
 
-   
+  return (
+    <DashboardLayout me={me}>
+      <div className="subpage-container">
+        <div className="subpage-header">
+          <div className="subpage-header__title">
+            <h2>Cấu hình vai trò & quyền</h2>
+            <p>Phân quyền hệ thống một cách linh hoạt cho các bộ phận nghiệp vụ.</p>
+          </div>
+          <Space size={12}>
+            <Button 
+              icon={<ReloadOutlined />} 
+              onClick={load} 
+              loading={loading}
+              className="premium-btn-outline"
+            >
+              Tải lại
+            </Button>
+            <Button 
+              type="primary" 
+              icon={<SaveOutlined />} 
+              onClick={onSave} 
+              loading={saving}
+              className="premium-btn-primary"
+            >
+              Lưu thay đổi
+            </Button>
+          </Space>
+        </div>
+
+        <div className="roles-grid">
+          {/* Left Column: Role Selector */}
+          <div className="premium-card role-select-card">
+            <div className="premium-card__title">
+              <SafetyOutlined style={{ color: 'var(--primary-color)', marginRight: 8 }} />
+              Chọn vai trò
+            </div>
+            
+            <div style={{ marginBottom: 8 }}>
+              <label style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>
+                Danh sách vai trò
+              </label>
+              <Select
+                style={{ width: '100%' }}
+                options={roleOptions}
+                value={selectedRoleId}
+                onChange={setSelectedRoleId}
+                className="premium-select"
+                popupClassName="premium-select-popup"
+              />
+            </div>
+          </div>
+
+          {/* Right Column: Details form */}
+          <div className="premium-card role-detail-card">
+            <div className="premium-card__title">Chi tiết phân quyền</div>
+
+            <Form form={form} layout="vertical" requiredMark={false}>
+              <Form.Item 
+                label="Tên vai trò (Name)" 
+                name="name" 
+                rules={[{ required: true, message: 'Vui lòng nhập tên role' }]}
+              >
+                <Input placeholder="Tên vai trò..." />
+              </Form.Item>
+              
+              <Form.Item label="Mô tả chi tiết" name="description">
+                <Input.TextArea rows={3} placeholder="Mô tả chức năng nhiệm vụ của vai trò này..." />
+              </Form.Item>
+            </Form>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', background: 'var(--neutral-light)', padding: '16px 20px', borderRadius: 12, marginBottom: 24 }}>
+              <div>
+                <strong style={{ display: 'block', color: 'var(--text-primary)' }}>Trạng thái hoạt động</strong>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Kích hoạt hoặc tạm thời vô hiệu hóa vai trò này trên hệ thống</span>
+              </div>
+              <Switch checked={roleEnabled} onChange={setRoleEnabled} />
+            </div>
+
+            <div>
+              <label style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)', display: 'block', marginBottom: 8 }}>
+                Danh sách quyền hạn (Permissions)
+              </label>
+              <Select
+                mode="multiple"
+                style={{ width: '100%' }}
+                options={permissionOptions}
+                value={selectedPermissionCodes}
+                onChange={setSelectedPermissionCodes}
+                placeholder="Chọn permissions cho vai trò này..."
+                className="premium-select-multiple"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
 }
