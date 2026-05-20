@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<c:set var="pageTitle" value="Quản lý vai " scope="request"/>
-<c:set var="activePage" value="users" scope="request"/>
+<c:set var="pageTitle" value="Quản lý vai trò" scope="request"/>
+<c:set var="activePage" value="roles" scope="request"/>
 <jsp:include page="../includes/dashboard-layout-start.jsp"/>
 
 <div class="subpage-container">
