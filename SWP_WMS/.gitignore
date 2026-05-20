@@ -1,5 +1,8 @@
-/build/
-/dist/
-/nbproject/private/
-*.war
-*.class
+# NetBeans user-specific settings (machine paths)
+WMS_SWP391/nbproject/private/
+**/nbproject/private/
+
+# Build output
+WMS_SWP391/build/
+WMS_SWP391/dist/
+WMS_SWP391/nbbuild/
