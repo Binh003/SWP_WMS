@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Quên mật khẩu - WarehouseManagementSystem(WMS)</title>
+  <title>Quên mật khẩu - WMS_SWP391</title>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css"/>
   <style>
     .flash { margin-bottom: 16px; padding: 12px; border-radius: 8px; font-size: 14px; }

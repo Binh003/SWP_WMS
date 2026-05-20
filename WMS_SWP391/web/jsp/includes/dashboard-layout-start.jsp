@@ -5,7 +5,7 @@
 <head>
   <jsp:include page="head.jsp"/>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/subpages.css"/>
-  <title>${pageTitle} - WarehouseManagementSystem(WMS)</title>
+  <title>${pageTitle} - WMS_SWP391</title>
   <style>
     .flash { margin: 12px 24px; padding: 12px 16px; border-radius: 8px; font-size: 14px; }
     .flash--success { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }

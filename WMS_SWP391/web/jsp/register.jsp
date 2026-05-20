@@ -3,7 +3,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8"/>
-  <title>Đăng ký - WarehouseManagementSystem(WMS)</title>
+  <title>Đăng ký - WMS_SWP391</title>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css"/>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/register.css"/>
   <style>
