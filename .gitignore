@@ -6,3 +6,6 @@ WMS_SWP391/nbproject/private/
 WMS_SWP391/build/
 WMS_SWP391/dist/
 WMS_SWP391/nbbuild/
+
+# NetBeans editor backups
+**/*~
