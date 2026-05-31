@@ -20,7 +20,7 @@ public class ChangePasswordServlet extends HttpServlet {
         throws ServletException, IOException {
         request.setAttribute("currentUser", WebUtil.currentUser(request));
         WebUtil.consumeFlash(request);
-        request.getRequestDispatcher("/jsp/change-password.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/profile/change-password.jsp").forward(request, response);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class ChangePasswordServlet extends HttpServlet {
             if (dbUser == null || !PasswordUtil.matches(currentPassword, dbUser.getPasswordHash())) {
                 request.setAttribute("flashError", "Mật khẩu hiện tại không đúng");
                 request.setAttribute("currentUser", current);
-                request.getRequestDispatcher("/jsp/change-password.jsp").forward(request, response);
+                request.getRequestDispatcher("/jsp/profile/change-password.jsp").forward(request, response);
                 return;
             }
             userDAO.updatePassword(current.getId(), PasswordUtil.hash(newPassword));
@@ -44,7 +44,7 @@ public class ChangePasswordServlet extends HttpServlet {
         } catch (SQLException ex) {
             request.setAttribute("flashError", ex.getMessage());
             request.setAttribute("currentUser", current);
-            request.getRequestDispatcher("/jsp/change-password.jsp").forward(request, response);
+            request.getRequestDispatcher("/jsp/profile/change-password.jsp").forward(request, response);
         }
     }
 }

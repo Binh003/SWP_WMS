@@ -24,7 +24,7 @@ public class LoginServlet extends HttpServlet {
             return;
         }
         WebUtil.consumeFlash(request);
-        request.getRequestDispatcher("/jsp/login.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/auth/login.jsp").forward(request, response);
     }
 
     @Override
@@ -38,13 +38,13 @@ public class LoginServlet extends HttpServlet {
             if (user == null || !PasswordUtil.matches(password, user.getPasswordHash())) {
                 request.setAttribute("flashError", "Tài khoản hoặc mật khẩu không đúng");
                 request.setAttribute("username", username);
-                request.getRequestDispatcher("/jsp/login.jsp").forward(request, response);
+                request.getRequestDispatcher("/jsp/auth/login.jsp").forward(request, response);
                 return;
             }
             if (!user.isEnabled()) {
                 request.setAttribute("flashError", "Tài khoản chưa được admin kích hoạt");
                 request.setAttribute("username", username);
-                request.getRequestDispatcher("/jsp/login.jsp").forward(request, response);
+                request.getRequestDispatcher("/jsp/auth/login.jsp").forward(request, response);
                 return;
             }
             request.getSession(true).setAttribute(SessionKeys.CURRENT_USER, user);
@@ -52,7 +52,7 @@ public class LoginServlet extends HttpServlet {
             WebUtil.redirect(request, response, "/home");
         } catch (SQLException ex) {
             request.setAttribute("flashError", "Lỗi hệ thống: " + ex.getMessage());
-            request.getRequestDispatcher("/jsp/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/jsp/auth/login.jsp").forward(request, response);
         }
     }
 }

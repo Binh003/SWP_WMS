@@ -65,6 +65,59 @@ public class RoleDAO {
         }
     }
 
+    public boolean existsByCode(String code) throws SQLException {
+        String sql = "SELECT 1 FROM roles WHERE code = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public long insertRole(Role role) throws SQLException {
+        String sql = "INSERT INTO roles (code, name, description, enabled) VALUES (?, ?, ?, ?)";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, role.getCode());
+            ps.setString(2, role.getName());
+            ps.setString(3, role.getDescription());
+            ps.setBoolean(4, role.isEnabled());
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
+        }
+        throw new SQLException("Insert role failed");
+    }
+
+    public void deleteRole(long id) throws SQLException {
+        try (Connection conn = DBConfig.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM user_roles WHERE role_id = ?")) {
+                    ps.setLong(1, id);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM role_permissions WHERE role_id = ?")) {
+                    ps.setLong(1, id);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM roles WHERE id = ?")) {
+                    ps.setLong(1, id);
+                    ps.executeUpdate();
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        }
+    }
+
     public void setEnabled(long id, boolean enabled) throws SQLException {
         String sql = "UPDATE roles SET enabled = ? WHERE id = ?";
         try (Connection conn = DBConfig.getConnection();

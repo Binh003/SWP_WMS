@@ -43,3 +43,12 @@ CREATE TABLE IF NOT EXISTS role_permissions (
   CONSTRAINT fk_role_permissions_role FOREIGN KEY (role_id) REFERENCES roles(id),
   CONSTRAINT fk_role_permissions_permission FOREIGN KEY (permission_id) REFERENCES permissions(id)
 );
+
+CREATE TABLE IF NOT EXISTS password_resets (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  token VARCHAR(255) NOT NULL,
+  expiry_time TIMESTAMP NOT NULL,
+  used BIT(1) NOT NULL DEFAULT 0,
+  CONSTRAINT fk_password_resets_user FOREIGN KEY (user_id) REFERENCES users(id)
+);

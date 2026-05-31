@@ -27,7 +27,7 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
         WebUtil.consumeFlash(request);
-        request.getRequestDispatcher("/jsp/register.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/auth/register.jsp").forward(request, response);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class RegisterServlet extends HttpServlet {
         try {
             if (userDAO.existsByUsername(username)) {
                 request.setAttribute("flashError", "Tài khoản đã tồn tại");
-                request.getRequestDispatcher("/jsp/register.jsp").forward(request, response);
+                request.getRequestDispatcher("/jsp/auth/register.jsp").forward(request, response);
                 return;
             }
             Role viewer = roleDAO.findByCode("VIEWER");
@@ -64,7 +64,7 @@ public class RegisterServlet extends HttpServlet {
             WebUtil.redirect(request, response, "/login");
         } catch (SQLException ex) {
             request.setAttribute("flashError", "Đăng ký thất bại: " + ex.getMessage());
-            request.getRequestDispatcher("/jsp/register.jsp").forward(request, response);
+            request.getRequestDispatcher("/jsp/auth/register.jsp").forward(request, response);
         }
     }
 }

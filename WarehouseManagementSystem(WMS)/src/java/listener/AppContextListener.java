@@ -25,6 +25,20 @@ public class AppContextListener implements ServletContextListener {
     }
 
     private void seedRbac() throws SQLException {
+        try (java.sql.Connection conn = config.DBConfig.getConnection();
+             java.sql.Statement stmt = conn.createStatement()) {
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS password_resets (
+                  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                  user_id BIGINT NOT NULL,
+                  token VARCHAR(255) NOT NULL,
+                  expiry_time TIMESTAMP NOT NULL,
+                  used BIT(1) NOT NULL DEFAULT 0,
+                  CONSTRAINT fk_password_resets_user FOREIGN KEY (user_id) REFERENCES users(id)
+                )
+            """);
+        }
+
         PermissionDAO permissionDAO = new PermissionDAO();
         UserDAO userDAO = new UserDAO();
 

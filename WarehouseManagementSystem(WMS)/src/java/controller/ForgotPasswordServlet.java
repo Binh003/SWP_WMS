@@ -1,21 +1,22 @@
 package controller;
 
 import dao.UserDAO;
+import dao.PasswordResetDAO;
 import model.User;
-import util.PasswordUtil;
-import util.SessionKeys;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.UUID;
 
 public class ForgotPasswordServlet extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAO();
+    private final PasswordResetDAO passwordResetDAO = new PasswordResetDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -25,106 +26,75 @@ public class ForgotPasswordServlet extends HttpServlet {
             return;
         }
         WebUtil.consumeFlash(request);
-        if (hasResetSession(request)) {
-            request.setAttribute("resetStep", 2);
-            HttpSession session = request.getSession(false);
-            if (session != null) {
-                Object username = session.getAttribute(SessionKeys.FORGOT_PASSWORD_USERNAME);
-                if (username != null) {
-                    request.setAttribute("username", username);
-                }
-            }
-        } else {
-            request.setAttribute("resetStep", 1);
-        }
-        request.getRequestDispatcher("/jsp/forgot-password.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/auth/forgot-password.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-        String action = WebUtil.param(request, "action");
-        if ("reset".equals(action)) {
-            handleReset(request, response);
-            return;
-        }
-        handleVerify(request, response);
-    }
-
-    private void handleVerify(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-        String username = WebUtil.param(request, "username");
         String email = WebUtil.param(request, "email");
 
+        if (email.isEmpty()) {
+            request.setAttribute("flashError", "Email không được để trống");
+            request.getRequestDispatcher("/jsp/auth/forgot-password.jsp").forward(request, response);
+            return;
+        }
+
         try {
-            User user = userDAO.findByUsernameAndEmail(username, email);
+            User user = userDAO.findByEmail(email);
             if (user == null) {
-                request.setAttribute("flashError", "Tài khoản hoặc email không khớp");
-                request.setAttribute("username", username);
+                request.setAttribute("flashError", "Email không tồn tại trong hệ thống");
                 request.setAttribute("email", email);
-                request.setAttribute("resetStep", 1);
-                request.getRequestDispatcher("/jsp/forgot-password.jsp").forward(request, response);
+                request.getRequestDispatcher("/jsp/auth/forgot-password.jsp").forward(request, response);
                 return;
             }
+
             if (!user.isEnabled()) {
-                request.setAttribute("flashError", "Tài khoản chưa được kích hoạt. Liên hệ admin.");
-                request.setAttribute("resetStep", 1);
-                request.getRequestDispatcher("/jsp/forgot-password.jsp").forward(request, response);
+                request.setAttribute("flashError", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.");
+                request.setAttribute("email", email);
+                request.getRequestDispatcher("/jsp/auth/forgot-password.jsp").forward(request, response);
                 return;
             }
-            HttpSession resetSession = request.getSession(true);
-            resetSession.setAttribute(SessionKeys.FORGOT_PASSWORD_USER_ID, user.getId());
-            resetSession.setAttribute(SessionKeys.FORGOT_PASSWORD_USERNAME, username);
-            request.setAttribute("resetStep", 2);
-            request.setAttribute("username", username);
-            request.getRequestDispatcher("/jsp/forgot-password.jsp").forward(request, response);
+
+            // Generate token (random UUID)
+            String token = UUID.randomUUID().toString();
+            // Expire in 15 minutes
+            Timestamp expiryTime = new Timestamp(System.currentTimeMillis() + 15 * 60 * 1000);
+
+            // Save to DB
+            passwordResetDAO.createToken(user.getId(), token, expiryTime);
+
+            // Construct reset link
+            String scheme = request.getScheme();
+            String serverName = request.getServerName();
+            int serverPort = request.getServerPort();
+            String contextPath = request.getContextPath();
+            
+            String baseUrl = scheme + "://" + serverName + ":" + serverPort + contextPath;
+            String resetLink = baseUrl + "/reset-password?token=" + token;
+
+            // Log the link in server console
+            System.out.println("=================================================");
+            System.out.println("MÃ KHÔI PHỤC MẬT KHẨU CHO: " + user.getUsername());
+            System.out.println("Reset Link: " + resetLink);
+            System.out.println("=================================================");
+
+            // Send actual email (safe block to prevent crashes if credentials/jars are missing)
+            try {
+                util.EmailUtil.sendResetLink(email, resetLink);
+            } catch (Throwable t) {
+                System.err.println("Gửi email thật thất bại (Có thể do chưa cấu hình SMTP hoặc thiếu thư viện JAR): " + t.getMessage());
+            }
+
+            // Pass variables to UI
+            request.setAttribute("emailSent", true);
+            request.setAttribute("resetLink", resetLink);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/jsp/auth/forgot-password.jsp").forward(request, response);
+
         } catch (SQLException ex) {
             request.setAttribute("flashError", "Lỗi hệ thống: " + ex.getMessage());
-            request.setAttribute("resetStep", 1);
-            request.getRequestDispatcher("/jsp/forgot-password.jsp").forward(request, response);
+            request.getRequestDispatcher("/jsp/auth/forgot-password.jsp").forward(request, response);
         }
-    }
-
-    private void handleReset(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        Long userId = session == null ? null : (Long) session.getAttribute(SessionKeys.FORGOT_PASSWORD_USER_ID);
-        if (userId == null) {
-            WebUtil.setFlashError(request, "Phiên đặt lại mật khẩu đã hết hạn. Vui lòng thử lại.");
-            WebUtil.redirect(request, response, "/forgot-password");
-            return;
-        }
-
-        String newPassword = WebUtil.param(request, "newPassword");
-        String confirmPassword = WebUtil.param(request, "confirmPassword");
-        if (newPassword.length() < 6) {
-            request.setAttribute("flashError", "Mật khẩu mới phải có ít nhất 6 ký tự");
-            request.setAttribute("resetStep", 2);
-            request.getRequestDispatcher("/jsp/forgot-password.jsp").forward(request, response);
-            return;
-        }
-        if (!newPassword.equals(confirmPassword)) {
-            request.setAttribute("flashError", "Mật khẩu xác nhận không khớp");
-            request.setAttribute("resetStep", 2);
-            request.getRequestDispatcher("/jsp/forgot-password.jsp").forward(request, response);
-            return;
-        }
-
-        try {
-            userDAO.updatePassword(userId, PasswordUtil.hash(newPassword));
-            session.removeAttribute(SessionKeys.FORGOT_PASSWORD_USER_ID);
-            session.removeAttribute(SessionKeys.FORGOT_PASSWORD_USERNAME);
-            WebUtil.setFlashSuccess(request, "Đặt lại mật khẩu thành công. Vui lòng đăng nhập.");
-            WebUtil.redirect(request, response, "/login");
-        } catch (SQLException ex) {
-            request.setAttribute("flashError", "Lỗi hệ thống: " + ex.getMessage());
-            request.setAttribute("resetStep", 2);
-            request.getRequestDispatcher("/jsp/forgot-password.jsp").forward(request, response);
-        }
-    }
-
-    private boolean hasResetSession(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        return session != null && session.getAttribute(SessionKeys.FORGOT_PASSWORD_USER_ID) != null;
     }
 }

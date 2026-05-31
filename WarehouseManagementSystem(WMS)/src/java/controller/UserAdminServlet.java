@@ -23,15 +23,47 @@ public class UserAdminServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if (action == null) {
+            action = "list";
+        }
         try {
-            request.setAttribute("users", userDAO.findAll());
-            request.setAttribute("roles", roleDAO.findAll());
             request.setAttribute("currentUser", WebUtil.currentUser(request));
             WebUtil.consumeFlash(request);
-            request.getRequestDispatcher("/jsp/admin/users.jsp").forward(request, response);
+            switch (action) {
+                case "create" -> showCreateForm(request, response);
+                case "edit" -> showEditForm(request, response);
+                default -> listUsers(request, response);
+            }
         } catch (SQLException ex) {
             throw new ServletException(ex);
         }
+    }
+
+    private void listUsers(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, ServletException, IOException {
+        request.setAttribute("users", userDAO.findAll());
+        request.getRequestDispatcher("/jsp/admin/users.jsp").forward(request, response);
+    }
+
+    private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, ServletException, IOException {
+        request.setAttribute("roles", roleDAO.findAll());
+        request.getRequestDispatcher("/jsp/admin/user-create.jsp").forward(request, response);
+    }
+
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, ServletException, IOException {
+        long id = Long.parseLong(WebUtil.param(request, "id"));
+        User user = userDAO.findById(id);
+        if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
+            WebUtil.setFlashError(request, "Không thể chỉnh sửa tài khoản quản trị hệ thống");
+            WebUtil.redirect(request, response, "/admin/users");
+            return;
+        }
+        request.setAttribute("user", user);
+        request.setAttribute("roles", roleDAO.findAll());
+        request.getRequestDispatcher("/jsp/admin/user-edit.jsp").forward(request, response);
     }
 
     @Override
@@ -69,6 +101,12 @@ public class UserAdminServlet extends HttpServlet {
     private void updateUser(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
+        User user = userDAO.findById(id);
+        if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
+            WebUtil.setFlashError(request, "Không thể chỉnh sửa tài khoản quản trị hệ thống");
+            WebUtil.redirect(request, response, "/admin/users");
+            return;
+        }
         userDAO.updateProfile(id, WebUtil.param(request, "fullName"), WebUtil.param(request, "email"));
         boolean enabled = "on".equalsIgnoreCase(WebUtil.param(request, "enabled"))
             || "true".equalsIgnoreCase(WebUtil.param(request, "enabled"));
@@ -81,6 +119,12 @@ public class UserAdminServlet extends HttpServlet {
     private void toggleUser(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
+        User user = userDAO.findById(id);
+        if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
+            WebUtil.setFlashError(request, "Không thể thay đổi trạng thái tài khoản quản trị hệ thống");
+            WebUtil.redirect(request, response, "/admin/users");
+            return;
+        }
         boolean enabled = Boolean.parseBoolean(WebUtil.param(request, "enabled"));
         userDAO.setEnabled(id, enabled);
         WebUtil.setFlashSuccess(request, enabled ? "Đã kích hoạt" : "Đã vô hiệu hóa");
@@ -90,6 +134,12 @@ public class UserAdminServlet extends HttpServlet {
     private void updateRoles(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
+        User user = userDAO.findById(id);
+        if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
+            WebUtil.setFlashError(request, "Không thể thay đổi vai trò tài khoản quản trị hệ thống");
+            WebUtil.redirect(request, response, "/admin/users");
+            return;
+        }
         userDAO.replaceRoles(id, resolveRoles(request));
         WebUtil.setFlashSuccess(request, "Đã cập nhật vai trò");
         WebUtil.redirect(request, response, "/admin/users");

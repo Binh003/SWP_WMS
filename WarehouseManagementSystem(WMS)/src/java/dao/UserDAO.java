@@ -50,6 +50,25 @@ public class UserDAO {
         }
     }
 
+    public User findByEmail(String email) throws SQLException {
+        String sql = """
+            SELECT id, username, full_name, email, password_hash, enabled
+            FROM users WHERE LOWER(email) = LOWER(?)
+            """;
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+                User user = mapUser(rs);
+                user.setRoles(findRolesForUser(conn, user.getId()));
+                return user;
+            }
+        }
+    }
+
     public User findById(long id) throws SQLException {
         String sql = """
             SELECT id, username, full_name, email, password_hash, enabled

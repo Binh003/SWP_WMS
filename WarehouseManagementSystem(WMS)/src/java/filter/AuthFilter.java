@@ -32,6 +32,19 @@ public class AuthFilter implements Filter {
             return;
         }
 
+        // Verify if user is still valid and password hash matches the database
+        try {
+            dao.UserDAO userDAO = new dao.UserDAO();
+            User freshUser = userDAO.findById(user.getId());
+            if (freshUser == null || !freshUser.isEnabled() || !freshUser.getPasswordHash().equals(user.getPasswordHash())) {
+                req.getSession().invalidate();
+                resp.sendRedirect(req.getContextPath() + "/login");
+                return;
+            }
+        } catch (java.sql.SQLException ex) {
+            req.getServletContext().log("Database verification error in AuthFilter: " + ex.getMessage(), ex);
+        }
+
         if (path.startsWith("/admin/") && !WebUtil.isAdmin(user)) {
             resp.sendRedirect(req.getContextPath() + "/home");
             return;
@@ -47,6 +60,7 @@ public class AuthFilter implements Filter {
         return path.equals("/login")
             || path.equals("/register")
             || path.equals("/forgot-password")
+            || path.equals("/reset-password")
             || path.startsWith("/css/")
             || path.endsWith(".css")
             || path.endsWith(".js")
