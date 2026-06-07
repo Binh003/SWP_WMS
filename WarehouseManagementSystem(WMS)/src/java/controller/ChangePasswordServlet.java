@@ -33,7 +33,14 @@ public class ChangePasswordServlet extends HttpServlet {
         try {
             User dbUser = userDAO.findById(current.getId());
             if (dbUser == null || !PasswordUtil.matches(currentPassword, dbUser.getPasswordHash())) {
-                request.setAttribute("flashError", "Mật khẩu hiện tại không đúng");
+                request.setAttribute("flashError", "Mật khẩu hiện tại không đúng.");
+                request.setAttribute("currentUser", current);
+                request.getRequestDispatcher("/jsp/profile/change-password.jsp").forward(request, response);
+                return;
+            }
+
+            if (newPassword.length() < 8 || !newPassword.matches(".*[a-z].*") || !newPassword.matches(".*[A-Z].*") || !newPassword.matches(".*\\d.*")) {
+                request.setAttribute("flashError", "Mật khẩu mới phải từ 8 ký tự, bao gồm chữ hoa, chữ thường và chữ số.");
                 request.setAttribute("currentUser", current);
                 request.getRequestDispatcher("/jsp/profile/change-password.jsp").forward(request, response);
                 return;

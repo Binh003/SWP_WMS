@@ -13,7 +13,13 @@
     .brand-text { font-weight: 800; color: #048abf; font-size: 1.1rem; }
     .sidebar-nav--links a { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px; margin-bottom: 4px; border-radius: 10px; color: var(--sidebar-text); text-decoration: none; font-weight: 600; }
     .sidebar-nav--links a:hover, .sidebar-nav--links a.active { background: var(--sidebar-active-bg); color: var(--sidebar-active-text); }
-    .home-brand { text-decoration: none; }
+    .home-brand {
+      text-decoration: none;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 16px !important;
+    }
     
     /* Collapsed brand styling */
     .home-shell--collapsed .home-topbar {
@@ -21,9 +27,9 @@
     }
     .home-shell--collapsed .home-brand {
       width: 80px;
-      padding: 0;
+      padding: 0 !important;
       border-right: 1px solid #e2e8f0;
-      justify-content: center;
+      justify-content: center !important;
     }
     .home-shell--collapsed .brand-text-long {
       display: none;
@@ -82,9 +88,7 @@
   </script>
   <header class="home-topbar">
     <a class="home-brand" href="${pageContext.request.contextPath}/home">
-      <span class="brand-text">
-        <span class="brand-text-short">V</span><span class="brand-text-long">-Inventory WMS</span>
-      </span>
+      <img src="${pageContext.request.contextPath}/assets/logo.png" alt="V-Inventory" style="height: 50px; width: auto; object-fit: contain; max-width: 100%;"/>
     </a>
     <label class="home-search" aria-label="Tìm kiếm">
       <span class="home-search__icon">⌕</span>

@@ -5,7 +5,10 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Đăng ký - WarehouseManagementSystem(WMS)</title>
+  <title>Đăng nhập - WarehouseManagementSystem(WMS)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css"/>
   <style>
     .flash { margin-bottom: 16px; padding: 12px; border-radius: 8px; font-size: 14px; }
@@ -15,20 +18,20 @@
 </head>
 <body>
 <main class="login-page">
-  <section class="login-shell" aria-label="Đăng ký tài khoản">
+  <section class="login-shell" aria-label="Đăng nhập quản trị kho hàng">
     <div class="login-visual">
       <div class="visual-copy">
         <span class="eyebrow logo-eyebrow">
-          <img src="${pageContext.request.contextPath}/assets/inventory-logo.png" alt="InventoryTracking"/>
+          <img src="${pageContext.request.contextPath}/assets/logo.png" alt="InventoryTracking"/>
         </span>
         <h1>QUẢN TRỊ KHO HÀNG<br/>THÔNG MINH</h1>
-        <p>ĐĂNG KÝ</p>
+        <p>HỢP NHẤT</p>
       </div>
 
       <div class="avatar-frame" aria-hidden="true">
         <span class="floating-square top"></span>
         <span class="floating-square bottom"></span>
-        <img class="robot-image" src="${pageContext.request.contextPath}/assets/inventory-robot.png" alt="Robot"/>
+        <img class="robot-image" src="${pageContext.request.contextPath}/assets/img_login.png" alt="Robot"/>
       </div>
     </div>
 
@@ -36,28 +39,15 @@
       <div class="login-form-card">
         <div class="form-heading">
           <span class="heading-logo">
-            <img src="${pageContext.request.contextPath}/assets/inventory-logo.png" alt="InventoryTracking"/>
+            <img src="${pageContext.request.contextPath}/assets/logo.png" alt="InventoryTracking"/>
           </span>
-          <h2>Tạo tài khoản</h2>
+          <h2>Đăng nhập</h2>
         </div>
         <jsp:include page="../includes/flash.jsp"/>
 
-        <form method="post" action="${pageContext.request.contextPath}/register">
+        <form method="post" action="${pageContext.request.contextPath}/login">
           <div class="input-group">
-            <span class="input-label">Họ và tên</span>
-            <div class="input-wrap">
-              <span class="input-icon" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M20 21C20 19.6044 20 18.9067 19.6847 18.3022C19.2618 17.4913 18.5087 16.8393 17.587 16.4831C16.9 16.2174 16.1022 16.2174 14.5066 16.2174H9.49339C7.89781 16.2174 7.09997 16.2174 6.413 16.4831C5.49129 16.8393 4.73819 17.4913 4.31527 18.3022C4 18.9067 4 19.6044 4 21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                  <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.7"/>
-                </svg>
-              </span>
-              <input class="custom-input" type="text" name="fullName" placeholder="Nhập họ và tên" required/>
-            </div>
-          </div>
-
-          <div class="input-group">
-            <span class="input-label">Email / Username</span>
+            <span class="input-label">Tài khoản</span>
             <div class="input-wrap">
               <span class="input-icon" aria-hidden="true">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -65,7 +55,7 @@
                   <path d="M5.5 6.5L12 12L18.5 6.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </span>
-              <input class="custom-input" type="email" name="email" placeholder="Nhập email đăng ký" required/>
+              <input class="custom-input" type="text" name="username" value="${username}" placeholder="Nhập tài khoản" autocomplete="username" required/>
             </div>
           </div>
 
@@ -79,7 +69,7 @@
                   <path d="M12 14V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
                 </svg>
               </span>
-              <input id="passwordInput" class="custom-input" type="password" name="password" minlength="6" placeholder="Nhập mật khẩu" required/>
+              <input id="passwordInput" class="custom-input" type="password" name="password" placeholder="Nhập mật khẩu" autocomplete="current-password" required/>
               <button type="button" class="password-toggle" aria-label="Hiện/ẩn mật khẩu" onclick="togglePassword()">
                 <svg id="eyeSvg" class="eye" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -87,11 +77,19 @@
                 </svg>
               </button>
             </div>
+            <div class="forgot-password-link">
+              <a href="${pageContext.request.contextPath}/forgot-password">Quên mật khẩu?</a>
+            </div>
           </div>
 
-          <button type="submit" class="btn-primary" style="margin-top: 24px;">Đăng ký</button>
+          <label class="remember-row">
+            <input type="checkbox" name="remember" value="true"/>
+            <span>Ghi nhớ đăng nhập</span>
+          </label>
+
+          <button type="submit" class="btn-primary">Đăng nhập</button>
         </form>
-        <p class="register-note">Đã có tài khoản? <a href="${pageContext.request.contextPath}/login">Đăng nhập</a></p>
+        <p class="register-note">Chưa có tài khoản? <a href="${pageContext.request.contextPath}/register">Liên hệ quản trị viên</a></p>
       </div>
     </div>
   </section>

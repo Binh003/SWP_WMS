@@ -37,6 +37,13 @@ public class AppContextListener implements ServletContextListener {
                   CONSTRAINT fk_password_resets_user FOREIGN KEY (user_id) REFERENCES users(id)
                 )
             """);
+            try {
+                stmt.execute("SELECT status FROM users LIMIT 1");
+            } catch (SQLException e) {
+                stmt.execute("ALTER TABLE users ADD COLUMN status VARCHAR(50) NOT NULL DEFAULT 'PENDING'");
+                stmt.execute("UPDATE users SET status = 'ACTIVE' WHERE enabled = 1");
+                stmt.execute("UPDATE users SET status = 'LOCKED' WHERE enabled = 0");
+            }
         }
 
         PermissionDAO permissionDAO = new PermissionDAO();

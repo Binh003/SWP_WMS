@@ -28,17 +28,23 @@ public class RoleAdminServlet extends HttpServlet {
             request.setAttribute("currentUser", WebUtil.currentUser(request));
 
             String action = WebUtil.param(request, "action");
+            String idParam = WebUtil.param(request, "id");
+            String forwardJsp = "/jsp/admin/roles.jsp";
+
             if ("create".equalsIgnoreCase(action)) {
-                request.setAttribute("isCreateMode", true);
-            } else {
-                long selectedId = parseLong(WebUtil.param(request, "id"), roles.isEmpty() ? 0 : roles.get(0).getId());
-                Role selected = roleDAO.findByIdWithPermissions(selectedId);
-                request.setAttribute("selectedRole", selected);
-                request.setAttribute("selectedRoleId", selectedId);
+                forwardJsp = "/jsp/admin/role-create.jsp";
+            } else if ("edit".equalsIgnoreCase(action) || (idParam != null && !idParam.isEmpty())) {
+                long selectedId = parseLong(idParam, 0);
+                Role selected = selectedId > 0 ? roleDAO.findByIdWithPermissions(selectedId) : null;
+                if (selected != null) {
+                    request.setAttribute("selectedRole", selected);
+                    request.setAttribute("selectedRoleId", selectedId);
+                    forwardJsp = "/jsp/admin/role-edit.jsp";
+                }
             }
 
             WebUtil.consumeFlash(request);
-            request.getRequestDispatcher("/jsp/admin/roles.jsp").forward(request, response);
+            request.getRequestDispatcher(forwardJsp).forward(request, response);
         } catch (SQLException ex) {
             throw new ServletException(ex);
         }
@@ -56,6 +62,12 @@ public class RoleAdminServlet extends HttpServlet {
                 if (role != null && "ADMIN".equalsIgnoreCase(role.getCode())) {
                     WebUtil.setFlashError(request, "Không thể xóa vai trò ADMIN mặc định");
                     WebUtil.redirect(request, response, "/admin/roles?id=" + id);
+                    return;
+                }
+                int userCount = roleDAO.countUsersWithRole(id);
+                if (userCount > 0) {
+                    WebUtil.setFlashError(request, "Không thể xóa vai trò \"" + (role != null ? role.getCode() : "") + "\" vì đang có " + userCount + " tài khoản đang sử dụng vai trò này.");
+                    WebUtil.redirect(request, response, "/admin/roles");
                     return;
                 }
                 roleDAO.deleteRole(id);
