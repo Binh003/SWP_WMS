@@ -22,7 +22,7 @@
             <polyline points="2 17 12 22 22 17"></polyline>
             <polyline points="2 12 12 17 22 12"></polyline>
           </svg>
-          Vai trò hiện có
+          Vai trò đang hiện có
         </h3>
         <a href="${pageContext.request.contextPath}/admin/roles?action=create" 
            class="premium-btn-primary" 
