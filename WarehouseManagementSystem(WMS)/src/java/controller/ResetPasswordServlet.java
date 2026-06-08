@@ -66,8 +66,8 @@ public class ResetPasswordServlet extends HttpServlet {
                 return;
             }
 
-            if (newPassword.length() < 6) {
-                request.setAttribute("flashError", "Mật khẩu mới phải có ít nhất 6 ký tự.");
+            if (newPassword.length() < 8 || !newPassword.matches(".*[a-z].*") || !newPassword.matches(".*[A-Z].*") || !newPassword.matches(".*\\d.*")) {
+                request.setAttribute("flashError", "Mật khẩu mới phải từ 8 ký tự, bao gồm chữ hoa, chữ thường và chữ số.");
                 request.setAttribute("token", token);
                 request.getRequestDispatcher("/jsp/auth/reset-password.jsp").forward(request, response);
                 return;

@@ -14,6 +14,6 @@ public class ProfileServlet extends HttpServlet {
         throws ServletException, IOException {
         request.setAttribute("currentUser", WebUtil.currentUser(request));
         WebUtil.consumeFlash(request);
-        request.getRequestDispatcher("/jsp/profile.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/profile/profile.jsp").forward(request, response);
     }
 }

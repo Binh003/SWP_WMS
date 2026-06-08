@@ -13,7 +13,13 @@
     .brand-text { font-weight: 800; color: #048abf; font-size: 1.1rem; }
     .sidebar-nav--links a { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 16px; margin-bottom: 4px; border-radius: 10px; color: var(--sidebar-text); text-decoration: none; font-weight: 600; }
     .sidebar-nav--links a:hover, .sidebar-nav--links a.active { background: var(--sidebar-active-bg); color: var(--sidebar-active-text); }
-    .home-brand { text-decoration: none; }
+    .home-brand {
+      text-decoration: none;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 16px !important;
+    }
     
     /* Collapsed brand styling */
     .home-shell--collapsed .home-topbar {
@@ -21,9 +27,9 @@
     }
     .home-shell--collapsed .home-brand {
       width: 80px;
-      padding: 0;
+      padding: 0 !important;
       border-right: 1px solid #e2e8f0;
-      justify-content: center;
+      justify-content: center !important;
     }
     .home-shell--collapsed .brand-text-long {
       display: none;
@@ -82,9 +88,7 @@
   </script>
   <header class="home-topbar">
     <a class="home-brand" href="${pageContext.request.contextPath}/home">
-      <span class="brand-text">
-        <span class="brand-text-short">V</span><span class="brand-text-long">-Inventory WMS</span>
-      </span>
+      <img src="${pageContext.request.contextPath}/assets/logo.png" alt="V-Inventory" style="height: 50px; width: auto; object-fit: contain; max-width: 100%;"/>
     </a>
     <label class="home-search" aria-label="Tìm kiếm">
       <span class="home-search__icon">⌕</span>
@@ -159,11 +163,16 @@
           </svg>
           <span>Bảng điều khiển</span>
         </a>
-        <c:set var="isAdmin" value="false"/>
-        <c:forEach var="r" items="${currentUser.roles}">
-          <c:if test="${r.code == 'ADMIN'}"><c:set var="isAdmin" value="true"/></c:if>
-        </c:forEach>
-        <c:if test="${isAdmin}">
+        <c:set var="isAdmin" value="${currentUser.hasRole('ADMIN')}"/>
+        
+        <c:set var="canManageUsers" value="${isAdmin || currentUser.hasPermission('USER_READ') || currentUser.hasPermission('USER_WRITE')}"/>
+        <c:set var="canManageRoles" value="${isAdmin || currentUser.hasPermission('ROLE_READ') || currentUser.hasPermission('ROLE_WRITE') || currentUser.hasPermission('PERMISSION_READ')}"/>
+        
+        <c:set var="canViewBrands" value="${isAdmin || currentUser.hasPermission('BRAND_READ') || currentUser.hasPermission('BRAND_WRITE')}"/>
+        <c:set var="canViewSuppliers" value="${isAdmin || currentUser.hasPermission('SUPPLIER_READ') || currentUser.hasPermission('SUPPLIER_WRITE')}"/>
+        <c:set var="canViewProductLines" value="${isAdmin || currentUser.hasPermission('PRODUCT_LINE_READ') || currentUser.hasPermission('PRODUCT_LINE_WRITE')}"/>
+        
+        <c:if test="${canManageUsers}">
           <a class="${activePage == 'users' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/users">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -173,11 +182,45 @@
             </svg>
             <span>Quản lý tài khoản</span>
           </a>
+        </c:if>
+
+        <c:if test="${canManageRoles}">
           <a class="${activePage == 'roles' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/roles">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
             </svg>
             <span>Quản lý vai trò</span>
+          </a>
+        </c:if>
+
+        <c:if test="${canViewBrands}">
+          <a class="${activePage == 'brands' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/brands">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+            <span>Quản lý Hãng</span>
+          </a>
+        </c:if>
+
+        <c:if test="${canViewSuppliers}">
+          <a class="${activePage == 'suppliers' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/suppliers">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="10" rx="2" ry="2"></rect>
+              <circle cx="12" cy="5" r="2"></circle>
+              <path d="M12 7v4"></path>
+            </svg>
+            <span>Nhà cung cấp</span>
+          </a>
+        </c:if>
+
+        <c:if test="${canViewProductLines}">
+          <a class="${activePage == 'product-lines' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/product-lines">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+              <rect x="9" y="9" width="6" height="6"></rect>
+            </svg>
+            <span>Dòng sản phẩm</span>
           </a>
         </c:if>
       </nav>

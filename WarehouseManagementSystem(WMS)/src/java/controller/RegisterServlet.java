@@ -39,6 +39,22 @@ public class RegisterServlet extends HttpServlet {
         }
         String fullName = WebUtil.param(request, "fullName");
         String password = WebUtil.param(request, "password");
+        String confirmPassword = WebUtil.param(request, "confirmPassword");
+
+        request.setAttribute("email", username);
+        request.setAttribute("fullName", fullName);
+
+        if (!password.equals(confirmPassword)) {
+            request.setAttribute("flashError", "Mật khẩu xác nhận không khớp.");
+            request.getRequestDispatcher("/jsp/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        if (password.length() < 8 || !password.matches(".*[a-z].*") || !password.matches(".*[A-Z].*") || !password.matches(".*\\d.*")) {
+            request.setAttribute("flashError", "Mật khẩu phải từ 8 ký tự, bao gồm chữ hoa, chữ thường và chữ số.");
+            request.getRequestDispatcher("/jsp/auth/register.jsp").forward(request, response);
+            return;
+        }
 
         try {
             if (userDAO.existsByUsername(username)) {

@@ -17,10 +17,10 @@ public final class EmailUtil {
     private static final String SMTP_PORT = "587"; // Cổng TLS của Gmail
     
     // TODO: Thay đổi 2 thông tin dưới đây bằng tài khoản của bạn để gửi được mail thật
-    // private static final String FROM_EMAIL = "sea31082003@gmail.com"; 
-    // private static final String APP_PASSWORD = "fjuh vbha bckg qcqu"; // Mật khẩu ứng dụng (không phải mật khẩu thường)
-    private static final String FROM_EMAIL = ""; 
-    private static final String APP_PASSWORD = ""; 
+     private static final String FROM_EMAIL = "sea31082003@gmail.com";
+     private static final String APP_PASSWORD = "fjuh vbha bckg qcqu"; // Mật khẩu ứng dụng (không phải mật khẩu thường)
+//    private static final String FROM_EMAIL = "";
+//    private static final String APP_PASSWORD = "";
     private EmailUtil() {}
 
     /**
@@ -45,7 +45,7 @@ public final class EmailUtil {
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(FROM_EMAIL));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
-        message.setSubject("[V-Inventory] Yêu cầu khôi phục mật khẩu tài khoản");
+        message.setSubject("[V-Inventory] Yeu cau khoi phuc mat khau tai khoan");
 
         String htmlContent = """
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
