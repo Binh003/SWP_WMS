@@ -15,7 +15,7 @@ public class UserDAO {
 
     public User findByUsernameAndEmail(String username, String email) throws SQLException {
         String sql = """
-            SELECT id, username, full_name, email, password_hash, enabled
+            SELECT id, username, full_name, email, password_hash, enabled, status
             FROM users WHERE username = ? AND LOWER(email) = LOWER(?)
             """;
         try (Connection conn = DBConfig.getConnection();
@@ -33,7 +33,7 @@ public class UserDAO {
 
     public User findByUsername(String username) throws SQLException {
         String sql = """
-            SELECT id, username, full_name, email, password_hash, enabled
+            SELECT id, username, full_name, email, password_hash, enabled, status
             FROM users WHERE username = ?
             """;
         try (Connection conn = DBConfig.getConnection();
@@ -52,7 +52,7 @@ public class UserDAO {
 
     public User findByEmail(String email) throws SQLException {
         String sql = """
-            SELECT id, username, full_name, email, password_hash, enabled
+            SELECT id, username, full_name, email, password_hash, enabled, status
             FROM users WHERE LOWER(email) = LOWER(?)
             """;
         try (Connection conn = DBConfig.getConnection();
@@ -71,7 +71,7 @@ public class UserDAO {
 
     public User findById(long id) throws SQLException {
         String sql = """
-            SELECT id, username, full_name, email, password_hash, enabled
+            SELECT id, username, full_name, email, password_hash, enabled, status
             FROM users WHERE id = ?
             """;
         try (Connection conn = DBConfig.getConnection();
@@ -90,7 +90,7 @@ public class UserDAO {
 
     public List<User> findAll() throws SQLException {
         String sql = """
-            SELECT id, username, full_name, email, password_hash, enabled
+            SELECT id, username, full_name, email, password_hash, enabled, status
             FROM users ORDER BY id
             """;
         List<User> users = new ArrayList<>();
@@ -119,8 +119,8 @@ public class UserDAO {
 
     public long insert(User user) throws SQLException {
         String sql = """
-            INSERT INTO users (username, full_name, email, password_hash, enabled)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO users (username, full_name, email, password_hash, enabled, status)
+            VALUES (?, ?, ?, ?, ?, ?)
             """;
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -129,6 +129,7 @@ public class UserDAO {
             ps.setString(3, user.getEmail());
             ps.setString(4, user.getPasswordHash());
             ps.setBoolean(5, user.isEnabled());
+            ps.setString(6, user.getStatus());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -163,11 +164,23 @@ public class UserDAO {
     }
 
     public void setEnabled(long userId, boolean enabled) throws SQLException {
-        String sql = "UPDATE users SET enabled = ? WHERE id = ?";
+        String sql = "UPDATE users SET enabled = ?, status = ? WHERE id = ?";
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setBoolean(1, enabled);
-            ps.setLong(2, userId);
+            ps.setString(2, enabled ? "ACTIVE" : "LOCKED");
+            ps.setLong(3, userId);
+            ps.executeUpdate();
+        }
+    }
+
+    public void setStatus(long userId, String status) throws SQLException {
+        String sql = "UPDATE users SET status = ?, enabled = ? WHERE id = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setBoolean(2, "ACTIVE".equalsIgnoreCase(status));
+            ps.setLong(3, userId);
             ps.executeUpdate();
         }
     }
@@ -210,11 +223,32 @@ public class UserDAO {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    roles.add(mapRole(rs));
+                    Role role = mapRole(rs);
+                    role.setPermissionCodes(findPermissionsForRole(conn, role.getId()));
+                    roles.add(role);
                 }
             }
         }
         return roles;
+    }
+
+    private List<String> findPermissionsForRole(Connection conn, long roleId) throws SQLException {
+        String sql = """
+            SELECT p.code 
+            FROM permissions p
+            INNER JOIN role_permissions rp ON rp.permission_id = p.id
+            WHERE rp.role_id = ?
+            """;
+        List<String> perms = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, roleId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    perms.add(rs.getString("code"));
+                }
+            }
+        }
+        return perms;
     }
 
     private User mapUser(ResultSet rs) throws SQLException {
@@ -225,6 +259,7 @@ public class UserDAO {
         user.setEmail(rs.getString("email"));
         user.setPasswordHash(rs.getString("password_hash"));
         user.setEnabled(rs.getBoolean("enabled"));
+        user.setStatus(rs.getString("status"));
         return user;
     }
 

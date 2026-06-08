@@ -5,6 +5,15 @@
 <jsp:include page="../includes/dashboard-layout-start.jsp"/>
 
 <div class="subpage-container">
+  <div style="margin-bottom: 16px;">
+    <a href="${pageContext.request.contextPath}/admin/users" class="back-link" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text-secondary); font-weight: 600; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Quay lại danh sách tài khoản
+    </a>
+  </div>
   <div class="subpage-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
     <div class="subpage-header__title">
       <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">Cập nhật tài khoản</h2>
@@ -62,13 +71,12 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Trạng thái hoạt động</label>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; background: #ffffff; padding: 8px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s;">
-              <input type="checkbox" name="enabled" value="true" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary-color);" ${user.enabled ? 'checked' : ''}/>
-              <span>Kích hoạt tài khoản</span>
-            </label>
-          </div>
+          <label class="form-label">Trạng thái tài khoản</label>
+          <select name="status" class="subpage-input" style="width: 100%; max-width: 250px; background-color: #ffffff; cursor: pointer; border: 1.5px solid var(--card-border); border-radius: 10px; padding: 10px 16px; outline: none; font-size: 14px; font-weight: 600;">
+            <option value="ACTIVE" ${user.status == 'ACTIVE' ? 'selected' : ''}>Đang hoạt động</option>
+            <option value="LOCKED" ${user.status == 'LOCKED' ? 'selected' : ''}>Bị khóa</option>
+            <option value="PENDING" ${user.status == 'PENDING' ? 'selected' : ''}>Chờ phê duyệt</option>
+          </select>
         </div>
 
         <div style="margin-top: 12px; display: flex; gap: 12px; justify-content: flex-end;">
@@ -83,9 +91,17 @@
       <div class="premium-card" style="padding: 24px;">
         <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: var(--text-primary);">Thông tin phiên hoạt động</h3>
         <p style="margin: 8px 0; font-size: 14px; color: var(--text-secondary);">Trạng thái tài khoản hiện tại: 
-          <span class="premium-tag ${user.enabled ? 'premium-tag--success' : 'premium-tag--neutral'}" style="font-size: 11px; margin-left: 6px;">
-            ${user.enabled ? 'Kích hoạt' : 'Bị khóa'}
-          </span>
+          <c:choose>
+            <c:when test="${user.status == 'ACTIVE'}">
+              <span class="premium-tag premium-tag--success" style="font-size: 11px; margin-left: 6px;">Kích hoạt</span>
+            </c:when>
+            <c:when test="${user.status == 'LOCKED'}">
+              <span class="premium-tag premium-tag--danger" style="font-size: 11px; margin-left: 6px;">Bị khóa</span>
+            </c:when>
+            <c:otherwise>
+              <span class="premium-tag premium-tag--warning" style="font-size: 11px; margin-left: 6px;">Chờ phê duyệt</span>
+            </c:otherwise>
+          </c:choose>
         </p>
         <p style="margin: 8px 0; font-size: 14px; color: var(--text-secondary);">Số vai trò gán hiện tại: <strong>${user.roles.size()}</strong></p>
       </div>

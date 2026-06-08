@@ -9,7 +9,8 @@ public class User {
     private String fullName;
     private String email;
     private String passwordHash;
-    private boolean enabled = true;
+    private boolean enabled = false;
+    private String status = "PENDING";
     private List<Role> roles = new ArrayList<>();
 
     public long getId() {
@@ -53,11 +54,21 @@ public class User {
     }
 
     public boolean isEnabled() {
-        return enabled;
+        return "ACTIVE".equalsIgnoreCase(status);
     }
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+        this.status = enabled ? "ACTIVE" : "LOCKED";
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+        this.enabled = "ACTIVE".equalsIgnoreCase(status);
     }
 
     public List<Role> getRoles() {
@@ -71,6 +82,15 @@ public class User {
     public boolean hasRole(String code) {
         for (Role role : roles) {
             if (code.equalsIgnoreCase(role.getCode())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasPermission(String permissionCode) {
+        for (Role role : roles) {
+            if (role.getPermissionCodes() != null && role.getPermissionCodes().contains(permissionCode)) {
                 return true;
             }
         }

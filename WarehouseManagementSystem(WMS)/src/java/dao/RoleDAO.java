@@ -18,7 +18,9 @@ public class RoleDAO {
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                roles.add(mapRole(rs));
+                Role r = mapRole(rs);
+                r.setPermissionCodes(findPermissionCodes(conn, r.getId()));
+                roles.add(r);
             }
         }
         return roles;
@@ -169,6 +171,20 @@ public class RoleDAO {
             }
         }
         return codes;
+    }
+
+    public int countUsersWithRole(long roleId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM user_roles WHERE role_id = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, roleId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
     }
 
     private Role mapRole(ResultSet rs) throws SQLException {
