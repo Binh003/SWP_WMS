@@ -12,13 +12,6 @@
   </c:if>
 </c:forEach>
 
-<c:set var="pendingCount" value="0"/>
-<c:forEach var="u" items="${users}">
-  <c:if test="${u.status == 'PENDING'}">
-    <c:set var="pendingCount" value="${pendingCount + 1}"/>
-  </c:if>
-</c:forEach>
-
 <div class="subpage-container">
   <div class="subpage-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
     <div class="subpage-header__title">
