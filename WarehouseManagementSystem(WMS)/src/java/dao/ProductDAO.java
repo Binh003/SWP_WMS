@@ -68,7 +68,7 @@ public class ProductDAO {
     }
 
     public void insert(Product product) throws SQLException {
-        String sql = "INSERT INTO products (product_line_id, sku, name, unit, price, description) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO products (product_line_id, sku, name, unit, price, description, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, product.getProductLineId());
@@ -81,6 +81,7 @@ public class ProductDAO {
                 ps.setNull(5, Types.DECIMAL);
             }
             ps.setString(6, product.getDescription());
+            ps.setString(7, product.getImageUrl());
             ps.executeUpdate();
             
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -92,7 +93,7 @@ public class ProductDAO {
     }
 
     public void update(Product product) throws SQLException {
-        String sql = "UPDATE products SET product_line_id = ?, sku = ?, name = ?, unit = ?, price = ?, description = ? WHERE id = ?";
+        String sql = "UPDATE products SET product_line_id = ?, sku = ?, name = ?, unit = ?, price = ?, description = ?, image_url = ? WHERE id = ?";
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, product.getProductLineId());
@@ -105,7 +106,8 @@ public class ProductDAO {
                 ps.setNull(5, Types.DECIMAL);
             }
             ps.setString(6, product.getDescription());
-            ps.setLong(7, product.getId());
+            ps.setString(7, product.getImageUrl());
+            ps.setLong(8, product.getId());
             ps.executeUpdate();
         }
     }
@@ -128,6 +130,7 @@ public class ProductDAO {
         p.setUnit(rs.getString("unit"));
         p.setPrice(rs.getDouble("price"));
         p.setDescription(rs.getString("description"));
+        p.setImageUrl(rs.getString("image_url"));
         p.setCreatedAt(rs.getTimestamp("created_at"));
         p.setUpdatedAt(rs.getTimestamp("updated_at"));
 
@@ -147,5 +150,64 @@ public class ProductDAO {
         p.setProductLine(pl);
 
         return p;
+    }
+
+    public List<Product> findPaginated(int page, int limit, String search) throws SQLException {
+        List<Product> list = new ArrayList<>();
+        int offset = (page - 1) * limit;
+        String sql = "SELECT p.*, pl.name as product_line_name, pl.code as product_line_code, " +
+                     "b.id as brand_id, b.name as brand_name, b.code as brand_code " +
+                     "FROM products p " +
+                     "INNER JOIN product_lines pl ON p.product_line_id = pl.id " +
+                     "INNER JOIN brands b ON pl.brand_id = b.id ";
+        
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        if (hasSearch) {
+            sql += "WHERE p.sku LIKE ? OR p.name LIKE ? ";
+        }
+        
+        sql += "ORDER BY p.name ASC LIMIT ? OFFSET ?";
+        
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int paramIndex = 1;
+            if (hasSearch) {
+                String searchPattern = "%" + search.trim() + "%";
+                ps.setString(paramIndex++, searchPattern);
+                ps.setString(paramIndex++, searchPattern);
+            }
+            ps.setInt(paramIndex++, limit);
+            ps.setInt(paramIndex++, offset);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapProduct(rs));
+                }
+            }
+        }
+        return list;
+    }
+
+    public int count(String search) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM products p ";
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        if (hasSearch) {
+            sql += "WHERE p.sku LIKE ? OR p.name LIKE ? ";
+        }
+        
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (hasSearch) {
+                String searchPattern = "%" + search.trim() + "%";
+                ps.setString(1, searchPattern);
+                ps.setString(2, searchPattern);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
     }
 }

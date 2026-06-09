@@ -81,7 +81,7 @@ public class User {
 
     public boolean hasRole(String code) {
         for (Role role : roles) {
-            if (code.equalsIgnoreCase(role.getCode())) {
+            if (role.isEnabled() && code.equalsIgnoreCase(role.getCode())) {
                 return true;
             }
         }
@@ -90,7 +90,7 @@ public class User {
 
     public boolean hasPermission(String permissionCode) {
         for (Role role : roles) {
-            if (role.getPermissionCodes() != null && role.getPermissionCodes().contains(permissionCode)) {
+            if (role.isEnabled() && role.getPermissionCodes() != null && role.getPermissionCodes().contains(permissionCode)) {
                 return true;
             }
         }

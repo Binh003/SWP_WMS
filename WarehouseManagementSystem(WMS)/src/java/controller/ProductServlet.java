@@ -10,9 +10,15 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.sql.SQLException;
 
+@jakarta.servlet.annotation.MultipartConfig(
+    fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+    maxFileSize = 1024 * 1024 * 10,      // 10MB
+    maxRequestSize = 1024 * 1024 * 50    // 50MB
+)
 public class ProductServlet extends HttpServlet {
 
     private final ProductDAO productDAO = new ProductDAO();
@@ -32,6 +38,7 @@ public class ProductServlet extends HttpServlet {
             switch (action) {
                 case "create" -> showCreateForm(request, response);
                 case "edit" -> showEditForm(request, response);
+                case "view" -> showProductDetail(request, response);
                 default -> listProducts(request, response);
             }
         } catch (SQLException ex) {
@@ -39,9 +46,49 @@ public class ProductServlet extends HttpServlet {
         }
     }
 
+    private void showProductDetail(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, ServletException, IOException {
+        long id = Long.parseLong(WebUtil.param(request, "id"));
+        Product product = productDAO.getById(id);
+        if (product == null) {
+            WebUtil.setFlashError(request, "Không tìm thấy sản phẩm");
+            WebUtil.redirect(request, response, "/admin/products");
+            return;
+        }
+        Inventory inventory = inventoryDAO.getByProductId(id);
+        request.setAttribute("product", product);
+        request.setAttribute("inventory", inventory);
+        request.getRequestDispatcher("/jsp/admin/product-detail.jsp").forward(request, response);
+    }
+
     private void listProducts(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
-        request.setAttribute("products", productDAO.getAll());
+        int page = 1;
+        int limit = 10;
+        String pageParam = request.getParameter("page");
+        String limitParam = request.getParameter("limit");
+        
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try { page = Integer.parseInt(pageParam); } catch (NumberFormatException ignored) {}
+        }
+        if (limitParam != null && !limitParam.isEmpty()) {
+            try { limit = Integer.parseInt(limitParam); } catch (NumberFormatException ignored) {}
+        }
+        
+        String search = request.getParameter("search");
+        if (search != null) search = search.trim();
+        
+        java.util.List<Product> products = productDAO.findPaginated(page, limit, search);
+        int totalItems = productDAO.count(search);
+        int totalPages = (int) Math.ceil((double) totalItems / limit);
+        
+        request.setAttribute("products", products);
+        request.setAttribute("totalItems", totalItems);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("limit", limit);
+        request.setAttribute("search", search);
+        
         request.getRequestDispatcher("/jsp/admin/products.jsp").forward(request, response);
     }
 
@@ -83,7 +130,7 @@ public class ProductServlet extends HttpServlet {
     }
 
     private void createProduct(HttpServletRequest request, HttpServletResponse response)
-        throws SQLException, IOException {
+        throws SQLException, IOException, ServletException {
         
         String sku = WebUtil.param(request, "sku");
         // Check if SKU exists
@@ -104,6 +151,7 @@ public class ProductServlet extends HttpServlet {
             p.setPrice(Double.parseDouble(priceStr));
         }
         p.setDescription(WebUtil.param(request, "description"));
+        p.setImageUrl(handleFileUpload(request));
 
         productDAO.insert(p);
         
@@ -119,7 +167,7 @@ public class ProductServlet extends HttpServlet {
     }
 
     private void updateProduct(HttpServletRequest request, HttpServletResponse response)
-        throws SQLException, IOException {
+        throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         Product p = productDAO.getById(id);
         if (p != null) {
@@ -144,11 +192,60 @@ public class ProductServlet extends HttpServlet {
                 p.setPrice(null);
             }
             p.setDescription(WebUtil.param(request, "description"));
+            p.setImageUrl(handleFileUpload(request));
             
             productDAO.update(p);
             WebUtil.setFlashSuccess(request, "Đã cập nhật sản phẩm");
         }
         WebUtil.redirect(request, response, "/admin/products");
+    }
+
+    private String handleFileUpload(HttpServletRequest request) throws ServletException, IOException {
+        String contentType = request.getContentType();
+        if (contentType == null || !contentType.toLowerCase().startsWith("multipart/form-data")) {
+            String url = WebUtil.param(request, "imageUrl");
+            return url.isEmpty() ? null : url;
+        }
+        
+        try {
+            Part filePart = request.getPart("imageFile");
+            if (filePart != null && filePart.getSize() > 0) {
+                String fileName = java.nio.file.Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                String extension = "";
+                int i = fileName.lastIndexOf('.');
+                if (i > 0) {
+                    extension = fileName.substring(i);
+                }
+                String uniqueFileName = "prod_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8) + extension;
+                
+                String relativePath = "uploads/products/" + uniqueFileName;
+                
+                // 1. Deploy path
+                String deployPath = request.getServletContext().getRealPath("/") + "uploads/products";
+                java.io.File deployDir = new java.io.File(deployPath);
+                if (!deployDir.exists()) deployDir.mkdirs();
+                filePart.write(deployPath + java.io.File.separator + uniqueFileName);
+                
+                // 2. Source path
+                String workspacePath = "d:\\InventoryTrackingSystem\\WMS\\WarehouseManagementSystem(WMS)";
+                String srcPath = workspacePath + java.io.File.separator + "web" + java.io.File.separator + "uploads" + java.io.File.separator + "products";
+                java.io.File srcDir = new java.io.File(srcPath);
+                if (srcDir.exists() || srcDir.mkdirs()) {
+                    try {
+                        java.nio.file.Files.copy(
+                            java.nio.file.Paths.get(deployPath + java.io.File.separator + uniqueFileName),
+                            java.nio.file.Paths.get(srcPath + java.io.File.separator + uniqueFileName),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                        );
+                    } catch (Exception ignored) {}
+                }
+                
+                return "/" + relativePath;
+            }
+        } catch (Exception ignored) {}
+        
+        String url = WebUtil.param(request, "imageUrl");
+        return url.isEmpty() ? null : url;
     }
 
     private void deleteProduct(HttpServletRequest request, HttpServletResponse response)

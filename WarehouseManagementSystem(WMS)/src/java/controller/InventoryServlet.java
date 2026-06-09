@@ -42,34 +42,46 @@ public class InventoryServlet extends HttpServlet {
     private void listInventories(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         
-        List<Inventory> allInventories = inventoryDAO.getAll();
+        int page = 1;
+        int limit = 10;
+        String pageParam = request.getParameter("page");
+        String limitParam = request.getParameter("limit");
         
-        // Basic filtering logic
-        String brandIdStr = request.getParameter("brandId");
-        String productLineIdStr = request.getParameter("productLineId");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try { page = Integer.parseInt(pageParam); } catch (NumberFormatException ignored) {}
+        }
+        if (limitParam != null && !limitParam.isEmpty()) {
+            try { limit = Integer.parseInt(limitParam); } catch (NumberFormatException ignored) {}
+        }
+        
         String sku = request.getParameter("sku");
+        if (sku != null) sku = sku.trim();
         
+        String brandIdStr = request.getParameter("brandId");
+        Long brandId = null;
         if (brandIdStr != null && !brandIdStr.isEmpty()) {
-            long brandId = Long.parseLong(brandIdStr);
-            allInventories = allInventories.stream()
-                .filter(i -> i.getProduct().getProductLine().getBrand().getId() == brandId)
-                .collect(Collectors.toList());
+            try { brandId = Long.parseLong(brandIdStr); } catch (NumberFormatException ignored) {}
         }
         
+        String productLineIdStr = request.getParameter("productLineId");
+        Long productLineId = null;
         if (productLineIdStr != null && !productLineIdStr.isEmpty()) {
-            long plId = Long.parseLong(productLineIdStr);
-            allInventories = allInventories.stream()
-                .filter(i -> i.getProduct().getProductLine().getId() == plId)
-                .collect(Collectors.toList());
+            try { productLineId = Long.parseLong(productLineIdStr); } catch (NumberFormatException ignored) {}
         }
         
-        if (sku != null && !sku.trim().isEmpty()) {
-            allInventories = allInventories.stream()
-                .filter(i -> i.getProduct().getSku().toLowerCase().contains(sku.toLowerCase().trim()))
-                .collect(Collectors.toList());
-        }
-
-        request.setAttribute("inventories", allInventories);
+        List<Inventory> inventories = inventoryDAO.findPaginated(page, limit, sku, brandId, productLineId);
+        int totalItems = inventoryDAO.count(sku, brandId, productLineId);
+        int totalPages = (int) Math.ceil((double) totalItems / limit);
+        
+        request.setAttribute("inventories", inventories);
+        request.setAttribute("totalItems", totalItems);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("limit", limit);
+        request.setAttribute("sku", sku);
+        request.setAttribute("brandId", brandId);
+        request.setAttribute("productLineId", productLineId);
+        
         request.setAttribute("brands", brandDAO.getAll());
         request.setAttribute("productLines", productLineDAO.getAll());
         

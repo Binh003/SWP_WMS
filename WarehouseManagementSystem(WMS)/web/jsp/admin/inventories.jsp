@@ -104,6 +104,60 @@
         </tbody>
       </table>
     </div>
+    <!-- Pagination Toolbar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1.5px solid var(--card-border); flex-wrap: wrap; gap: 16px;">
+      <div style="font-size: 14px; color: var(--text-secondary); font-weight: 600;">
+        Hiển thị 
+        <c:choose>
+          <c:when test="${totalItems == 0}">0</c:when>
+          <c:otherwise>${(currentPage - 1) * limit + 1}</c:otherwise>
+        </c:choose>
+        đến 
+        <c:choose>
+          <c:when test="${currentPage * limit > totalItems}">${totalItems}</c:when>
+          <c:otherwise>${currentPage * limit}</c:otherwise>
+        </c:choose>
+        trong số <strong>${totalItems}</strong> bản ghi
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <!-- Limit selector -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số dòng:</span>
+          <select onchange="changeLimit(this.value)" style="padding: 6px 12px; border: 1.5px solid var(--card-border); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer;">
+            <option value="5" ${limit == 5 ? 'selected' : ''}>5</option>
+            <option value="10" ${limit == 10 ? 'selected' : ''}>10</option>
+            <option value="20" ${limit == 20 ? 'selected' : ''}>20</option>
+            <option value="50" ${limit == 50 ? 'selected' : ''}>50</option>
+          </select>
+        </div>
+
+        <!-- Pagination Buttons -->
+        <div style="display: flex; gap: 6px;">
+          <button onclick="goToPage(1)" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang đầu">
+            &laquo;
+          </button>
+          
+          <button onclick="goToPage(${currentPage - 1})" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang trước">
+            &lsaquo;
+          </button>
+
+          <c:forEach var="p" begin="${currentPage - 2 < 1 ? 1 : currentPage - 2}" end="${currentPage + 2 > totalPages ? totalPages : currentPage + 2}">
+            <button onclick="goToPage(${p})" class="pagination-btn ${p == currentPage ? 'pagination-btn--active' : ''}">
+              ${p}
+            </button>
+          </c:forEach>
+
+          <button onclick="goToPage(${currentPage + 1})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang sau">
+            &rsaquo;
+          </button>
+
+          <button onclick="goToPage(${totalPages})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang cuối">
+            &raquo;
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -117,8 +171,57 @@
   .action-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
   .action-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(4, 138, 191, 0.02); }
   select:focus, input:focus { border-color: var(--primary-color) !important; box-shadow: 0 0 0 3px rgba(4, 138, 191, 0.1) !important; }
+  
+  /* Pagination Buttons styling */
+  .pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1.5px solid var(--card-border);
+    background: #ffffff;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pagination-btn:hover:not(:disabled) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(4, 138, 191, 0.02);
+  }
+  .pagination-btn--active {
+    background: var(--primary-color) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-color) !important;
+  }
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8fafc;
+  }
+
   .stock-low { color: #ef4444 !important; }
   .stock-ok { color: #10b981 !important; }
 </style>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  
+  function goToPage(page) {
+    urlParams.set('page', page);
+    window.location.search = urlParams.toString();
+  }
+
+  function changeLimit(limit) {
+    urlParams.set('limit', limit);
+    urlParams.set('page', 1);
+    window.location.search = urlParams.toString();
+  }
+</script>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>

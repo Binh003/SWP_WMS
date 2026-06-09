@@ -85,11 +85,6 @@
         </div>
       </div>
     </form>
-
-    <form id="delete-role-form" method="post" action="${pageContext.request.contextPath}/admin/roles" style="display: none;">
-      <input type="hidden" name="action" value="delete"/>
-      <input type="hidden" name="id" value="${selectedRole.id}"/>
-    </form>
   </div>
 </div>
 
