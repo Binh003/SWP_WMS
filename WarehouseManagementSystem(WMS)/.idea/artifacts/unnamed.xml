@@ -1,13 +1,1 @@
-<component name="ArtifactManager">
-  <artifact type="exploded-war" name="unnamed">
-    <output-path>$PROJECT_DIR$/out/artifacts/unnamed</output-path>
-    <root id="root">
-      <element id="dir-copy" path="$PROJECT_DIR$/web" />
-      <element id="directory" name="WEB-INF">
-        <element id="directory" name="classes">
-          <element id="module-output" name="WarehouseManagementSystem(WMS)" />
-        </element>
-      </element>
-    </root>
-  </artifact>
-</component>
+<component name="ArtifactManager" />

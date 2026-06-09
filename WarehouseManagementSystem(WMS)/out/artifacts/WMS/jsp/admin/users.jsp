@@ -3,6 +3,7 @@
 <c:set var="pageTitle" value="Quản lý tài khoản" scope="request"/>
 <c:set var="activePage" value="users" scope="request"/>
 <jsp:include page="../includes/dashboard-layout-start.jsp"/>
+<c:set var="canWriteUser" value="${currentUser.hasPermission('USER_WRITE') || currentUser.hasRole('ADMIN')}"/>
 
 <c:set var="pendingCount" value="0"/>
 <c:forEach var="u" items="${users}">
@@ -30,15 +31,17 @@
       </h2>
       <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">Phê duyệt tài khoản và cập nhật phân quyền.</p>
     </div>
-    <div>
-      <a href="${pageContext.request.contextPath}/admin/users?action=create" class="premium-btn-primary" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; height: 44px; line-height: 44px; box-sizing: border-box;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        Thêm thành viên mới
-      </a>
-    </div>
+    <c:if test="${canWriteUser}">
+      <div>
+        <a href="${pageContext.request.contextPath}/admin/users?action=create" class="premium-btn-primary" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; height: 44px; line-height: 44px; box-sizing: border-box;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Thêm thành viên mới
+        </a>
+      </div>
+    </c:if>
   </div>
 
   <!-- Table card: Danh sách thành viên -->
@@ -108,7 +111,9 @@
             <th>Email</th>
             <th>Vai trò</th>
             <th style="width: 180px;">Trạng thái</th>
-            <th style="text-align: center; width: 100px;">Hành động</th>
+            <c:if test="${canWriteUser}">
+              <th style="text-align: center; width: 100px;">Hành động</th>
+            </c:if>
           </tr>
         </thead>
         <tbody>
@@ -160,95 +165,97 @@
                   </c:otherwise>
                 </c:choose>
               </td>
-              <td style="text-align: center; vertical-align: middle;">
-                <c:choose>
-                  <c:when test="${u.username == 'admin'}">
-                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px dashed var(--card-border); background: #f8fafc; color: var(--text-secondary);" title="Tài khoản Admin hệ thống (Không thể chỉnh sửa)">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                      </svg>
-                    </div>
-                  </c:when>
-                  <c:otherwise>
-                    <div class="action-dropdown-container" style="position: relative; display: inline-block; text-align: left;">
-                      <button type="button" class="action-dropdown-trigger" onclick="toggleDropdown(this)" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <circle cx="12" cy="12" r="1.5"></circle>
-                          <circle cx="12" cy="5" r="1.5"></circle>
-                          <circle cx="12" cy="19" r="1.5"></circle>
+              <c:if test="${canWriteUser}">
+                <td style="text-align: center; vertical-align: middle;">
+                  <c:choose>
+                    <c:when test="${u.username == 'admin'}">
+                      <div style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px dashed var(--card-border); background: #f8fafc; color: var(--text-secondary);" title="Tài khoản Admin hệ thống (Không thể chỉnh sửa)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                         </svg>
-                      </button>
-                      
-                      <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 160px; overflow: hidden; animation: slideDown 0.15s ease-out;">
-                        <a href="${pageContext.request.contextPath}/admin/users?action=edit&id=${u.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                          </svg>
-                          Chỉnh sửa
-                        </a>
-                        <c:choose>
-                          <c:when test="${u.status == 'PENDING'}">
-                            <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
-                              <input type="hidden" name="action" value="toggle"/>
-                              <input type="hidden" name="id" value="${u.id}"/>
-                              <input type="hidden" name="status" value="ACTIVE"/>
-                              <button type="submit" class="action-dropdown-item action-dropdown-item--primary" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                </svg>
-                                Phê duyệt
-                              </button>
-                            </form>
-                            <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
-                              <input type="hidden" name="action" value="toggle"/>
-                              <input type="hidden" name="id" value="${u.id}"/>
-                              <input type="hidden" name="status" value="LOCKED"/>
-                              <button type="submit" class="action-dropdown-item action-dropdown-item--danger" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                </svg>
-                                Từ chối & Khóa
-                              </button>
-                            </form>
-                          </c:when>
-                          <c:when test="${u.status == 'ACTIVE'}">
-                            <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
-                              <input type="hidden" name="action" value="toggle"/>
-                              <input type="hidden" name="id" value="${u.id}"/>
-                              <input type="hidden" name="status" value="LOCKED"/>
-                              <button type="submit" class="action-dropdown-item action-dropdown-item--danger" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                </svg>
-                                Khóa tài khoản
-                              </button>
-                            </form>
-                          </c:when>
-                          <c:otherwise>
-                            <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
-                              <input type="hidden" name="action" value="toggle"/>
-                              <input type="hidden" name="id" value="${u.id}"/>
-                              <input type="hidden" name="status" value="ACTIVE"/>
-                              <button type="submit" class="action-dropdown-item action-dropdown-item--primary" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                  <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-                                </svg>
-                                Kích hoạt
-                              </button>
-                            </form>
-                          </c:otherwise>
-                        </c:choose>
                       </div>
-                    </div>
-                  </c:otherwise>
-                </c:choose>
-              </td>
+                    </c:when>
+                    <c:otherwise>
+                      <div class="action-dropdown-container" style="position: relative; display: inline-block; text-align: left;">
+                        <button type="button" class="action-dropdown-trigger" onclick="toggleDropdown(this)" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="1.5"></circle>
+                            <circle cx="12" cy="5" r="1.5"></circle>
+                            <circle cx="12" cy="19" r="1.5"></circle>
+                          </svg>
+                        </button>
+                        
+                        <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 160px; overflow: hidden; animation: slideDown 0.15s ease-out;">
+                          <a href="${pageContext.request.contextPath}/admin/users?action=edit&id=${u.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                            Chỉnh sửa
+                          </a>
+                          <c:choose>
+                            <c:when test="${u.status == 'PENDING'}">
+                              <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
+                                <input type="hidden" name="action" value="toggle"/>
+                                <input type="hidden" name="id" value="${u.id}"/>
+                                <input type="hidden" name="status" value="ACTIVE"/>
+                                <button type="submit" class="action-dropdown-item action-dropdown-item--primary" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                  </svg>
+                                  Phê duyệt
+                                </button>
+                              </form>
+                              <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
+                                <input type="hidden" name="action" value="toggle"/>
+                                <input type="hidden" name="id" value="${u.id}"/>
+                                <input type="hidden" name="status" value="LOCKED"/>
+                                <button type="submit" class="action-dropdown-item action-dropdown-item--danger" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                  </svg>
+                                  Từ chối & Khóa
+                                </button>
+                              </form>
+                            </c:when>
+                            <c:when test="${u.status == 'ACTIVE'}">
+                              <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
+                                <input type="hidden" name="action" value="toggle"/>
+                                <input type="hidden" name="id" value="${u.id}"/>
+                                <input type="hidden" name="status" value="LOCKED"/>
+                                <button type="submit" class="action-dropdown-item action-dropdown-item--danger" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                  </svg>
+                                  Khóa tài khoản
+                                </button>
+                              </form>
+                            </c:when>
+                            <c:otherwise>
+                              <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
+                                <input type="hidden" name="action" value="toggle"/>
+                                <input type="hidden" name="id" value="${u.id}"/>
+                                <input type="hidden" name="status" value="ACTIVE"/>
+                                <button type="submit" class="action-dropdown-item action-dropdown-item--primary" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                                  </svg>
+                                  Kích hoạt
+                                </button>
+                              </form>
+                            </c:otherwise>
+                          </c:choose>
+                        </div>
+                      </div>
+                    </c:otherwise>
+                  </c:choose>
+                </td>
+              </c:if>
             </tr>
           </c:forEach>
         </tbody>

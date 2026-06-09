@@ -3,6 +3,7 @@
 <c:set var="pageTitle" value="Quản lý vai trò" scope="request"/>
 <c:set var="activePage" value="roles" scope="request"/>
 <jsp:include page="../includes/dashboard-layout-start.jsp"/>
+<c:set var="canWriteRole" value="${currentUser.hasPermission('ROLE_WRITE') || currentUser.hasRole('ADMIN')}"/>
 
 <div class="subpage-container">
   <div class="subpage-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
@@ -10,15 +11,17 @@
       <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">Quản lý vai trò</h2>
       <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">Quản lý danh sách vai trò và phân quyền tương ứng trên hệ thống.</p>
     </div>
-    <div>
-      <a href="${pageContext.request.contextPath}/admin/roles?action=create" class="premium-btn-primary" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; height: 44px; line-height: 44px; box-sizing: border-box;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        Thêm vai trò mới
-      </a>
-    </div>
+    <c:if test="${canWriteRole}">
+      <div>
+        <a href="${pageContext.request.contextPath}/admin/roles?action=create" class="premium-btn-primary" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; height: 44px; line-height: 44px; box-sizing: border-box;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Thêm vai trò mới
+        </a>
+      </div>
+    </c:if>
   </div>
 
   <div class="premium-card" style="padding: 32px;">
@@ -71,7 +74,9 @@
             <th>Mô tả</th>
             <th>Quyền hạn được gán</th>
             <th style="width: 160px;">Trạng thái</th>
-            <th style="text-align: center; width: 100px;">Hành động</th>
+            <c:if test="${canWriteRole}">
+              <th style="text-align: center; width: 100px;">Hành động</th>
+            </c:if>
           </tr>
         </thead>
         <tbody>
@@ -107,44 +112,46 @@
                   ${r.enabled ? 'Đang hoạt động' : 'Bị khóa'}
                 </span>
               </td>
-              <td style="text-align: center; vertical-align: middle;">
-                <div class="action-dropdown-container" style="position: relative; display: inline-block; text-align: left;">
-                  <button type="button" class="action-dropdown-trigger" onclick="toggleDropdown(this)" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="1.5"></circle>
-                      <circle cx="12" cy="5" r="1.5"></circle>
-                      <circle cx="12" cy="19" r="1.5"></circle>
-                    </svg>
-                  </button>
-                  
-                  <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 150px; overflow: hidden; animation: slideDown 0.15s ease-out;">
-                    <a href="${pageContext.request.contextPath}/admin/roles?action=edit&id=${r.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              <c:if test="${canWriteRole}">
+                <td style="text-align: center; vertical-align: middle;">
+                  <div class="action-dropdown-container" style="position: relative; display: inline-block; text-align: left;">
+                    <button type="button" class="action-dropdown-trigger" onclick="toggleDropdown(this)" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="1.5"></circle>
+                        <circle cx="12" cy="5" r="1.5"></circle>
+                        <circle cx="12" cy="19" r="1.5"></circle>
                       </svg>
-                      Chỉnh sửa
-                    </a>
-                    <c:if test="${r.code != 'ADMIN'}">
-                      <form id="delete-role-form-${r.id}" method="post" action="${pageContext.request.contextPath}/admin/roles" style="margin: 0;">
-                        <input type="hidden" name="action" value="delete"/>
-                        <input type="hidden" name="id" value="${r.id}"/>
-                        <button type="button" class="action-dropdown-item action-dropdown-item--danger" 
-                                onclick="if(confirm('Bạn có chắc chắn muốn xóa vai trò này? Tất cả các liên kết tài khoản sẽ bị gỡ bỏ.')) { document.getElementById('delete-role-form-${r.id}').submit(); }"
-                                style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            <line x1="10" y1="11" x2="10" y2="17"></line>
-                            <line x1="14" y1="11" x2="14" y2="17"></line>
-                          </svg>
-                          Xóa vai trò
-                        </button>
-                      </form>
-                    </c:if>
+                    </button>
+                    
+                    <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 150px; overflow: hidden; animation: slideDown 0.15s ease-out;">
+                      <a href="${pageContext.request.contextPath}/admin/roles?action=edit&id=${r.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                          <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Chỉnh sửa
+                      </a>
+                      <c:if test="${r.code != 'ADMIN'}">
+                        <form id="delete-role-form-${r.id}" method="post" action="${pageContext.request.contextPath}/admin/roles" style="margin: 0;">
+                          <input type="hidden" name="action" value="delete"/>
+                          <input type="hidden" name="id" value="${r.id}"/>
+                          <button type="button" class="action-dropdown-item action-dropdown-item--danger" 
+                                  onclick="if(confirm('Bạn có chắc chắn muốn xóa vai trò này? Tất cả các liên kết tài khoản sẽ bị gỡ bỏ.')) { document.getElementById('delete-role-form-${r.id}').submit(); }"
+                                  style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="3 6 5 6 21 6"></polyline>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                              <line x1="10" y1="11" x2="10" y2="17"></line>
+                              <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                            Xóa vai trò
+                          </button>
+                        </form>
+                      </c:if>
+                    </div>
                   </div>
-                </div>
-              </td>
+                </td>
+              </c:if>
             </tr>
           </c:forEach>
         </tbody>
