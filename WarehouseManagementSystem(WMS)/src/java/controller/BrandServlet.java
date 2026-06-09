@@ -27,6 +27,7 @@ public class BrandServlet extends HttpServlet {
             switch (action) {
                 case "create" -> showCreateForm(request, response);
                 case "edit" -> showEditForm(request, response);
+                case "view" -> showDetail(request, response);
                 default -> listBrands(request, response);
             }
         } catch (SQLException ex) {
@@ -36,8 +37,57 @@ public class BrandServlet extends HttpServlet {
 
     private void listBrands(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
-        request.setAttribute("brands", brandDAO.getAll());
+        String search = request.getParameter("search");
+        if (search == null) {
+            search = "";
+        }
+        
+        int page = 1;
+        String pageStr = request.getParameter("page");
+        if (pageStr != null && !pageStr.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageStr);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException ignored) {}
+        }
+        
+        int limit = 10;
+        String limitStr = request.getParameter("limit");
+        if (limitStr != null && !limitStr.isEmpty()) {
+            try {
+                limit = Integer.parseInt(limitStr);
+                if (limit < 1) limit = 10;
+            } catch (NumberFormatException ignored) {}
+        }
+        
+        int totalItems = brandDAO.count(search);
+        int totalPages = (int) Math.ceil((double) totalItems / limit);
+        if (page > totalPages && totalPages > 0) {
+            page = totalPages;
+        }
+        int offset = (page - 1) * limit;
+        
+        request.setAttribute("brands", brandDAO.findPaginated(search, offset, limit));
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalItems", totalItems);
+        request.setAttribute("limit", limit);
+        request.setAttribute("search", search);
+        
         request.getRequestDispatcher("/jsp/admin/brands.jsp").forward(request, response);
+    }
+
+    private void showDetail(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, ServletException, IOException {
+        long id = Long.parseLong(WebUtil.param(request, "id"));
+        Brand brand = brandDAO.getById(id);
+        if (brand == null) {
+            WebUtil.setFlashError(request, "Không tìm thấy hãng");
+            WebUtil.redirect(request, response, "/admin/brands");
+            return;
+        }
+        request.setAttribute("brand", brand);
+        request.getRequestDispatcher("/jsp/admin/brand-detail.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)

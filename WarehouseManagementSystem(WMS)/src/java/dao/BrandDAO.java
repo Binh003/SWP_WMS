@@ -67,6 +67,60 @@ public class BrandDAO {
         }
     }
 
+    public List<Brand> findPaginated(String search, int offset, int limit) throws SQLException {
+        List<Brand> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT id, code, name, description, created_at, updated_at FROM brands WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (LOWER(code) LIKE ? OR LOWER(name) LIKE ? OR LOWER(description) LIKE ?)");
+            String pattern = "%" + search.trim().toLowerCase() + "%";
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+        }
+        sql.append(" ORDER BY name ASC LIMIT ? OFFSET ?");
+        params.add(limit);
+        params.add(offset);
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapBrand(rs));
+                }
+            }
+        }
+        return list;
+    }
+
+    public int count(String search) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM brands WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (LOWER(code) LIKE ? OR LOWER(name) LIKE ? OR LOWER(description) LIKE ?)");
+            String pattern = "%" + search.trim().toLowerCase() + "%";
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+        }
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
     private Brand mapBrand(ResultSet rs) throws SQLException {
         Brand brand = new Brand();
         brand.setId(rs.getLong("id"));

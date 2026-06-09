@@ -29,6 +29,7 @@ public class ProductLineServlet extends HttpServlet {
             switch (action) {
                 case "create" -> showCreateForm(request, response);
                 case "edit" -> showEditForm(request, response);
+                case "view" -> showDetail(request, response);
                 default -> listProductLines(request, response);
             }
         } catch (SQLException ex) {
@@ -38,8 +39,57 @@ public class ProductLineServlet extends HttpServlet {
 
     private void listProductLines(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
-        request.setAttribute("productLines", productLineDAO.getAll());
+        String search = request.getParameter("search");
+        if (search == null) {
+            search = "";
+        }
+        
+        int page = 1;
+        String pageStr = request.getParameter("page");
+        if (pageStr != null && !pageStr.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageStr);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException ignored) {}
+        }
+        
+        int limit = 10;
+        String limitStr = request.getParameter("limit");
+        if (limitStr != null && !limitStr.isEmpty()) {
+            try {
+                limit = Integer.parseInt(limitStr);
+                if (limit < 1) limit = 10;
+            } catch (NumberFormatException ignored) {}
+        }
+        
+        int totalItems = productLineDAO.count(search);
+        int totalPages = (int) Math.ceil((double) totalItems / limit);
+        if (page > totalPages && totalPages > 0) {
+            page = totalPages;
+        }
+        int offset = (page - 1) * limit;
+        
+        request.setAttribute("productLines", productLineDAO.findPaginated(search, offset, limit));
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalItems", totalItems);
+        request.setAttribute("limit", limit);
+        request.setAttribute("search", search);
+        
         request.getRequestDispatcher("/jsp/admin/product-lines.jsp").forward(request, response);
+    }
+
+    private void showDetail(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, ServletException, IOException {
+        long id = Long.parseLong(WebUtil.param(request, "id"));
+        ProductLine productLine = productLineDAO.getById(id);
+        if (productLine == null) {
+            WebUtil.setFlashError(request, "Không tìm thấy dòng sản phẩm");
+            WebUtil.redirect(request, response, "/admin/product-lines");
+            return;
+        }
+        request.setAttribute("productLine", productLine);
+        request.getRequestDispatcher("/jsp/admin/product-line-detail.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)

@@ -97,6 +97,72 @@ public class ProductLineDAO {
         }
     }
 
+    public List<ProductLine> findPaginated(String search, int offset, int limit) throws SQLException {
+        List<ProductLine> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT p.*, b.name as brand_name, b.code as brand_code " +
+            "FROM product_lines p " +
+            "INNER JOIN brands b ON p.brand_id = b.id " +
+            "WHERE 1=1"
+        );
+        List<Object> params = new ArrayList<>();
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (LOWER(p.code) LIKE ? OR LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ? OR LOWER(b.name) LIKE ?)");
+            String pattern = "%" + search.trim().toLowerCase() + "%";
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+        }
+        sql.append(" ORDER BY p.name ASC LIMIT ? OFFSET ?");
+        params.add(limit);
+        params.add(offset);
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapProductLineWithBrand(rs));
+                }
+            }
+        }
+        return list;
+    }
+
+    public int count(String search) throws SQLException {
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(*) " +
+            "FROM product_lines p " +
+            "INNER JOIN brands b ON p.brand_id = b.id " +
+            "WHERE 1=1"
+        );
+        List<Object> params = new ArrayList<>();
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (LOWER(p.code) LIKE ? OR LOWER(p.name) LIKE ? OR LOWER(p.description) LIKE ? OR LOWER(b.name) LIKE ?)");
+            String pattern = "%" + search.trim().toLowerCase() + "%";
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+            params.add(pattern);
+        }
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
     private ProductLine mapProductLineWithBrand(ResultSet rs) throws SQLException {
         ProductLine pl = new ProductLine();
         pl.setId(rs.getLong("id"));
