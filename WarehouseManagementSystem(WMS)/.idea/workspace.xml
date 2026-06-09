@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bb02d8ec-4e0d-4ea3-9060-dd64b04a364d" name="Changes" comment="" />
+    <list default="true" id="bb02d8ec-4e0d-4ea3-9060-dd64b04a364d" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/artifacts/unnamed.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/unnamed.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,7 +43,7 @@
     "TomEE Server.TomEE 10.1.55.executor": "Run",
     "TomEE Server.Unnamed.executor": "Run",
     "Tomcat Server.Tomcat 10.1.55.executor": "Run",
-    "git-widget-placeholder": "Binh",
+    "git-widget-placeholder": "develop",
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "D:/SP_SWP/Binh-Phase 1-5/SWP_WMS/WarehouseManagementSystem(WMS)",
@@ -58,18 +61,17 @@
 }]]></component>
   <component name="RunManager">
     <configuration name="Tomcat 10.1.55" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 10.1.55" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
-      <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/" />
-      <option name="BROWSER_ID" value="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" />
+      <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/wms" />
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
-        <file path="$PROJECT_DIR$/../apache-tomcat-10.1.55">
+        <artifact name="unnamed">
           <settings>
-            <option name="CONTEXT_PATH" value="/apache_tomcat_10_1_55" />
+            <option name="CONTEXT_PATH" value="/wms" />
           </settings>
-        </file>
+        </artifact>
       </deployment>
       <server-settings>
-        <option name="BASE_DIRECTORY_NAME" value="4a6d8c20-f6aa-4738-994c-7436529bda5d" />
+        <option name="BASE_DIRECTORY_NAME" value="c5b36759-6160-4253-8098-94d2b912f08f" />
       </server-settings>
       <predefined_log_file enabled="true" id="Tomcat" />
       <predefined_log_file enabled="true" id="Tomcat Catalina" />
@@ -77,7 +79,7 @@
       <predefined_log_file id="Tomcat Host Manager" />
       <predefined_log_file id="Tomcat Localhost Access" />
       <RunnerSettings RunnerId="AppServerDebuggerRunner">
-        <option name="DEBUG_PORT" value="53902" />
+        <option name="DEBUG_PORT" value="52128" />
       </RunnerSettings>
       <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="AppServerDebuggerRunner">
         <option name="USE_ENV_VARIABLES" value="true" />
@@ -139,7 +141,12 @@
           <option name="PROGRAM_PARAMETERS" value="" />
         </SHUTDOWN>
       </ConfigurationWrapper>
-      <method v="2" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+        <option name="BuildArtifacts" enabled="true">
+          <artifact name="unnamed" />
+        </option>
+      </method>
     </configuration>
   </component>
   <component name="SharedIndexes">
@@ -166,6 +173,7 @@
       <workItem from="1780899712504" duration="233000" />
       <workItem from="1780900043466" duration="15000" />
       <workItem from="1780900312174" duration="98000" />
+      <workItem from="1780993221586" duration="351000" />
     </task>
     <servers />
   </component>
