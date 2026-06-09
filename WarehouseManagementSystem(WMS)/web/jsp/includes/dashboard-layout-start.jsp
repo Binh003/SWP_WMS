@@ -171,8 +171,11 @@
         <c:set var="canViewBrands" value="${isAdmin || currentUser.hasPermission('BRAND_READ') || currentUser.hasPermission('BRAND_WRITE')}"/>
         <c:set var="canViewSuppliers" value="${isAdmin || currentUser.hasPermission('SUPPLIER_READ') || currentUser.hasPermission('SUPPLIER_WRITE')}"/>
         <c:set var="canViewProductLines" value="${isAdmin || currentUser.hasPermission('PRODUCT_LINE_READ') || currentUser.hasPermission('PRODUCT_LINE_WRITE')}"/>
+<<<<<<< HEAD
         <c:set var="canViewProducts" value="${isAdmin || currentUser.hasPermission('PRODUCT_READ') || currentUser.hasPermission('PRODUCT_WRITE')}"/>
         <c:set var="canViewInventories" value="${isAdmin || currentUser.hasPermission('INVENTORY_READ') || currentUser.hasPermission('INVENTORY_WRITE')}"/>
+=======
+>>>>>>> da08122f16ff3416b854daff4913baf881136698
         
         <c:if test="${canManageUsers}">
           <a class="${activePage == 'users' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/users">
