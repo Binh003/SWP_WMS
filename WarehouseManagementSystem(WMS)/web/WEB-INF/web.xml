@@ -136,6 +136,15 @@
         <servlet-name>InventoryServlet</servlet-name>
         <url-pattern>/admin/inventories</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>ReceiptServlet</servlet-name>
+        <servlet-class>controller.ReceiptServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReceiptServlet</servlet-name>
+        <url-pattern>/admin/receipts</url-pattern>
+    </servlet-mapping>
 
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>

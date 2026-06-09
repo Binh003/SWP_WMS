@@ -1,0 +1,15 @@
+# Use LF in the repository; Git checks out LF on all platforms for source files.
+* text=auto eol=lf
+
+# Windows command scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaries
+*.jar binary
+*.war binary
+*.class binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary

@@ -246,6 +246,19 @@
             <span>Quản lý Tồn kho</span>
           </a>
         </c:if>
+
+        <c:set var="canViewReceipts" value="${isAdmin || currentUser.hasPermission('RECEIPT_READ') || currentUser.hasPermission('RECEIPT_WRITE')}"/>
+
+        <c:if test="${canViewReceipts}">
+          <a class="${activePage == 'receipts' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/receipts">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Nhập kho</span>
+          </a>
+        </c:if>
       </nav>
     </aside>
     <main class="home-main">
