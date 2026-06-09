@@ -71,6 +71,8 @@ public class AuthFilter implements Filter {
                     hasAccess = user.hasPermission("INVENTORY_READ") || user.hasPermission("INVENTORY_WRITE");
                 } else if (path.startsWith("/admin/receipts")) {
                     hasAccess = user.hasPermission("RECEIPT_READ") || user.hasPermission("RECEIPT_WRITE");
+                } else if (path.startsWith("/admin/shipments")) {
+                    hasAccess = user.hasPermission("SHIPMENT_READ") || user.hasPermission("SHIPMENT_WRITE");
                 }
             }
 
