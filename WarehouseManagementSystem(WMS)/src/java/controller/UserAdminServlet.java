@@ -28,8 +28,18 @@ public class UserAdminServlet extends HttpServlet {
             action = "list";
         }
         try {
-            request.setAttribute("currentUser", WebUtil.currentUser(request));
+            User currentUser = WebUtil.currentUser(request);
+            request.setAttribute("currentUser", currentUser);
             WebUtil.consumeFlash(request);
+            
+            boolean canWrite = currentUser != null && (currentUser.hasRole("ADMIN") || currentUser.hasPermission("USER_WRITE"));
+            
+            if (!canWrite && ("create".equals(action) || "edit".equals(action))) {
+                WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
+                WebUtil.redirect(request, response, "/admin/users");
+                return;
+            }
+
             switch (action) {
                 case "create" -> showCreateForm(request, response);
                 case "edit" -> showEditForm(request, response);
@@ -69,6 +79,14 @@ public class UserAdminServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
+        User currentUser = WebUtil.currentUser(request);
+        boolean canWrite = currentUser != null && (currentUser.hasRole("ADMIN") || currentUser.hasPermission("USER_WRITE"));
+        if (!canWrite) {
+            WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
+            WebUtil.redirect(request, response, "/admin/users");
+            return;
+        }
+        
         String action = WebUtil.param(request, "action");
         try {
             switch (action) {
@@ -85,14 +103,47 @@ public class UserAdminServlet extends HttpServlet {
     }
 
     private void createUser(HttpServletRequest request, HttpServletResponse response)
-        throws SQLException, IOException {
+        throws SQLException, ServletException, IOException {
+        String username = WebUtil.param(request, "username");
+        String fullName = WebUtil.param(request, "fullName");
+        String email = WebUtil.param(request, "email");
+        String password = WebUtil.param(request, "password");
+        String confirmPassword = WebUtil.param(request, "confirmPassword");
+        List<Role> selectedRoles = resolveRoles(request);
+
+        // Keep values in request attributes to prepopulate form in case of error
+        request.setAttribute("username", username);
+        request.setAttribute("fullName", fullName);
+        request.setAttribute("email", email);
+        List<String> roleCodes = selectedRoles.stream().map(Role::getCode).toList();
+        request.setAttribute("roleCodes", roleCodes);
+
+        if (!password.equals(confirmPassword)) {
+            request.setAttribute("flashError", "Mật khẩu xác nhận không khớp.");
+            showCreateForm(request, response);
+            return;
+        }
+
+        if (password.length() < 8 || !password.matches(".*[a-z].*") || !password.matches(".*[A-Z].*") || !password.matches(".*\\d.*")) {
+            request.setAttribute("flashError", "Mật khẩu phải từ 8 ký tự, bao gồm chữ hoa, chữ thường và chữ số.");
+            showCreateForm(request, response);
+            return;
+        }
+
+        if (userDAO.existsByUsername(username)) {
+            request.setAttribute("flashError", "Tài khoản đã tồn tại");
+            showCreateForm(request, response);
+            return;
+        }
+
         User user = new User();
-        user.setUsername(WebUtil.param(request, "username"));
-        user.setFullName(WebUtil.param(request, "fullName"));
-        user.setEmail(WebUtil.param(request, "email"));
-        user.setPasswordHash(PasswordUtil.hash(WebUtil.param(request, "password")));
-        user.setEnabled(true);
-        user.setRoles(resolveRoles(request));
+        user.setUsername(username);
+        user.setFullName(fullName.isEmpty() ? username : fullName);
+        user.setEmail(email);
+        user.setPasswordHash(PasswordUtil.hash(password));
+        user.setStatus("ACTIVE");
+        user.setRoles(selectedRoles);
+
         userDAO.insert(user);
         WebUtil.setFlashSuccess(request, "Đã tạo tài khoản");
         WebUtil.redirect(request, response, "/admin/users");
@@ -108,9 +159,14 @@ public class UserAdminServlet extends HttpServlet {
             return;
         }
         userDAO.updateProfile(id, WebUtil.param(request, "fullName"), WebUtil.param(request, "email"));
-        boolean enabled = "on".equalsIgnoreCase(WebUtil.param(request, "enabled"))
-            || "true".equalsIgnoreCase(WebUtil.param(request, "enabled"));
-        userDAO.setEnabled(id, enabled);
+        String status = WebUtil.param(request, "status");
+        if (status != null && !status.isEmpty()) {
+            userDAO.setStatus(id, status);
+        } else {
+            boolean enabled = "on".equalsIgnoreCase(WebUtil.param(request, "enabled"))
+                || "true".equalsIgnoreCase(WebUtil.param(request, "enabled"));
+            userDAO.setEnabled(id, enabled);
+        }
         userDAO.replaceRoles(id, resolveRoles(request));
         WebUtil.setFlashSuccess(request, "Đã cập nhật tài khoản");
         WebUtil.redirect(request, response, "/admin/users");
@@ -125,9 +181,21 @@ public class UserAdminServlet extends HttpServlet {
             WebUtil.redirect(request, response, "/admin/users");
             return;
         }
-        boolean enabled = Boolean.parseBoolean(WebUtil.param(request, "enabled"));
-        userDAO.setEnabled(id, enabled);
-        WebUtil.setFlashSuccess(request, enabled ? "Đã kích hoạt" : "Đã vô hiệu hóa");
+        String status = WebUtil.param(request, "status");
+        if (status != null && !status.isEmpty()) {
+            userDAO.setStatus(id, status);
+            String displayStatus = "Đang hoạt động";
+            if ("LOCKED".equalsIgnoreCase(status)) {
+                displayStatus = "Bị khóa";
+            } else if ("PENDING".equalsIgnoreCase(status)) {
+                displayStatus = "Chờ phê duyệt";
+            }
+            WebUtil.setFlashSuccess(request, "Đã chuyển trạng thái sang " + displayStatus);
+        } else {
+            boolean enabled = Boolean.parseBoolean(WebUtil.param(request, "enabled"));
+            userDAO.setEnabled(id, enabled);
+            WebUtil.setFlashSuccess(request, enabled ? "Đã kích hoạt" : "Đã vô hiệu hóa");
+        }
         WebUtil.redirect(request, response, "/admin/users");
     }
 

@@ -42,7 +42,13 @@ public class LoginServlet extends HttpServlet {
                 return;
             }
             if (!user.isEnabled()) {
-                request.setAttribute("flashError", "Tài khoản chưa được admin kích hoạt");
+                String errorMsg = "Tài khoản chưa được admin kích hoạt";
+                if ("LOCKED".equalsIgnoreCase(user.getStatus())) {
+                    errorMsg = "Tài khoản đã bị khóa bởi quản trị viên";
+                } else if ("PENDING".equalsIgnoreCase(user.getStatus())) {
+                    errorMsg = "Tài khoản đang chờ phê duyệt từ quản trị viên";
+                }
+                request.setAttribute("flashError", errorMsg);
                 request.setAttribute("username", username);
                 request.getRequestDispatcher("/jsp/auth/login.jsp").forward(request, response);
                 return;

@@ -41,13 +41,45 @@ public class AuthFilter implements Filter {
                 resp.sendRedirect(req.getContextPath() + "/login");
                 return;
             }
+            
+            // Cập nhật session user để luôn có danh sách roles/permissions mới nhất
+            req.getSession().setAttribute(util.SessionKeys.CURRENT_USER, freshUser);
+            user = freshUser;
+            
         } catch (java.sql.SQLException ex) {
             req.getServletContext().log("Database verification error in AuthFilter: " + ex.getMessage(), ex);
         }
 
-        if (path.startsWith("/admin/") && !WebUtil.isAdmin(user)) {
-            resp.sendRedirect(req.getContextPath() + "/home");
-            return;
+        if (path.startsWith("/admin/")) {
+            boolean isAdmin = WebUtil.isAdmin(user);
+            boolean hasAccess = isAdmin;
+
+            if (!isAdmin) {
+                if (path.startsWith("/admin/users")) {
+                    hasAccess = user.hasPermission("USER_READ") || user.hasPermission("USER_WRITE");
+                } else if (path.startsWith("/admin/roles")) {
+                    hasAccess = user.hasPermission("ROLE_READ") || user.hasPermission("ROLE_WRITE") || user.hasPermission("PERMISSION_READ");
+                } else if (path.startsWith("/admin/brands")) {
+                    hasAccess = user.hasPermission("BRAND_READ") || user.hasPermission("BRAND_WRITE");
+                } else if (path.startsWith("/admin/suppliers")) {
+                    hasAccess = user.hasPermission("SUPPLIER_READ") || user.hasPermission("SUPPLIER_WRITE");
+                } else if (path.startsWith("/admin/product-lines")) {
+                    hasAccess = user.hasPermission("PRODUCT_LINE_READ") || user.hasPermission("PRODUCT_LINE_WRITE");
+                } else if (path.startsWith("/admin/products")) {
+                    hasAccess = user.hasPermission("PRODUCT_READ") || user.hasPermission("PRODUCT_WRITE");
+                } else if (path.startsWith("/admin/inventories")) {
+                    hasAccess = user.hasPermission("INVENTORY_READ") || user.hasPermission("INVENTORY_WRITE");
+                } else if (path.startsWith("/admin/receipts")) {
+                    hasAccess = user.hasPermission("RECEIPT_READ") || user.hasPermission("RECEIPT_WRITE");
+                } else if (path.startsWith("/admin/shipments")) {
+                    hasAccess = user.hasPermission("SHIPMENT_READ") || user.hasPermission("SHIPMENT_WRITE");
+                }
+            }
+
+            if (!hasAccess) {
+                resp.sendRedirect(req.getContextPath() + "/home");
+                return;
+            }
         }
 
         chain.doFilter(request, response);

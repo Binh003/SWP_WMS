@@ -92,6 +92,69 @@
         <servlet-name>ChangePasswordServlet</servlet-name>
         <url-pattern>/change-password</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>BrandServlet</servlet-name>
+        <servlet-class>controller.BrandServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BrandServlet</servlet-name>
+        <url-pattern>/admin/brands</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>SupplierServlet</servlet-name>
+        <servlet-class>controller.SupplierServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SupplierServlet</servlet-name>
+        <url-pattern>/admin/suppliers</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>ProductLineServlet</servlet-name>
+        <servlet-class>controller.ProductLineServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProductLineServlet</servlet-name>
+        <url-pattern>/admin/product-lines</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>ProductServlet</servlet-name>
+        <servlet-class>controller.ProductServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProductServlet</servlet-name>
+        <url-pattern>/admin/products</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>InventoryServlet</servlet-name>
+        <servlet-class>controller.InventoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>InventoryServlet</servlet-name>
+        <url-pattern>/admin/inventories</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>ReceiptServlet</servlet-name>
+        <servlet-class>controller.ReceiptServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReceiptServlet</servlet-name>
+        <url-pattern>/admin/receipts</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ShipmentServlet</servlet-name>
+        <servlet-class>controller.ShipmentServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ShipmentServlet</servlet-name>
+        <url-pattern>/admin/shipments</url-pattern>
+    </servlet-mapping>
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
