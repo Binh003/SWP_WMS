@@ -1,9 +1,3 @@
-<%-- 
-    Document   : receipt-form
-    Created on : Jun 1, 2026, 7:46:40 AM
-    Author     : Admin
---%>
-
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:set var="pageTitle" value="Tạo Phiếu Nhập Kho"/>

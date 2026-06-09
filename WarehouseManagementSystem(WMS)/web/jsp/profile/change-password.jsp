@@ -21,7 +21,7 @@
         </div>
         <div>
           <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--text-primary);">Mật khẩu & Bảo mật</h3>
-          <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary);">Mật khẩu của bạn nên có ít nhất 6 ký tự.</p>
+          <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary);">Mật khẩu mới phải từ 8 ký tự, bao gồm chữ hoa, chữ thường và chữ số.</p>
         </div>
       </div>
       
@@ -33,12 +33,12 @@
         
         <div class="form-group">
           <label class="form-label">Mật khẩu mới</label>
-          <input type="password" id="newPassword" name="newPassword" minlength="6" required class="subpage-input" placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"/>
+          <input type="password" id="newPassword" name="newPassword" minlength="8" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Mật khẩu phải từ 8 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ thường và 1 chữ số." placeholder="Tối thiểu 8 ký tự (hoa, thường, số)" required class="subpage-input"/>
         </div>
         
         <div class="form-group">
           <label class="form-label">Xác nhận mật khẩu mới</label>
-          <input type="password" id="confirmPassword" name="confirmPassword" minlength="6" required class="subpage-input" placeholder="Nhập lại mật khẩu mới"/>
+          <input type="password" id="confirmPassword" name="confirmPassword" minlength="8" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Mật khẩu phải từ 8 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ thường và 1 chữ số." placeholder="Nhập lại mật khẩu mới" required class="subpage-input"/>
           <span id="passwordError" style="color: #ef4444; font-size: 13px; margin-top: 6px; display: none;">Mật khẩu xác nhận không khớp</span>
         </div>
         
@@ -96,8 +96,14 @@ document.getElementById('changePasswordForm').addEventListener('submit', functio
   var newPass = document.getElementById('newPassword').value;
   var confirmPass = document.getElementById('confirmPassword').value;
   var errorSpan = document.getElementById('passwordError');
-  if (newPass !== confirmPass) {
+  var strengthRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+  if (!strengthRegex.test(newPass)) {
     e.preventDefault();
+    errorSpan.innerText = 'Mật khẩu phải từ 8 ký tự, bao gồm chữ hoa, chữ thường và chữ số';
+    errorSpan.style.display = 'block';
+  } else if (newPass !== confirmPass) {
+    e.preventDefault();
+    errorSpan.innerText = 'Mật khẩu xác nhận không khớp';
     errorSpan.style.display = 'block';
   } else {
     errorSpan.style.display = 'none';

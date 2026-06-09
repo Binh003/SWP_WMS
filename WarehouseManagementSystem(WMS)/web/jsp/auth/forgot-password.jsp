@@ -6,6 +6,9 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Quên mật khẩu - WarehouseManagementSystem(WMS)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/login.css"/>
   <style>
     .flash { margin-bottom: 16px; padding: 12px; border-radius: 8px; font-size: 14px; }
@@ -17,29 +20,6 @@
     .forgot-note { margin-top: 16px; font-size: 14px; color: #64748b; text-align: center; }
     .forgot-note a { color: #047fa9; text-decoration: none; font-weight: 600; }
     .step-hint { font-size: 14px; color: #64748b; margin-bottom: 16px; line-height: 1.5; }
-    
-    .dev-reset-card {
-      margin-top: 20px;
-      padding: 16px;
-      background: #f8fafc;
-      border: 1px dashed #cbd5e1;
-      border-radius: 8px;
-    }
-    .dev-reset-card h4 {
-      margin: 0 0 8px 0;
-      color: #334155;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .dev-link {
-      display: inline-block;
-      word-break: break-all;
-      color: #0284c7;
-      text-decoration: underline;
-      font-weight: 500;
-      font-size: 13px;
-    }
   </style>
 </head>
 <body>
@@ -47,9 +27,17 @@
   <section class="login-shell">
     <div class="login-visual">
       <div class="visual-copy">
-        <span class="eyebrow logo-eyebrow">V-Inventory</span>
+        <span class="eyebrow logo-eyebrow">
+          <img src="${pageContext.request.contextPath}/assets/logo.png" alt="InventoryTracking"/>
+        </span>
         <h1>KHÔI PHỤC MẬT KHẨU</h1>
-        <p>Nhận liên kết qua Email để đặt lại mật khẩu</p>
+        <p>QUÊN MẬT KHẨU</p>
+      </div>
+
+      <div class="avatar-frame" aria-hidden="true">
+        <span class="floating-square top"></span>
+        <span class="floating-square bottom"></span>
+        <img class="robot-image" src="${pageContext.request.contextPath}/assets/img_login.png" alt="Robot"/>
       </div>
     </div>
 
@@ -64,17 +52,6 @@
               Hệ thống đã gửi một liên kết đặt lại mật khẩu đến địa chỉ email: <strong>${email}</strong>.<br/>
               Vui lòng kiểm tra hộp thư đến của bạn để tiếp tục.
             </div>
-
-            <!-- Phát triển/Môi trường Test: Hiển thị link reset trực tiếp trên giao diện -->
-            <c:if test="${not empty resetLink}">
-              <div class="dev-reset-card">
-                <h4>Hộp thư giả lập (Môi trường phát triển)</h4>
-                <p style="font-size:12px; color:#64748b; margin: 0 0 8px 0;">
-                  (Do hệ thống đang chạy local không có cấu hình SMTP, bạn có thể click trực tiếp vào link dưới đây để đổi mật khẩu):
-                </p>
-                <a href="${resetLink}" class="dev-link">${resetLink}</a>
-              </div>
-            </c:if>
           </c:when>
           <c:otherwise>
             <p class="step-hint">Nhập địa chỉ email tài khoản của bạn để nhận liên kết khôi phục mật khẩu.</p>

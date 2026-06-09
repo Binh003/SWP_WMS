@@ -6,7 +6,7 @@
 
 <section class="hero-panel">
   <div class="hero-panel__content">
-    <h1>Quản lý xuất nhập kho nhanh, chính xác, minh bạch</h1>
+    <h1>Quản lý nhập kho nhanh, chính xác, minh bạch</h1>
     <p>Hệ thống Inventory Intelligence giúp tối ưu hóa luồng hàng hóa và giảm thiểu sai sót vận hành lên đến 40%.</p>
   </div>
 </section>
@@ -46,7 +46,6 @@
 
     <div class="quick-grid">
       <button class="quick-card" type="button"><span aria-hidden="true">⇣</span>Nhập kho</button>
-      <button class="quick-card" type="button"><span aria-hidden="true">⇡</span>Xuất kho</button>
       <button class="quick-card" type="button"><span aria-hidden="true">✓</span>Kiểm kho</button>
       <button class="quick-card" type="button"><span aria-hidden="true">+</span>Thêm SP</button>
     </div>
@@ -113,13 +112,7 @@
         <span>50</span>
         <span>10:45 AM</span>
       </div>
-      <div class="transaction-row">
-        <strong>#XK-4523</strong>
-        <span class="transaction-badge transaction-badge--out">Xuất kho</span>
-        <span>MacBook Pro M3</span>
-        <span>12</span>
-        <span>09:12 AM</span>
-      </div>
+
       <div class="transaction-row">
         <strong>#NK-8820</strong>
         <span class="transaction-badge transaction-badge--in">Nhập kho</span>
@@ -133,7 +126,7 @@
   <section class="report-card">
     <div>
       <h2>Báo cáo tổng quan</h2>
-      <p>Xem xu hướng nhập xuất kho chi tiết theo tuần.</p>
+      <p>Xem xu hướng nhập kho chi tiết theo tuần.</p>
       <button type="button">Mở báo cáo</button>
     </div>
     <div class="report-card__chart" aria-hidden="true">

@@ -22,7 +22,7 @@
     <div class="login-visual">
       <div class="visual-copy">
         <span class="eyebrow logo-eyebrow">
-          <img src="${pageContext.request.contextPath}/assets/inventory-logo.png" alt="InventoryTracking"/>
+          <img src="${pageContext.request.contextPath}/assets/logo.png" alt="InventoryTracking"/>
         </span>
         <h1>QUẢN TRỊ KHO HÀNG<br/>THÔNG MINH</h1>
         <p>HỢP NHẤT</p>
@@ -31,7 +31,7 @@
       <div class="avatar-frame" aria-hidden="true">
         <span class="floating-square top"></span>
         <span class="floating-square bottom"></span>
-        <img class="robot-image" src="${pageContext.request.contextPath}/assets/inventory-robot.png" alt="Robot"/>
+        <img class="robot-image" src="${pageContext.request.contextPath}/assets/img_login.png" alt="Robot"/>
       </div>
     </div>
 
@@ -39,7 +39,7 @@
       <div class="login-form-card">
         <div class="form-heading">
           <span class="heading-logo">
-            <img src="${pageContext.request.contextPath}/assets/inventory-logo.png" alt="InventoryTracking"/>
+            <img src="${pageContext.request.contextPath}/assets/logo.png" alt="InventoryTracking"/>
           </span>
           <h2>Đăng nhập</h2>
         </div>
