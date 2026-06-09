@@ -28,8 +28,18 @@ public class UserAdminServlet extends HttpServlet {
             action = "list";
         }
         try {
-            request.setAttribute("currentUser", WebUtil.currentUser(request));
+            User currentUser = WebUtil.currentUser(request);
+            request.setAttribute("currentUser", currentUser);
             WebUtil.consumeFlash(request);
+            
+            boolean canWrite = currentUser != null && (currentUser.hasRole("ADMIN") || currentUser.hasPermission("USER_WRITE"));
+            
+            if (!canWrite && ("create".equals(action) || "edit".equals(action))) {
+                WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
+                WebUtil.redirect(request, response, "/admin/users");
+                return;
+            }
+
             switch (action) {
                 case "create" -> showCreateForm(request, response);
                 case "edit" -> showEditForm(request, response);
@@ -69,6 +79,14 @@ public class UserAdminServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
+        User currentUser = WebUtil.currentUser(request);
+        boolean canWrite = currentUser != null && (currentUser.hasRole("ADMIN") || currentUser.hasPermission("USER_WRITE"));
+        if (!canWrite) {
+            WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
+            WebUtil.redirect(request, response, "/admin/users");
+            return;
+        }
+        
         String action = WebUtil.param(request, "action");
         try {
             switch (action) {

@@ -55,15 +55,40 @@ public class AppContextListener implements ServletContextListener {
         long roleWrite = permissionDAO.ensurePermission("ROLE_WRITE", "Quản lý vai trò");
         long permRead = permissionDAO.ensurePermission("PERMISSION_READ", "Xem quyền");
 
+        // Phase 2 (Master Data) Permissions
+        long brandRead = permissionDAO.ensurePermission("BRAND_READ", "Xem danh sách Hãng");
+        long brandWrite = permissionDAO.ensurePermission("BRAND_WRITE", "Thêm/Sửa/Xóa Hãng");
+        long supplierRead = permissionDAO.ensurePermission("SUPPLIER_READ", "Xem danh sách Nhà cung cấp");
+        long supplierWrite = permissionDAO.ensurePermission("SUPPLIER_WRITE", "Thêm/Sửa/Xóa Nhà cung cấp");
+        long prodLineRead = permissionDAO.ensurePermission("PRODUCT_LINE_READ", "Xem danh sách Dòng sản phẩm");
+        long prodLineWrite = permissionDAO.ensurePermission("PRODUCT_LINE_WRITE", "Thêm/Sửa/Xóa Dòng sản phẩm");
+
         long adminRoleId = permissionDAO.ensureRole("ADMIN", "Administrator");
         permissionDAO.linkRolePermission(adminRoleId, userRead);
         permissionDAO.linkRolePermission(adminRoleId, userWrite);
         permissionDAO.linkRolePermission(adminRoleId, roleRead);
         permissionDAO.linkRolePermission(adminRoleId, roleWrite);
         permissionDAO.linkRolePermission(adminRoleId, permRead);
+        
+        // Link Phase 2 Permissions to ADMIN
+        permissionDAO.linkRolePermission(adminRoleId, brandRead);
+        permissionDAO.linkRolePermission(adminRoleId, brandWrite);
+        permissionDAO.linkRolePermission(adminRoleId, supplierRead);
+        permissionDAO.linkRolePermission(adminRoleId, supplierWrite);
+        permissionDAO.linkRolePermission(adminRoleId, prodLineRead);
+        permissionDAO.linkRolePermission(adminRoleId, prodLineWrite);
 
-        permissionDAO.ensureRole("WAREHOUSE", "Warehouse");
-        permissionDAO.ensureRole("VIEWER", "Viewer");
+        long warehouseRoleId = permissionDAO.ensureRole("WAREHOUSE STAFF", "Warehouse Staff");
+        // Warehouse Staff only needs READ access for master data
+        permissionDAO.linkRolePermission(warehouseRoleId, brandRead);
+        permissionDAO.linkRolePermission(warehouseRoleId, supplierRead);
+        permissionDAO.linkRolePermission(warehouseRoleId, prodLineRead);
+
+        long viewerRoleId = permissionDAO.ensureRole("VIEWER", "Viewer");
+        // Viewer only needs READ access for master data
+        permissionDAO.linkRolePermission(viewerRoleId, brandRead);
+        permissionDAO.linkRolePermission(viewerRoleId, supplierRead);
+        permissionDAO.linkRolePermission(viewerRoleId, prodLineRead);
 
         String adminUsername = DBConfig.get("admin.username");
         if (userDAO.findByUsername(adminUsername) == null) {

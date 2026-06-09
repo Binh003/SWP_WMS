@@ -87,4 +87,13 @@ public class User {
         }
         return false;
     }
+
+    public boolean hasPermission(String permissionCode) {
+        for (Role role : roles) {
+            if (role.getPermissionCodes() != null && role.getPermissionCodes().contains(permissionCode)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

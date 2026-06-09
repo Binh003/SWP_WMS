@@ -223,11 +223,32 @@ public class UserDAO {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    roles.add(mapRole(rs));
+                    Role role = mapRole(rs);
+                    role.setPermissionCodes(findPermissionsForRole(conn, role.getId()));
+                    roles.add(role);
                 }
             }
         }
         return roles;
+    }
+
+    private List<String> findPermissionsForRole(Connection conn, long roleId) throws SQLException {
+        String sql = """
+            SELECT p.code 
+            FROM permissions p
+            INNER JOIN role_permissions rp ON rp.permission_id = p.id
+            WHERE rp.role_id = ?
+            """;
+        List<String> perms = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, roleId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    perms.add(rs.getString("code"));
+                }
+            }
+        }
+        return perms;
     }
 
     private User mapUser(ResultSet rs) throws SQLException {

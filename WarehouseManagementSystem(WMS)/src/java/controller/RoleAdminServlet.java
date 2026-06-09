@@ -22,18 +22,31 @@ public class RoleAdminServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
         try {
+            model.User currentUser = WebUtil.currentUser(request);
+            boolean canWrite = currentUser != null && (currentUser.hasRole("ADMIN") || currentUser.hasPermission("ROLE_WRITE"));
+
             List<Role> roles = roleDAO.findAll();
             request.setAttribute("roles", roles);
             request.setAttribute("permissions", permissionDAO.findAll());
-            request.setAttribute("currentUser", WebUtil.currentUser(request));
+            request.setAttribute("currentUser", currentUser);
 
             String action = WebUtil.param(request, "action");
             String idParam = WebUtil.param(request, "id");
             String forwardJsp = "/jsp/admin/roles.jsp";
 
             if ("create".equalsIgnoreCase(action)) {
+                if (!canWrite) {
+                    WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
+                    WebUtil.redirect(request, response, "/admin/roles");
+                    return;
+                }
                 forwardJsp = "/jsp/admin/role-create.jsp";
             } else if ("edit".equalsIgnoreCase(action) || (idParam != null && !idParam.isEmpty())) {
+                if (!canWrite) {
+                    WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
+                    WebUtil.redirect(request, response, "/admin/roles");
+                    return;
+                }
                 long selectedId = parseLong(idParam, 0);
                 Role selected = selectedId > 0 ? roleDAO.findByIdWithPermissions(selectedId) : null;
                 if (selected != null) {
@@ -53,6 +66,15 @@ public class RoleAdminServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
+        
+        model.User currentUser = WebUtil.currentUser(request);
+        boolean canWrite = currentUser != null && (currentUser.hasRole("ADMIN") || currentUser.hasPermission("ROLE_WRITE"));
+        if (!canWrite) {
+            WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
+            WebUtil.redirect(request, response, "/admin/roles");
+            return;
+        }
+        
         String action = WebUtil.param(request, "action");
 
         try {
