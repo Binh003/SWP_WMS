@@ -106,6 +106,91 @@ public class UserDAO {
         return users;
     }
 
+    public List<User> findPaginated(String search, String status, String roleCode, int offset, int limit) throws SQLException {
+        StringBuilder sql = new StringBuilder("""
+            SELECT DISTINCT u.id, u.username, u.full_name, u.email, u.password_hash, u.enabled, u.status
+            FROM users u
+            LEFT JOIN user_roles ur ON ur.user_id = u.id
+            LEFT JOIN roles r ON ur.role_id = r.id
+            WHERE 1=1
+            """);
+        List<Object> params = new ArrayList<>();
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (LOWER(u.username) LIKE ? OR LOWER(u.full_name) LIKE ? OR LOWER(u.email) LIKE ?)");
+            String searchPattern = "%" + search.trim().toLowerCase() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append(" AND u.status = ?");
+            params.add(status.trim().toUpperCase());
+        }
+        if (roleCode != null && !roleCode.trim().isEmpty()) {
+            sql.append(" AND r.code = ?");
+            params.add(roleCode.trim());
+        }
+        sql.append(" ORDER BY u.id LIMIT ? OFFSET ?");
+        params.add(limit);
+        params.add(offset);
+
+        List<User> users = new ArrayList<>();
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User user = mapUser(rs);
+                    user.setRoles(findRolesForUser(conn, user.getId()));
+                    users.add(user);
+                }
+            }
+        }
+        return users;
+    }
+
+    public int count(String search, String status, String roleCode) throws SQLException {
+        StringBuilder sql = new StringBuilder("""
+            SELECT COUNT(DISTINCT u.id)
+            FROM users u
+            LEFT JOIN user_roles ur ON ur.user_id = u.id
+            LEFT JOIN roles r ON ur.role_id = r.id
+            WHERE 1=1
+            """);
+        List<Object> params = new ArrayList<>();
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (LOWER(u.username) LIKE ? OR LOWER(u.full_name) LIKE ? OR LOWER(u.email) LIKE ?)");
+            String searchPattern = "%" + search.trim().toLowerCase() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append(" AND u.status = ?");
+            params.add(status.trim().toUpperCase());
+        }
+        if (roleCode != null && !roleCode.trim().isEmpty()) {
+            sql.append(" AND r.code = ?");
+            params.add(roleCode.trim());
+        }
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+
     public boolean existsByUsername(String username) throws SQLException {
         String sql = "SELECT 1 FROM users WHERE username = ?";
         try (Connection conn = DBConfig.getConnection();

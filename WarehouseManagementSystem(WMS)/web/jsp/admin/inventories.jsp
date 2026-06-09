@@ -67,7 +67,7 @@
                 <strong style="color: var(--text-primary); font-size: 14px;">${i.product.name}</strong><br/>
                 <small style="color: var(--text-secondary);">${i.product.productLine.brand.name} - ${i.product.productLine.name}</small>
               </td>
-              <td style="text-align: right; font-weight: 700; font-size: 16px; ${i.quantityInStock <= i.minStockLevel ? 'color: #ef4444;' : 'color: #10b981;'}">
+              <td class="${i.quantityInStock <= i.minStockLevel ? 'stock-low' : 'stock-ok'}" style="text-align: right; font-weight: 700; font-size: 16px;">
                 <fmt:formatNumber value="${i.quantityInStock}"/> ${i.product.unit}
               </td>
               <td style="text-align: right; color: var(--text-secondary);">
@@ -117,6 +117,8 @@
   .action-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
   .action-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(4, 138, 191, 0.02); }
   select:focus, input:focus { border-color: var(--primary-color) !important; box-shadow: 0 0 0 3px rgba(4, 138, 191, 0.1) !important; }
+  .stock-low { color: #ef4444 !important; }
+  .stock-ok { color: #10b981 !important; }
 </style>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>

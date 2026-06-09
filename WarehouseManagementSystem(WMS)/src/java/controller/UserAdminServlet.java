@@ -43,6 +43,7 @@ public class UserAdminServlet extends HttpServlet {
             switch (action) {
                 case "create" -> showCreateForm(request, response);
                 case "edit" -> showEditForm(request, response);
+                case "detail" -> showDetail(request, response);
                 default -> listUsers(request, response);
             }
         } catch (SQLException ex) {
@@ -52,9 +53,48 @@ public class UserAdminServlet extends HttpServlet {
 
     private void listUsers(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
-        request.setAttribute("users", userDAO.findAll());
+        String search = request.getParameter("search");
+        String status = request.getParameter("status");
+        String role = request.getParameter("role");
+
+        int page = 1;
+        String pageStr = request.getParameter("page");
+        if (pageStr != null && !pageStr.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageStr);
+            } catch (NumberFormatException ignored) {}
+        }
+
+        int size = 10;
+        String sizeStr = request.getParameter("size");
+        if (sizeStr != null && !sizeStr.isEmpty()) {
+            try {
+                size = Integer.parseInt(sizeStr);
+            } catch (NumberFormatException ignored) {}
+        }
+
+        int totalCount = userDAO.count(search, status, role);
+        int totalPages = (int) Math.ceil((double) totalCount / size);
+        if (totalPages < 1) totalPages = 1;
+        if (page > totalPages) page = totalPages;
+        if (page < 1) page = 1;
+
+        int offset = (page - 1) * size;
+        List<User> users = userDAO.findPaginated(search, status, role, offset, size);
+
+        request.setAttribute("users", users);
+        request.setAttribute("roles", roleDAO.findAll()); // for the filter dropdown
+        request.setAttribute("search", search);
+        request.setAttribute("status", status);
+        request.setAttribute("selectedRole", role);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("pageSize", size);
+        request.setAttribute("totalCount", totalCount);
+        request.setAttribute("totalPages", totalPages);
+
         request.getRequestDispatcher("/jsp/admin/users.jsp").forward(request, response);
     }
+
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
@@ -75,6 +115,25 @@ public class UserAdminServlet extends HttpServlet {
         request.setAttribute("roles", roleDAO.findAll());
         request.getRequestDispatcher("/jsp/admin/user-edit.jsp").forward(request, response);
     }
+
+    private void showDetail(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, ServletException, IOException {
+        String idStr = WebUtil.param(request, "id");
+        if (idStr == null || idStr.isEmpty()) {
+            WebUtil.redirect(request, response, "/admin/users");
+            return;
+        }
+        long id = Long.parseLong(idStr);
+        User user = userDAO.findById(id);
+        if (user == null) {
+            WebUtil.setFlashError(request, "Không tìm thấy tài khoản");
+            WebUtil.redirect(request, response, "/admin/users");
+            return;
+        }
+        request.setAttribute("user", user);
+        request.getRequestDispatcher("/jsp/admin/user-detail.jsp").forward(request, response);
+    }
+
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

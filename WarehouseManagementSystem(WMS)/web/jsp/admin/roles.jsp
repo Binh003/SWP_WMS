@@ -44,21 +44,22 @@
       <div style="display: flex; gap: 12px; flex: 1; min-width: 300px; max-width: 500px; position: relative;">
         <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 16px;">⌕</span>
         <input type="text" id="role-search" placeholder="Tìm kiếm theo Mã, Tên vai trò, Quyền hạn..." 
+               value="<c:out value="${search}"/>"
                style="width: 100%; padding: 10px 16px 10px 40px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background: #ffffff;"
-               oninput="filterRolesTable()"
+               oninput="onSearchInput()"
                onfocus="this.style.borderColor='var(--primary-color)';" 
                onblur="this.style.borderColor='var(--card-border)';"/>
       </div>
       
       <div style="display: flex; gap: 12px; align-items: center;">
         <div style="display: flex; flex-direction: column; gap: 4px;">
-          <select id="filter-status" onchange="filterRolesTable()" 
+          <select id="filter-status" onchange="submitFilter()" 
                   style="padding: 10px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s;"
                   onfocus="this.style.borderColor='var(--primary-color)';" 
                   onblur="this.style.borderColor='var(--card-border)';">
             <option value="">Tất cả trạng thái</option>
-            <option value="active">Đang hoạt động</option>
-            <option value="locked">Bị khóa</option>
+            <option value="active" ${status == 'active' ? 'selected' : ''}>Đang hoạt động</option>
+            <option value="locked" ${status == 'locked' ? 'selected' : ''}>Bị khóa</option>
           </select>
         </div>
       </div>
@@ -69,26 +70,42 @@
         <thead>
           <tr>
             <th style="width: 80px;">ID</th>
-            <th style="width: 200px;">Mã vai trò</th>
+            <th style="width: 180px;">Mã vai trò</th>
             <th style="width: 220px;">Tên hiển thị</th>
             <th>Mô tả</th>
             <th>Quyền hạn được gán</th>
             <th style="width: 160px;">Trạng thái</th>
-            <c:if test="${canWriteRole}">
-              <th style="text-align: center; width: 100px;">Hành động</th>
-            </c:if>
+            <th style="text-align: center; width: 120px;">Hành động</th>
           </tr>
         </thead>
         <tbody>
           <c:forEach var="r" items="${roles}">
             <tr class="role-row">
               <td>#${r.id}</td>
-              <td>
-                <span class="premium-tag" style="background: rgba(4, 138, 191, 0.08); color: var(--primary-color); font-weight: 700; border: 1px solid rgba(4, 138, 191, 0.15); font-size: 13px; padding: 4px 10px; border-radius: 6px;">
-                  ${r.code}
-                </span>
+              <td style="display:none;" class="role-details-data">
+                <span class="det-id">${r.id}</span>
+                <span class="det-code">${r.code}</span>
+                <span class="det-name">${r.name}</span>
+                <span class="det-desc">${r.description}</span>
+                <span class="det-enabled">${r.enabled}</span>
+                <div class="det-permissions">
+                  <c:forEach var="pc" items="${r.permissionCodes}">
+                    <span class="det-perm">${pc}</span>
+                  </c:forEach>
+                </div>
               </td>
-              <td><strong style="color: var(--text-primary); font-size: 14px;">${r.name}</strong></td>
+              <td>
+                <a href="javascript:openRoleDetailModal(${r.id})" style="text-decoration: none; font-weight: 700; color: var(--primary-color);" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                  <span class="premium-tag" style="background: rgba(4, 138, 191, 0.08); color: var(--primary-color); font-weight: 700; border: 1px solid rgba(4, 138, 191, 0.15); font-size: 13px; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
+                    ${r.code}
+                  </span>
+                </a>
+              </td>
+              <td>
+                <a href="${pageContext.request.contextPath}/admin/roles?action=detail&id=${r.id}" style="color: var(--primary-color); text-decoration: none; font-weight: 700; font-size: 14px;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                  ${r.name}
+                </a>
+              </td>
               <td style="color: var(--text-secondary); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.description}">${r.description}</td>
               <td>
                 <div style="display: flex; gap: 4px; flex-wrap: wrap; max-width: 480px; padding: 4px 0;">
@@ -112,18 +129,26 @@
                   ${r.enabled ? 'Đang hoạt động' : 'Bị khóa'}
                 </span>
               </td>
-              <c:if test="${canWriteRole}">
-                <td style="text-align: center; vertical-align: middle;">
-                  <div class="action-dropdown-container" style="position: relative; display: inline-block; text-align: left;">
-                    <button type="button" class="action-dropdown-trigger" onclick="toggleDropdown(this)" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="1.5"></circle>
-                        <circle cx="12" cy="5" r="1.5"></circle>
-                        <circle cx="12" cy="19" r="1.5"></circle>
+              <td style="text-align: center; vertical-align: middle;">
+                <div class="action-dropdown-container" style="position: relative; display: inline-block; text-align: left;">
+                  <button type="button" class="action-dropdown-trigger" onclick="toggleDropdown(this)" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="5" r="1.5"></circle>
+                      <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                  </button>
+                  
+                  <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 150px; overflow: hidden; animation: slideDown 0.15s ease-out;">
+                    <a href="${pageContext.request.contextPath}/admin/roles?action=detail&id=${r.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
                       </svg>
-                    </button>
-                    
-                    <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 150px; overflow: hidden; animation: slideDown 0.15s ease-out;">
+                      Xem chi tiết
+                    </a>
+                    <c:if test="${canWriteRole}">
                       <a href="${pageContext.request.contextPath}/admin/roles?action=edit&id=${r.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -132,35 +157,97 @@
                         Chỉnh sửa
                       </a>
                       <c:if test="${r.code != 'ADMIN'}">
-                        <form id="delete-role-form-${r.id}" method="post" action="${pageContext.request.contextPath}/admin/roles" style="margin: 0;">
-                          <input type="hidden" name="action" value="delete"/>
+                        <form id="toggle-role-form-${r.id}" method="post" action="${pageContext.request.contextPath}/admin/roles" style="margin: 0;">
+                          <input type="hidden" name="action" value="toggle-status"/>
                           <input type="hidden" name="id" value="${r.id}"/>
-                          <button type="button" class="action-dropdown-item action-dropdown-item--danger" 
-                                  onclick="if(confirm('Bạn có chắc chắn muốn xóa vai trò này? Tất cả các liên kết tài khoản sẽ bị gỡ bỏ.')) { document.getElementById('delete-role-form-${r.id}').submit(); }"
-                                  style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <polyline points="3 6 5 6 21 6"></polyline>
-                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                              <line x1="10" y1="11" x2="10" y2="17"></line>
-                              <line x1="14" y1="11" x2="14" y2="17"></line>
-                            </svg>
-                            Xóa vai trò
-                          </button>
+                          <input type="hidden" name="enabled" value="${not r.enabled}"/>
+                          <c:choose>
+                            <c:when test="${r.enabled}">
+                              <button type="button" class="action-dropdown-item action-dropdown-item--danger" 
+                                      onclick="if(confirm('Bạn có chắc chắn muốn không kích hoạt vai trò này?')) { document.getElementById('toggle-role-form-${r.id}').submit(); }"
+                                      style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <circle cx="12" cy="12" r="10"></circle>
+                                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                                </svg>
+                                Không kích hoạt
+                              </button>
+                            </c:when>
+                            <c:otherwise>
+                              <button type="button" class="action-dropdown-item action-dropdown-item--success" 
+                                      onclick="if(confirm('Bạn có chắc chắn muốn kích hoạt vai trò này?')) { document.getElementById('toggle-role-form-${r.id}').submit(); }"
+                                      style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                Kích hoạt
+                              </button>
+                            </c:otherwise>
+                          </c:choose>
                         </form>
                       </c:if>
-                    </div>
+                    </c:if>
                   </div>
-                </td>
-              </c:if>
+                </div>
+              </td>
             </tr>
           </c:forEach>
         </tbody>
       </table>
     </div>
+
+    <!-- Pagination Container -->
+    <div class="pagination-container">
+      <div class="pagination-info">
+        Hiển thị từ <span style="font-weight: 700; color: var(--text-primary);">${totalCount == 0 ? 0 : (currentPage - 1) * pageSize + 1}</span> đến <span style="font-weight: 700; color: var(--text-primary);">${(currentPage * pageSize) > totalCount ? totalCount : (currentPage * pageSize)}</span> trong số <span style="font-weight: 700; color: var(--text-primary);">${totalCount}</span> vai trò
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <!-- Limit selector -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số dòng:</span>
+          <select id="pag-size" class="page-size-selector" onchange="changePageSize(this.value)">
+            <option value="5" ${pageSize == 5 ? 'selected' : ''}>5</option>
+            <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
+            <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
+            <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
+          </select>
+        </div>
+
+        <!-- Pagination Buttons -->
+        <div id="pag-controls" class="pagination-controls" style="display: flex; gap: 6px;">
+          <button onclick="changePage(1)" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang đầu">
+            &laquo;
+          </button>
+          
+          <button onclick="changePage(${currentPage - 1})" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang trước">
+            &lsaquo;
+          </button>
+
+          <c:forEach var="p" begin="${currentPage - 2 < 1 ? 1 : currentPage - 2}" end="${currentPage + 2 > totalPages ? totalPages : currentPage + 2}">
+            <button onclick="changePage(${p})" class="pagination-btn ${p == currentPage ? 'pagination-btn--active' : ''}">
+              ${p}
+            </button>
+          </c:forEach>
+
+          <button onclick="changePage(${currentPage + 1})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang sau">
+            &rsaquo;
+          </button>
+
+          <button onclick="changePage(${totalPages})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang cuối">
+            &raquo;
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
+
+
 <style>
+  /* Base Table styling */
   .premium-table {
     width: 100%;
     border-collapse: collapse;
@@ -201,6 +288,9 @@
   .action-dropdown-item--danger {
     color: #ef4444 !important;
   }
+  .action-dropdown-item--success {
+    color: #10b981 !important;
+  }
   .premium-tag--danger {
     background: rgba(239, 68, 68, 0.1) !important;
     color: #ef4444 !important;
@@ -210,6 +300,187 @@
     color: var(--primary-color) !important;
     background: rgba(4, 138, 191, 0.02) !important;
   }
+
+  /* Pagination Styling */
+  .pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1.5px solid var(--card-border);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .pagination-info {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .pagination-btn:hover:not(:disabled) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(4, 138, 191, 0.02);
+  }
+  .pagination-btn--active {
+    background: var(--primary-color) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-color) !important;
+  }
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8fafc;
+  }
+  .page-size-selector {
+    padding: 6px 12px;
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    outline: none;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .page-size-selector:focus {
+    border-color: var(--primary-color);
+  }
+
+  /* Premium Modal Style */
+  .premium-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+  }
+  .premium-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(6px);
+    animation: fadeIn 0.2s ease-out;
+  }
+  .premium-modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--card-border);
+    z-index: 1;
+    overflow: hidden;
+    animation: scaleUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+  }
+  .premium-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1.5px solid var(--card-border);
+    background: #f8fafc;
+  }
+  .premium-modal-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .premium-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+    font-weight: 300;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .premium-modal-close:hover {
+    background: #e2e8f0;
+    color: var(--text-primary);
+  }
+  .premium-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .premium-modal-footer {
+    padding: 16px 24px;
+    border-top: 1.5px solid var(--card-border);
+    background: #f8fafc;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .detail-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    font-weight: 700;
+  }
+  .detail-value {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .detail-value-full {
+    grid-column: span 2;
+  }
+
   @keyframes slideDown {
     from {
       opacity: 0;
@@ -220,9 +491,35 @@
       transform: translateY(0);
     }
   }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scaleUp {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
 </style>
 
 <script>
+  // Permission descriptions lookup
+  const permissionNames = {
+    "BRAND_READ": "Xem danh sách Hãng sản xuất",
+    "BRAND_WRITE": "Thêm/Sửa/Xóa Hãng sản xuất",
+    "SUPPLIER_READ": "Xem danh sách Nhà cung cấp",
+    "SUPPLIER_WRITE": "Thêm/Sửa/Xóa Nhà cung cấp",
+    "PRODUCT_LINE_READ": "Xem danh sách Dòng sản phẩm",
+    "PRODUCT_LINE_WRITE": "Thêm/Sửa/Xóa Dòng sản phẩm",
+    "PRODUCT_READ": "Xem danh sách Sản phẩm",
+    "PRODUCT_WRITE": "Quản lý Sản phẩm",
+    "INVENTORY_READ": "Xem Tồn kho sản phẩm",
+    "INVENTORY_WRITE": "Quản lý cấu hình Tồn kho",
+    "RECEIPT_READ": "Xem Phiếu Nhập kho",
+    "RECEIPT_WRITE": "Tạo Phiếu Nhập kho",
+    "SHIPMENT_READ": "Xem Phiếu Xuất kho",
+    "SHIPMENT_WRITE": "Tạo Phiếu Xuất kho"
+  };
+
   function toggleDropdown(button) {
     event.stopPropagation();
     const currentMenu = button.nextElementSibling;
@@ -250,49 +547,67 @@
     }
   });
 
-  function filterRolesTable() {
-    const searchVal = document.getElementById("role-search").value.toLowerCase().trim();
+  // Server-side Pagination & Filtering redirection
+  let searchTimeout;
+  function onSearchInput() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      submitFilter();
+    }, 500);
+  }
+
+  function submitFilter() {
+    const searchVal = document.getElementById("role-search").value.trim();
+    const statusVal = document.getElementById("filter-status").value;
+    const size = document.getElementById("pag-size").value;
+
+    window.location.href = `${pageContext.request.contextPath}/admin/roles?search=` 
+      + encodeURIComponent(searchVal) 
+      + "&status=" + encodeURIComponent(statusVal) 
+      + "&page=1" 
+      + "&size=" + size;
+  }
+
+  function changePage(page) {
+    const searchVal = document.getElementById("role-search").value.trim();
+    const statusVal = document.getElementById("filter-status").value;
+    const size = document.getElementById("pag-size").value;
+
+    window.location.href = `${pageContext.request.contextPath}/admin/roles?search=` 
+      + encodeURIComponent(searchVal) 
+      + "&status=" + encodeURIComponent(statusVal) 
+      + "&page=" + page 
+      + "&size=" + size;
+  }
+
+  function changePageSize(size) {
+    const searchVal = document.getElementById("role-search").value.trim();
     const statusVal = document.getElementById("filter-status").value;
 
-    document.querySelectorAll(".role-row").forEach(row => {
-      // 1. Search text match (Code, Name, Description, Permissions)
-      const codeText = row.querySelector(".premium-tag").textContent.toLowerCase();
-      const nameText = row.querySelector("strong").textContent.toLowerCase();
-      const descText = row.cells[3].textContent.toLowerCase();
-      
-      // Let's gather all permission tags text
-      let permText = "";
-      row.querySelectorAll(".premium-tag--viewer").forEach(tag => {
-        permText += tag.textContent.toLowerCase() + " ";
-      });
-      
-      const matchesSearch = !searchVal || 
-                            codeText.includes(searchVal) || 
-                            nameText.includes(searchVal) || 
-                            descText.includes(searchVal) ||
-                            permText.includes(searchVal);
-
-      // 2. Status filter match
-      let matchesStatus = !statusVal;
-      if (statusVal) {
-        const statusText = row.querySelector(".premium-tag--success, .premium-tag--danger").textContent.trim().toLowerCase();
-        if (statusVal === "active" && statusText.includes("hoạt động")) {
-          matchesStatus = true;
-        } else if (statusVal === "locked" && statusText.includes("khóa")) {
-          matchesStatus = true;
-        }
-      }
-
-      // Show/hide row
-      if (matchesSearch && matchesStatus) {
-        row.style.display = "";
-        row.style.opacity = "1";
-      } else {
-        row.style.display = "none";
-        row.style.opacity = "0";
-      }
-    });
+    window.location.href = `${pageContext.request.contextPath}/admin/roles?search=` 
+      + encodeURIComponent(searchVal) 
+      + "&status=" + encodeURIComponent(statusVal) 
+      + "&page=1" 
+      + "&size=" + size;
   }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // Focus search input end of text if there is text
+    const searchInput = document.getElementById("role-search");
+    if (searchInput && searchInput.value) {
+      searchInput.focus();
+      const val = searchInput.value;
+      searchInput.value = '';
+      searchInput.value = val;
+    }
+  });
+
+
+
+  // Initialize
+  document.addEventListener("DOMContentLoaded", function() {
+    // No-op
+  });
 </script>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>

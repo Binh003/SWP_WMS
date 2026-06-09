@@ -26,6 +26,87 @@ public class RoleDAO {
         return roles;
     }
 
+    public List<Role> findPaginated(String search, String status, int offset, int limit) throws SQLException {
+        StringBuilder sql = new StringBuilder("""
+            SELECT DISTINCT r.id, r.code, r.name, r.description, r.enabled 
+            FROM roles r
+            LEFT JOIN role_permissions rp ON rp.role_id = r.id
+            LEFT JOIN permissions p ON rp.permission_id = p.id
+            WHERE 1=1
+            """);
+        List<Object> params = new ArrayList<>();
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (LOWER(r.code) LIKE ? OR LOWER(r.name) LIKE ? OR LOWER(r.description) LIKE ? OR LOWER(p.code) LIKE ?)");
+            String searchPattern = "%" + search.trim().toLowerCase() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+        if (status != null && !status.trim().isEmpty()) {
+            boolean enabled = "active".equalsIgnoreCase(status);
+            sql.append(" AND r.enabled = ?");
+            params.add(enabled);
+        }
+        sql.append(" ORDER BY r.code LIMIT ? OFFSET ?");
+        params.add(limit);
+        params.add(offset);
+
+        List<Role> roles = new ArrayList<>();
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Role r = mapRole(rs);
+                    r.setPermissionCodes(findPermissionCodes(conn, r.getId()));
+                    roles.add(r);
+                }
+            }
+        }
+        return roles;
+    }
+
+    public int count(String search, String status) throws SQLException {
+        StringBuilder sql = new StringBuilder("""
+            SELECT COUNT(DISTINCT r.id) 
+            FROM roles r
+            LEFT JOIN role_permissions rp ON rp.role_id = r.id
+            LEFT JOIN permissions p ON rp.permission_id = p.id
+            WHERE 1=1
+            """);
+        List<Object> params = new ArrayList<>();
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append(" AND (LOWER(r.code) LIKE ? OR LOWER(r.name) LIKE ? OR LOWER(r.description) LIKE ? OR LOWER(p.code) LIKE ?)");
+            String searchPattern = "%" + search.trim().toLowerCase() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+        if (status != null && !status.trim().isEmpty()) {
+            boolean enabled = "active".equalsIgnoreCase(status);
+            sql.append(" AND r.enabled = ?");
+            params.add(enabled);
+        }
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+
     public Role findByCode(String code) throws SQLException {
         String sql = "SELECT id, code, name, description, enabled FROM roles WHERE code = ?";
         try (Connection conn = DBConfig.getConnection();

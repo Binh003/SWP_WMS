@@ -66,36 +66,35 @@
       <div style="display: flex; gap: 12px; flex: 1; min-width: 300px; max-width: 500px; position: relative;">
         <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 16px;">⌕</span>
         <input type="text" id="user-search" placeholder="Tìm kiếm theo Tên tài khoản, Họ tên, Email..." 
+               value="<c:out value="${search}"/>"
                style="width: 100%; padding: 10px 16px 10px 40px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background: #ffffff;"
-               oninput="filterUsersTable()"
+               oninput="onSearchInput()"
                onfocus="this.style.borderColor='var(--primary-color)';" 
                onblur="this.style.borderColor='var(--card-border)';"/>
       </div>
       
       <div style="display: flex; gap: 12px; align-items: center;">
         <div style="display: flex; flex-direction: column; gap: 4px;">
-          <select id="filter-role" onchange="filterUsersTable()" 
+          <select id="filter-role" onchange="submitFilter()" 
                   style="padding: 10px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s;"
                   onfocus="this.style.borderColor='var(--primary-color)';" 
                   onblur="this.style.borderColor='var(--card-border)';">
             <option value="">Tất cả vai trò</option>
-            <option value="ADMIN">ADMIN</option>
-            <option value="MANAGER">MANAGER</option>
-            <option value="WAREHOUSE">WAREHOUSE</option>
-            <option value="STAFF">STAFF</option>
-            <option value="VIEWER">VIEWER</option>
+            <c:forEach var="r" items="${roles}">
+              <option value="${r.code}" ${selectedRole == r.code ? 'selected' : ''}>${r.code}</option>
+            </c:forEach>
           </select>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 4px;">
-          <select id="filter-status" onchange="filterUsersTable()" 
+          <select id="filter-status" onchange="submitFilter()" 
                   style="padding: 10px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s;"
                   onfocus="this.style.borderColor='var(--primary-color)';" 
                   onblur="this.style.borderColor='var(--card-border)';">
             <option value="">Tất cả trạng thái</option>
-            <option value="ACTIVE">Đang hoạt động</option>
-            <option value="LOCKED">Bị khóa</option>
-            <option value="PENDING">Chờ phê duyệt</option>
+            <option value="ACTIVE" ${status == 'ACTIVE' ? 'selected' : ''}>Đang hoạt động</option>
+            <option value="LOCKED" ${status == 'LOCKED' ? 'selected' : ''}>Bị khóa</option>
+            <option value="PENDING" ${status == 'PENDING' ? 'selected' : ''}>Chờ phê duyệt</option>
           </select>
         </div>
       </div>
@@ -111,21 +110,37 @@
             <th>Email</th>
             <th>Vai trò</th>
             <th style="width: 180px;">Trạng thái</th>
-            <c:if test="${canWriteUser}">
-              <th style="text-align: center; width: 100px;">Hành động</th>
-            </c:if>
+            <th style="text-align: center; width: 100px;">Hành động</th>
           </tr>
         </thead>
         <tbody>
           <c:forEach var="u" items="${users}">
             <tr class="user-row">
+              <td style="display:none;" class="user-details-data">
+                <span class="det-id">${u.id}</span>
+                <span class="det-username">${u.username}</span>
+                <span class="det-fullname">${u.fullName}</span>
+                <span class="det-email">${u.email}</span>
+                <span class="det-status">${u.status}</span>
+                <div class="det-roles">
+                  <c:forEach var="r" items="${u.roles}">
+                    <div class="det-role" data-code="${r.code}" data-name="${r.name}" data-desc="${r.description}">
+                      <c:forEach var="pc" items="${r.permissionCodes}">
+                        <span class="det-perm">${pc}</span>
+                      </c:forEach>
+                    </div>
+                  </c:forEach>
+                </div>
+              </td>
               <td>#${u.id}</td>
               <td>
                 <div style="display: flex; align-items: center; gap: 12px;">
                   <span class="user-menu__avatar user-menu__avatar--letter" style="width: 32px; height: 32px; font-size: 13px; border-radius: 8px; box-shadow: none;">
                     ${u.username.substring(0,1).toUpperCase()}
                   </span>
-                  <strong style="color: var(--text-primary); font-size: 14px;">${u.username}</strong>
+                  <a href="javascript:openUserDetailModal(${u.id})" style="color: var(--primary-color); text-decoration: none; font-weight: 700; font-size: 14px;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                    ${u.username}
+                  </a>
                 </div>
               </td>
               <td>${u.fullName}</td>
@@ -165,106 +180,149 @@
                   </c:otherwise>
                 </c:choose>
               </td>
-              <c:if test="${canWriteUser}">
-                <td style="text-align: center; vertical-align: middle;">
-                  <c:choose>
-                    <c:when test="${u.username == 'admin'}">
-                      <div style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px dashed var(--card-border); background: #f8fafc; color: var(--text-secondary);" title="Tài khoản Admin hệ thống (Không thể chỉnh sửa)">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              <td style="text-align: center; vertical-align: middle;">
+                <div class="action-dropdown-container" style="position: relative; display: inline-block; text-align: left;">
+                  <button type="button" class="action-dropdown-trigger" onclick="toggleDropdown(this)" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="5" r="1.5"></circle>
+                      <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                  </button>
+                  
+                  <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 160px; overflow: hidden; animation: slideDown 0.15s ease-out;">
+                    <a href="${pageContext.request.contextPath}/admin/users?action=detail&id=${u.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                      Xem chi tiết
+                    </a>
+                    
+                    <c:if test="${canWriteUser && u.username != 'admin'}">
+                      <a href="${pageContext.request.contextPath}/admin/users?action=edit&id=${u.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                          <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                         </svg>
-                      </div>
-                    </c:when>
-                    <c:otherwise>
-                      <div class="action-dropdown-container" style="position: relative; display: inline-block; text-align: left;">
-                        <button type="button" class="action-dropdown-trigger" onclick="toggleDropdown(this)" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="1.5"></circle>
-                            <circle cx="12" cy="5" r="1.5"></circle>
-                            <circle cx="12" cy="19" r="1.5"></circle>
-                          </svg>
-                        </button>
-                        
-                        <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 160px; overflow: hidden; animation: slideDown 0.15s ease-out;">
-                          <a href="${pageContext.request.contextPath}/admin/users?action=edit&id=${u.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                              <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                            </svg>
-                            Chỉnh sửa
-                          </a>
-                          <c:choose>
-                            <c:when test="${u.status == 'PENDING'}">
-                              <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
-                                <input type="hidden" name="action" value="toggle"/>
-                                <input type="hidden" name="id" value="${u.id}"/>
-                                <input type="hidden" name="status" value="ACTIVE"/>
-                                <button type="submit" class="action-dropdown-item action-dropdown-item--primary" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                  </svg>
-                                  Phê duyệt
-                                </button>
-                              </form>
-                              <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
-                                <input type="hidden" name="action" value="toggle"/>
-                                <input type="hidden" name="id" value="${u.id}"/>
-                                <input type="hidden" name="status" value="LOCKED"/>
-                                <button type="submit" class="action-dropdown-item action-dropdown-item--danger" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                  </svg>
-                                  Từ chối & Khóa
-                                </button>
-                              </form>
-                            </c:when>
-                            <c:when test="${u.status == 'ACTIVE'}">
-                              <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
-                                <input type="hidden" name="action" value="toggle"/>
-                                <input type="hidden" name="id" value="${u.id}"/>
-                                <input type="hidden" name="status" value="LOCKED"/>
-                                <button type="submit" class="action-dropdown-item action-dropdown-item--danger" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                  </svg>
-                                  Khóa tài khoản
-                                </button>
-                              </form>
-                            </c:when>
-                            <c:otherwise>
-                              <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
-                                <input type="hidden" name="action" value="toggle"/>
-                                <input type="hidden" name="id" value="${u.id}"/>
-                                <input type="hidden" name="status" value="ACTIVE"/>
-                                <button type="submit" class="action-dropdown-item action-dropdown-item--primary" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                    <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-                                  </svg>
-                                  Kích hoạt
-                                </button>
-                              </form>
-                            </c:otherwise>
-                          </c:choose>
-                        </div>
-                      </div>
-                    </c:otherwise>
-                  </c:choose>
-                </td>
-              </c:if>
+                        Chỉnh sửa
+                      </a>
+                      <c:choose>
+                        <c:when test="${u.status == 'PENDING'}">
+                          <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
+                            <input type="hidden" name="action" value="toggle"/>
+                            <input type="hidden" name="id" value="${u.id}"/>
+                            <input type="hidden" name="status" value="ACTIVE"/>
+                            <button type="submit" class="action-dropdown-item action-dropdown-item--primary" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                              </svg>
+                              Phê duyệt
+                            </button>
+                          </form>
+                          <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
+                            <input type="hidden" name="action" value="toggle"/>
+                            <input type="hidden" name="id" value="${u.id}"/>
+                            <input type="hidden" name="status" value="LOCKED"/>
+                            <button type="submit" class="action-dropdown-item action-dropdown-item--danger" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                              </svg>
+                              Từ chối & Khóa
+                            </button>
+                          </form>
+                        </c:when>
+                        <c:when test="${u.status == 'ACTIVE'}">
+                          <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
+                            <input type="hidden" name="action" value="toggle"/>
+                            <input type="hidden" name="id" value="${u.id}"/>
+                            <input type="hidden" name="status" value="LOCKED"/>
+                            <button type="submit" class="action-dropdown-item action-dropdown-item--danger" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                              </svg>
+                              Khóa tài khoản
+                            </button>
+                          </form>
+                        </c:when>
+                        <c:otherwise>
+                          <form method="post" action="${pageContext.request.contextPath}/admin/users" style="margin: 0;">
+                            <input type="hidden" name="action" value="toggle"/>
+                            <input type="hidden" name="id" value="${u.id}"/>
+                            <input type="hidden" name="status" value="ACTIVE"/>
+                            <button type="submit" class="action-dropdown-item action-dropdown-item--primary" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                              </svg>
+                              Kích hoạt
+                            </button>
+                          </form>
+                        </c:otherwise>
+                      </c:choose>
+                    </c:if>
+                  </div>
+                </div>
+              </td>
             </tr>
           </c:forEach>
         </tbody>
       </table>
     </div>
+
+    <!-- Pagination Container -->
+    <div class="pagination-container">
+      <div class="pagination-info">
+        Hiển thị <span style="font-weight: 700; color: var(--text-primary);">${totalCount == 0 ? 0 : (currentPage - 1) * pageSize + 1}</span> - <span style="font-weight: 700; color: var(--text-primary);">${(currentPage * pageSize) > totalCount ? totalCount : (currentPage * pageSize)}</span> trong số <span style="font-weight: 700; color: var(--text-primary);">${totalCount}</span> tài khoản
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <!-- Limit selector -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số dòng:</span>
+          <select id="pag-size" class="page-size-selector" onchange="changePageSize(this.value)">
+            <option value="5" ${pageSize == 5 ? 'selected' : ''}>5</option>
+            <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
+            <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
+            <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
+          </select>
+        </div>
+
+        <!-- Pagination Buttons -->
+        <div id="pag-controls" class="pagination-controls" style="display: flex; gap: 6px;">
+          <button onclick="changePage(1)" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang đầu">
+            &laquo;
+          </button>
+          
+          <button onclick="changePage(${currentPage - 1})" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang trước">
+            &lsaquo;
+          </button>
+
+          <c:forEach var="p" begin="${currentPage - 2 < 1 ? 1 : currentPage - 2}" end="${currentPage + 2 > totalPages ? totalPages : currentPage + 2}">
+            <button onclick="changePage(${p})" class="pagination-btn ${p == currentPage ? 'pagination-btn--active' : ''}">
+              ${p}
+            </button>
+          </c:forEach>
+
+          <button onclick="changePage(${currentPage + 1})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang sau">
+            &rsaquo;
+          </button>
+
+          <button onclick="changePage(${totalPages})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang cuối">
+            &raquo;
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
+
+
 <style>
+  /* Base Table styling */
   .premium-table {
     width: 100%;
     border-collapse: collapse;
@@ -337,6 +395,187 @@
     color: var(--primary-color) !important;
     background: rgba(4, 138, 191, 0.02) !important;
   }
+
+  /* Pagination Styling */
+  .pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1.5px solid var(--card-border);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .pagination-info {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .pagination-btn:hover:not(:disabled) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(4, 138, 191, 0.02);
+  }
+  .pagination-btn--active {
+    background: var(--primary-color) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-color) !important;
+  }
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8fafc;
+  }
+  .page-size-selector {
+    padding: 6px 12px;
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    outline: none;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .page-size-selector:focus {
+    border-color: var(--primary-color);
+  }
+
+  /* Premium Modal Style */
+  .premium-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+  }
+  .premium-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(6px);
+    animation: fadeIn 0.2s ease-out;
+  }
+  .premium-modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--card-border);
+    z-index: 1;
+    overflow: hidden;
+    animation: scaleUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+  }
+  .premium-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1.5px solid var(--card-border);
+    background: #f8fafc;
+  }
+  .premium-modal-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .premium-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+    font-weight: 300;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .premium-modal-close:hover {
+    background: #e2e8f0;
+    color: var(--text-primary);
+  }
+  .premium-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .premium-modal-footer {
+    padding: 16px 24px;
+    border-top: 1.5px solid var(--card-border);
+    background: #f8fafc;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .detail-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    font-weight: 700;
+  }
+  .detail-value {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .detail-value-full {
+    grid-column: span 2;
+  }
+
   @keyframes slideDown {
     from {
       opacity: 0;
@@ -347,17 +586,35 @@
       transform: translateY(0);
     }
   }
-  @keyframes swing {
-    0%, 100% { transform: rotate(0deg); }
-    10% { transform: rotate(15deg); }
-    20% { transform: rotate(-10deg); }
-    30% { transform: rotate(5deg); }
-    40% { transform: rotate(-5deg); }
-    50% { transform: rotate(0deg); }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scaleUp {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
   }
 </style>
 
 <script>
+  // Permission descriptions lookup
+  const permissionNames = {
+    "BRAND_READ": "Xem danh sách Hãng sản xuất",
+    "BRAND_WRITE": "Thêm/Sửa/Xóa Hãng sản xuất",
+    "SUPPLIER_READ": "Xem danh sách Nhà cung cấp",
+    "SUPPLIER_WRITE": "Thêm/Sửa/Xóa Nhà cung cấp",
+    "PRODUCT_LINE_READ": "Xem danh sách Dòng sản phẩm",
+    "PRODUCT_LINE_WRITE": "Thêm/Sửa/Xóa Dòng sản phẩm",
+    "PRODUCT_READ": "Xem danh sách Sản phẩm",
+    "PRODUCT_WRITE": "Quản lý Sản phẩm",
+    "INVENTORY_READ": "Xem Tồn kho sản phẩm",
+    "INVENTORY_WRITE": "Quản lý cấu hình Tồn kho",
+    "RECEIPT_READ": "Xem Phiếu Nhập kho",
+    "RECEIPT_WRITE": "Tạo Phiếu Nhập kho",
+    "SHIPMENT_READ": "Xem Phiếu Xuất kho",
+    "SHIPMENT_WRITE": "Tạo Phiếu Xuất kho"
+  };
+
   function toggleDropdown(button) {
     event.stopPropagation();
     const currentMenu = button.nextElementSibling;
@@ -385,78 +642,66 @@
     }
   });
 
-  // Dynamic role dropdown population & filtering logic
+  // Server-side Pagination & Filtering redirection
+  let searchTimeout;
+  function onSearchInput() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      submitFilter();
+    }, 500);
+  }
+
+  function submitFilter() {
+    const searchVal = document.getElementById("user-search").value.trim();
+    const statusVal = document.getElementById("filter-status").value;
+    const roleVal = document.getElementById("filter-role").value;
+    const size = document.getElementById("pag-size").value;
+
+    window.location.href = `${pageContext.request.contextPath}/admin/users?search=` 
+      + encodeURIComponent(searchVal) 
+      + "&status=" + encodeURIComponent(statusVal) 
+      + "&role=" + encodeURIComponent(roleVal) 
+      + "&page=1" 
+      + "&size=" + size;
+  }
+
+  function changePage(page) {
+    const searchVal = document.getElementById("user-search").value.trim();
+    const statusVal = document.getElementById("filter-status").value;
+    const roleVal = document.getElementById("filter-role").value;
+    const size = document.getElementById("pag-size").value;
+
+    window.location.href = `${pageContext.request.contextPath}/admin/users?search=` 
+      + encodeURIComponent(searchVal) 
+      + "&status=" + encodeURIComponent(statusVal) 
+      + "&role=" + encodeURIComponent(roleVal) 
+      + "&page=" + page 
+      + "&size=" + size;
+  }
+
+  function changePageSize(size) {
+    const searchVal = document.getElementById("user-search").value.trim();
+    const statusVal = document.getElementById("filter-status").value;
+    const roleVal = document.getElementById("filter-role").value;
+
+    window.location.href = `${pageContext.request.contextPath}/admin/users?search=` 
+      + encodeURIComponent(searchVal) 
+      + "&status=" + encodeURIComponent(statusVal) 
+      + "&role=" + encodeURIComponent(roleVal) 
+      + "&page=1" 
+      + "&size=" + size;
+  }
+
   document.addEventListener("DOMContentLoaded", function() {
-    const roleSelect = document.getElementById("filter-role");
-    if (roleSelect) {
-      const rolesSet = new Set();
-      document.querySelectorAll(".user-row").forEach(row => {
-        row.querySelectorAll(".premium-tag:not(.premium-tag--success):not(.premium-tag--danger)").forEach(tag => {
-          const roleCode = tag.textContent.trim();
-          if (roleCode) {
-            rolesSet.add(roleCode);
-          }
-        });
-      });
-      
-      roleSelect.innerHTML = '<option value="">Tất cả vai trò</option>';
-      Array.from(rolesSet).sort().forEach(role => {
-        const option = document.createElement("option");
-        option.value = role;
-        option.textContent = role;
-        roleSelect.appendChild(option);
-      });
+    // Focus search input end of text if there is text
+    const searchInput = document.getElementById("user-search");
+    if (searchInput && searchInput.value) {
+      searchInput.focus();
+      const val = searchInput.value;
+      searchInput.value = '';
+      searchInput.value = val;
     }
   });
-
-  function filterUsersTable() {
-    const searchVal = document.getElementById("user-search").value.toLowerCase().trim();
-    const roleVal = document.getElementById("filter-role").value;
-    const statusVal = document.getElementById("filter-status").value;
-
-    document.querySelectorAll(".user-row").forEach(row => {
-      // 1. Search text match (Username, Full name, Email)
-      const usernameText = row.querySelector("strong").textContent.toLowerCase();
-      const fullNameText = row.cells[2].textContent.toLowerCase();
-      const emailText = row.cells[3].textContent.toLowerCase();
-      
-      const matchesSearch = !searchVal || 
-                            usernameText.includes(searchVal) || 
-                            fullNameText.includes(searchVal) || 
-                            emailText.includes(searchVal);
-
-      // 2. Role filter match
-      let matchesRole = !roleVal;
-      if (roleVal) {
-        row.querySelectorAll(".premium-tag:not(.premium-tag--success):not(.premium-tag--danger)").forEach(tag => {
-          if (tag.textContent.trim() === roleVal) {
-            matchesRole = true;
-          }
-        });
-      }
-
-      // 3. Status filter match
-      let matchesStatus = !statusVal;
-      if (statusVal) {
-        if (statusVal === "ACTIVE" && row.querySelector(".premium-tag--success")) {
-          matchesStatus = true;
-        } else if (statusVal === "LOCKED" && row.querySelector(".premium-tag--danger")) {
-          matchesStatus = true;
-        } else if (statusVal === "PENDING" && row.querySelector(".premium-tag--warning")) {
-          matchesStatus = true;
-        }
-      }
-
-      // Show/hide row
-      if (matchesSearch && matchesRole && matchesStatus) {
-        row.style.display = "";
-        row.style.opacity = "1";
-      } else {
-        row.style.display = "none";
-        row.style.opacity = "0";
-      }
-    });
-  }
 
   function filterToPending() {
     const statusSelect = document.getElementById("filter-status");
@@ -465,6 +710,8 @@
       filterUsersTable();
     }
   }
+
+
 </script>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>

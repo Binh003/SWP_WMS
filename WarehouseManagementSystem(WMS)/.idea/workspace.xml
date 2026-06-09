@@ -1,53 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="WMS" />
+    </artifacts-to-build>
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bb02d8ec-4e0d-4ea3-9060-dd64b04a364d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/ant.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ant.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/artifacts/unnamed.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/unnamed.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WarehouseManagementSystem(WMS).iml" beforeDir="false" afterPath="$PROJECT_DIR$/WarehouseManagementSystem(WMS).iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/META-INF/context.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/WEB-INF/config/db.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/WEB-INF/lib/jakarta.activation-2.0.1.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/WEB-INF/lib/jakarta.mail-2.0.1.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/WEB-INF/lib/jakarta.servlet.jsp.jstl-3.0.1.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/WEB-INF/lib/jakarta.servlet.jsp.jstl-api-3.0.0.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/WEB-INF/lib/jbcrypt-0.4.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/WEB-INF/lib/mysql-connector-j-8.3.0.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/assets/img_login.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/assets/inventory-logo.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/assets/inventory-robot.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/assets/logo.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/assets/profile_avatar.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/css/base.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/css/home.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/css/login.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/css/register.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/css/subpages.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/index.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/admin/role-create.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/admin/role-edit.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/admin/roles.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/admin/user-create.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/admin/user-edit.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/admin/users.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/auth/forgot-password.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/auth/login.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/auth/register.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/auth/reset-password.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/home.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/includes/dashboard-layout-end.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/includes/dashboard-layout-start.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/includes/flash.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/includes/head.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/profile/change-password.jsp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/profile/profile.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/META-INF/context.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/WEB-INF/config/db.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/WEB-INF/lib/jakarta.activation-2.0.1.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/WEB-INF/lib/jakarta.mail-2.0.1.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/WEB-INF/lib/jakarta.servlet.jsp.jstl-3.0.1.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/WEB-INF/lib/jakarta.servlet.jsp.jstl-api-3.0.0.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/WEB-INF/lib/jbcrypt-0.4.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/WEB-INF/lib/mysql-connector-j-8.3.0.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/WEB-INF/web.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/assets/img_login.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/assets/inventory-logo.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/assets/inventory-robot.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/assets/logo.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/assets/profile_avatar.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/css/base.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/css/home.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/css/login.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/css/register.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/css/subpages.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/index.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/brand-form.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/brands.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/inventories.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/inventory-form.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/product-form.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/product-line-form.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/product-lines.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/products.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/receipt-detail.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/receipt-form.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/receipts.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/role-create.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/role-edit.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/roles.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/shipment-detail.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/shipment-form.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/shipments.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/supplier-form.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/suppliers.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/user-create.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/user-edit.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/users.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/auth/forgot-password.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/auth/login.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/auth/register.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/auth/reset-password.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/home.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/includes/dashboard-layout-end.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/includes/dashboard-layout-start.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/includes/flash.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/includes/head.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/profile/change-password.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/profile/profile.jsp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/unnamed/jsp/admin/roles.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/unnamed/jsp/admin/roles.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/unnamed/jsp/admin/users.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/unnamed/jsp/admin/users.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/controller/RoleAdminServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/controller/RoleAdminServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/controller/UserAdminServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/controller/UserAdminServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/dao/RoleDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/dao/RoleDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/dao/UserDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/dao/UserDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/jsp/admin/inventories.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/inventories.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/jsp/admin/roles.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/roles.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/jsp/admin/users.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/users.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,30 +102,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;TomEE Server.TomEE 10.1.55.executor&quot;: &quot;Run&quot;,
-    &quot;TomEE Server.Unnamed.executor&quot;: &quot;Run&quot;,
-    &quot;Tomcat Server.Tomcat 10.1.55.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/SP_SWP/Binh-Phase 1-5/SWP_WMS/WarehouseManagementSystem(WMS)&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Artifacts&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.applicationServers&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "TomEE Server.TomEE 10.1.55.executor": "Run",
+    "TomEE Server.Unnamed.executor": "Run",
+    "Tomcat Server.Tomcat 10.1.55.executor": "Run",
+    "git-widget-placeholder": "Binh",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "D:/SP_SWP/Binh-Phase 1-5/SWP_WMS/WarehouseManagementSystem(WMS)",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Artifacts",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.applicationServers",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="Tomcat 10.1.55" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 10.1.55" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
       <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/wms" />
@@ -215,6 +241,7 @@
       <workItem from="1780900043466" duration="15000" />
       <workItem from="1780900312174" duration="98000" />
       <workItem from="1780993221586" duration="351000" />
+      <workItem from="1781018908863" duration="1299000" />
     </task>
     <servers />
   </component>

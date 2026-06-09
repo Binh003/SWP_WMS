@@ -25,8 +25,6 @@ public class RoleAdminServlet extends HttpServlet {
             model.User currentUser = WebUtil.currentUser(request);
             boolean canWrite = currentUser != null && (currentUser.hasRole("ADMIN") || currentUser.hasPermission("ROLE_WRITE"));
 
-            List<Role> roles = roleDAO.findAll();
-            request.setAttribute("roles", roles);
             request.setAttribute("permissions", permissionDAO.findAll());
             request.setAttribute("currentUser", currentUser);
 
@@ -41,7 +39,19 @@ public class RoleAdminServlet extends HttpServlet {
                     return;
                 }
                 forwardJsp = "/jsp/admin/role-create.jsp";
-            } else if ("edit".equalsIgnoreCase(action) || (idParam != null && !idParam.isEmpty())) {
+            } else if ("detail".equalsIgnoreCase(action)) {
+                long selectedId = parseLong(idParam, 0);
+                Role selected = selectedId > 0 ? roleDAO.findByIdWithPermissions(selectedId) : null;
+                if (selected != null) {
+                    request.setAttribute("selectedRole", selected);
+                    request.setAttribute("selectedRoleId", selectedId);
+                    forwardJsp = "/jsp/admin/role-detail.jsp";
+                } else {
+                    WebUtil.setFlashError(request, "Không tìm thấy vai trò");
+                    WebUtil.redirect(request, response, "/admin/roles");
+                    return;
+                }
+            } else if ("edit".equalsIgnoreCase(action) || (idParam != null && !idParam.isEmpty() && !"detail".equalsIgnoreCase(action))) {
                 if (!canWrite) {
                     WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
                     WebUtil.redirect(request, response, "/admin/roles");
@@ -54,6 +64,42 @@ public class RoleAdminServlet extends HttpServlet {
                     request.setAttribute("selectedRoleId", selectedId);
                     forwardJsp = "/jsp/admin/role-edit.jsp";
                 }
+            } else {
+                String search = request.getParameter("search");
+                String status = request.getParameter("status");
+
+                int page = 1;
+                String pageStr = request.getParameter("page");
+                if (pageStr != null && !pageStr.isEmpty()) {
+                    try {
+                        page = Integer.parseInt(pageStr);
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                int size = 10;
+                String sizeStr = request.getParameter("size");
+                if (sizeStr != null && !sizeStr.isEmpty()) {
+                    try {
+                        size = Integer.parseInt(sizeStr);
+                    } catch (NumberFormatException ignored) {}
+                }
+
+                int totalCount = roleDAO.count(search, status);
+                int totalPages = (int) Math.ceil((double) totalCount / size);
+                if (totalPages < 1) totalPages = 1;
+                if (page > totalPages) page = totalPages;
+                if (page < 1) page = 1;
+
+                int offset = (page - 1) * size;
+                List<Role> roles = roleDAO.findPaginated(search, status, offset, size);
+
+                request.setAttribute("roles", roles);
+                request.setAttribute("search", search);
+                request.setAttribute("status", status);
+                request.setAttribute("currentPage", page);
+                request.setAttribute("pageSize", size);
+                request.setAttribute("totalCount", totalCount);
+                request.setAttribute("totalPages", totalPages);
             }
 
             WebUtil.consumeFlash(request);
@@ -78,22 +124,22 @@ public class RoleAdminServlet extends HttpServlet {
         String action = WebUtil.param(request, "action");
 
         try {
-            if ("delete".equalsIgnoreCase(action)) {
+            if ("toggle-status".equalsIgnoreCase(action)) {
                 long id = Long.parseLong(WebUtil.param(request, "id"));
+                boolean enabled = "true".equalsIgnoreCase(WebUtil.param(request, "enabled"));
                 Role role = roleDAO.findByIdWithPermissions(id);
-                if (role != null && "ADMIN".equalsIgnoreCase(role.getCode())) {
-                    WebUtil.setFlashError(request, "Không thể xóa vai trò ADMIN mặc định");
-                    WebUtil.redirect(request, response, "/admin/roles?id=" + id);
-                    return;
-                }
-                int userCount = roleDAO.countUsersWithRole(id);
-                if (userCount > 0) {
-                    WebUtil.setFlashError(request, "Không thể xóa vai trò \"" + (role != null ? role.getCode() : "") + "\" vì đang có " + userCount + " tài khoản đang sử dụng vai trò này.");
+                if (role == null) {
+                    WebUtil.setFlashError(request, "Vai trò không tồn tại");
                     WebUtil.redirect(request, response, "/admin/roles");
                     return;
                 }
-                roleDAO.deleteRole(id);
-                WebUtil.setFlashSuccess(request, "Đã xóa vai trò thành công");
+                if ("ADMIN".equalsIgnoreCase(role.getCode()) && !enabled) {
+                    WebUtil.setFlashError(request, "Không thể khóa vai trò ADMIN mặc định");
+                    WebUtil.redirect(request, response, "/admin/roles");
+                    return;
+                }
+                roleDAO.setEnabled(id, enabled);
+                WebUtil.setFlashSuccess(request, "Đã " + (enabled ? "kích hoạt" : "hủy kích hoạt") + " vai trò thành công");
                 WebUtil.redirect(request, response, "/admin/roles");
                 return;
             }
