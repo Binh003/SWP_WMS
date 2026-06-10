@@ -111,10 +111,11 @@
         <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: var(--text-primary);">Quy định phân quyền</h3>
         <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-secondary); line-height: 1.6;">Mỗi vai trò (Role) sẽ có các quyền hạn khác nhau trên hệ thống quản lý kho (WMS):</p>
         <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.8;">
-          <li><strong>ADMIN:</strong> Quản trị viên, có toàn quyền quản lý hệ thống, cấu hình vai trò, duyệt tài khoản.</li>
-          <li><strong>MANAGER:</strong> Quản lý kho, điều hành các hoạt động xuất nhập tồn và kiểm kho.</li>
-          <li><strong>STAFF:</strong> Nhân viên kho, thực hiện các thao tác nhập xuất, cập nhật dữ liệu.</li>
-          <li><strong>VIEWER:</strong> Chỉ xem thông tin tổng quan, không có quyền chỉnh sửa.</li>
+          <li><strong>ADMIN:</strong> Quản trị viên hệ thống.</li>
+          <li><strong>WAREHOUSE MANAGER:</strong> Quản lý kho, điều hành xuất nhập, quản lý tồn kho và phê duyệt.</li>
+          <li><strong>WAREHOUSE STAFF:</strong> Nhân viên kho, thực hiện kiểm đếm và nhận/xuất hàng.</li>
+          <li><strong>PURCHASING STAFF:</strong> Nhân viên mua hàng, quản lý nhà cung cấp và lập phiếu nhập kho.</li>
+          <li><strong>SALES STAFF:</strong> Nhân viên bán hàng, lập phiếu xuất bán hàng.</li>
         </ul>
       </div>
     </div>

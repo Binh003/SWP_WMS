@@ -24,6 +24,99 @@
     </c:if>
   </div>
 
+  <!-- Stats/Summary Cards -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 28px;">
+    
+    <!-- Card 1: Pending Approval -->
+    <div class="premium-card stats-card" onclick="filterByCard('PENDING_APPROVAL')" style="padding: 24px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #f59e0b; background: linear-gradient(135deg, #ffffff, #fefaf0); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
+      <div>
+        <span style="font-size: 13px; font-weight: 600; color: #78350f; text-transform: uppercase; letter-spacing: 0.05em;">Chờ phê duyệt</span>
+        <h3 style="font-size: 32px; font-weight: 800; color: #d97706; margin: 8px 0 4px 0; font-family: system-ui, -apple-system, sans-serif;">${pendingCount}</h3>
+        <p style="font-size: 13px; color: #92400e; margin: 0; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          Yêu cầu cần Admin/Manager duyệt
+        </p>
+      </div>
+      <div style="width: 56px; height: 56px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); display: flex; align-items: center; justify-content: center; color: #d97706;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="9" y1="15" x2="15" y2="15"></line>
+          <line x1="12" y1="12" x2="12" y2="18"></line>
+        </svg>
+      </div>
+      <div style="position: absolute; right: -20px; bottom: -20px; width: 100px; height: 100px; border-radius: 50%; background: rgba(245, 158, 11, 0.03); z-index: 0;"></div>
+    </div>
+
+    <!-- Card 2: In Progress -->
+    <div class="premium-card stats-card" onclick="filterByCard('PROCESSING')" style="padding: 24px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #3b82f6; background: linear-gradient(135deg, #ffffff, #eff6ff); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
+      <div>
+        <span style="font-size: 13px; font-weight: 600; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.05em;">Đang thực hiện</span>
+        <h3 style="font-size: 32px; font-weight: 800; color: #2563eb; margin: 8px 0 4px 0; font-family: system-ui, -apple-system, sans-serif;">${processingCount}</h3>
+        <p style="font-size: 13px; color: #1e40af; margin: 0; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Đang nhận hàng & cất vào kệ
+        </p>
+      </div>
+      <div style="width: 56px; height: 56px; border-radius: 12px; background: rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: center; color: #2563eb;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+      </div>
+      <div style="position: absolute; right: -20px; bottom: -20px; width: 100px; height: 100px; border-radius: 50%; background: rgba(59, 130, 246, 0.03); z-index: 0;"></div>
+    </div>
+
+    <!-- Card 3: Completed -->
+    <div class="premium-card stats-card" onclick="filterByCard('COMPLETED')" style="padding: 24px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #10b981; background: linear-gradient(135deg, #ffffff, #f0fdf4); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
+      <div>
+        <span style="font-size: 13px; font-weight: 600; color: #064e3b; text-transform: uppercase; letter-spacing: 0.05em;">Hoàn thành</span>
+        <h3 style="font-size: 32px; font-weight: 800; color: #059669; margin: 8px 0 4px 0; font-family: system-ui, -apple-system, sans-serif;">${completedCount}</h3>
+        <p style="font-size: 13px; color: #065f46; margin: 0; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Đã cất kho thành công
+        </p>
+      </div>
+      <div style="width: 56px; height: 56px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; color: #059669;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <div style="position: absolute; right: -20px; bottom: -20px; width: 100px; height: 100px; border-radius: 50%; background: rgba(16, 185, 129, 0.03); z-index: 0;"></div>
+    </div>
+
+  </div>
+
+  <!-- Search & Filter Toolbar -->
+  <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+    <div style="display: flex; gap: 12px; flex: 1; min-width: 300px; max-width: 500px; position: relative;">
+      <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 16px;">⌕</span>
+      <input type="text" id="receipt-search" placeholder="Tìm kiếm theo Mã phiếu, Nhà cung cấp, Người tạo..." 
+             oninput="filterReceipts()"
+             value="<c:out value="${search}"/>"
+             style="width: 100%; padding: 10px 16px 10px 40px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background: #ffffff;"
+             onfocus="this.style.borderColor='var(--primary-color)';" 
+             onblur="this.style.borderColor='var(--card-border)';"/>
+    </div>
+    
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <select id="filter-status" onchange="submitFilter()" 
+              style="padding: 10px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s;"
+              onfocus="this.style.borderColor='var(--primary-color)';" 
+              onblur="this.style.borderColor='var(--card-border)';">
+        <option value="ALL" ${selectedStatus == 'ALL' || empty selectedStatus ? 'selected' : ''}>Tất cả trạng thái</option>
+        <option value="DRAFT" ${selectedStatus == 'DRAFT' ? 'selected' : ''}>Nháp</option>
+        <option value="PENDING_APPROVAL" ${selectedStatus == 'PENDING_APPROVAL' ? 'selected' : ''}>Chờ phê duyệt</option>
+        <option value="APPROVED" ${selectedStatus == 'APPROVED' ? 'selected' : ''}>Đã duyệt</option>
+        <option value="RECEIVING" ${selectedStatus == 'RECEIVING' ? 'selected' : ''}>Đang nhận hàng</option>
+        <option value="PROCESSING" ${selectedStatus == 'PROCESSING' ? 'selected' : ''}>Đang thực hiện (Đã duyệt & Đang nhận)</option>
+        <option value="COMPLETED" ${selectedStatus == 'COMPLETED' ? 'selected' : ''}>Đã hoàn thành</option>
+        <option value="CANCELLED" ${selectedStatus == 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
+      </select>
+    </div>
+  </div>
+
   <div class="premium-card" style="padding: 32px;">
     <div style="overflow-x: auto; margin: 0 -32px; padding: 0 32px;">
       <table class="premium-table">
@@ -45,7 +138,26 @@
               <td><fmt:formatDate value="${r.createdAt}" pattern="dd/MM/yyyy HH:mm"/></td>
               <td>${r.creator.fullName}</td>
               <td>
-                <span class="premium-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">Đã hoàn thành</span>
+                <c:choose>
+                  <c:when test="${r.status == 'DRAFT'}">
+                    <span class="premium-tag" style="background: rgba(100, 116, 139, 0.1); color: #64748b;">Nháp</span>
+                  </c:when>
+                  <c:when test="${r.status == 'PENDING_APPROVAL'}">
+                    <span class="premium-tag" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">Chờ phê duyệt</span>
+                  </c:when>
+                  <c:when test="${r.status == 'APPROVED'}">
+                    <span class="premium-tag" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">Đã duyệt</span>
+                  </c:when>
+                  <c:when test="${r.status == 'RECEIVING'}">
+                    <span class="premium-tag" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">Đang nhận hàng</span>
+                  </c:when>
+                  <c:when test="${r.status == 'COMPLETED'}">
+                    <span class="premium-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">Đã hoàn thành</span>
+                  </c:when>
+                  <c:otherwise>
+                    <span class="premium-tag" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">Đã hủy</span>
+                  </c:otherwise>
+                </c:choose>
               </td>
               <td style="text-align: center;">
                 <a href="${pageContext.request.contextPath}/admin/receipts?action=view&id=${r.id}" class="action-btn" title="Xem chi tiết">
@@ -57,21 +169,175 @@
               </td>
             </tr>
           </c:forEach>
+          <c:if test="${empty receipts}">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 32px;">Không tìm thấy phiếu nhập kho nào.</td>
+            </tr>
+          </c:if>
         </tbody>
       </table>
+    </div>
+
+    <!-- Pagination Toolbar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1.5px solid var(--card-border); flex-wrap: wrap; gap: 16px;">
+      <div style="font-size: 14px; color: var(--text-secondary); font-weight: 600;">
+        Hiển thị 
+        <c:choose>
+          <c:when test="${totalItems == 0}">0</c:when>
+          <c:otherwise>${(currentPage - 1) * limit + 1}</c:otherwise>
+        </c:choose>
+        đến 
+        <c:choose>
+          <c:when test="${currentPage * limit > totalItems}">${totalItems}</c:when>
+          <c:otherwise>${totalItems}</c:otherwise>
+        </c:choose>
+        trong số <strong>${totalItems}</strong> bản ghi
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <!-- Limit selector -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số dòng:</span>
+          <select onchange="changeLimit(this.value)" style="padding: 6px 12px; border: 1.5px solid var(--card-border); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer;">
+            <option value="5" ${limit == 5 ? 'selected' : ''}>5</option>
+            <option value="10" ${limit == 10 ? 'selected' : ''}>10</option>
+            <option value="20" ${limit == 20 ? 'selected' : ''}>20</option>
+            <option value="50" ${limit == 50 ? 'selected' : ''}>50</option>
+          </select>
+        </div>
+
+        <!-- Pagination Buttons -->
+        <div style="display: flex; gap: 6px;">
+          <button onclick="goToPage(1)" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang đầu">
+            &laquo;
+          </button>
+          
+          <button onclick="goToPage(${currentPage - 1})" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang trước">
+            &lsaquo;
+          </button>
+
+          <c:forEach var="p" begin="${currentPage - 2 < 1 ? 1 : currentPage - 2}" end="${currentPage + 2 > totalPages ? totalPages : currentPage + 2}">
+            <button onclick="goToPage(${p})" class="pagination-btn ${p == currentPage ? 'pagination-btn--active' : ''}">
+              ${p}
+            </button>
+          </c:forEach>
+
+          <button onclick="goToPage(${currentPage + 1})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang sau">
+            &rsaquo;
+          </button>
+
+          <button onclick="goToPage(${totalPages})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang cuối">
+            &raquo;
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <style>
-  .premium-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .premium-table { width: 100%; min-width: 900px; border-collapse: collapse; margin-top: 8px; }
   .premium-table th { background: #f8fafc; color: var(--text-secondary); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; padding: 16px 20px; border-bottom: 1.5px solid var(--card-border); text-align: left; white-space: nowrap; }
-  .premium-table td { padding: 16px 20px; border-bottom: 1px solid var(--card-border); font-size: 14px; color: var(--text-primary); vertical-align: middle; }
+  .premium-table td { padding: 16px 20px; border-bottom: 1px solid var(--card-border); font-size: 14px; color: var(--text-primary); vertical-align: middle; white-space: nowrap; }
   .user-row { transition: opacity 0.2s ease, transform 0.2s ease; }
   .premium-table tr.user-row:hover td { background: rgba(4, 138, 191, 0.02); }
   .premium-tag--manager { background: rgba(245, 158, 11, 0.1) !important; color: #d97706 !important; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; }
   .action-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
   .action-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(4, 138, 191, 0.02); }
+  
+  .stats-card {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .stats-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  /* Pagination Buttons styling */
+  .pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1.5px solid var(--card-border);
+    background: #ffffff;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pagination-btn:hover:not(:disabled) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(4, 138, 191, 0.02);
+  }
+  .pagination-btn--active {
+    background: var(--primary-color) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-color) !important;
+  }
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8fafc;
+  }
 </style>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+
+  let searchTimeout;
+  function filterReceipts() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      submitFilter();
+    }, 500);
+  }
+
+  function submitFilter() {
+    const searchVal = document.getElementById("receipt-search").value.trim();
+    const statusVal = document.getElementById("filter-status").value;
+    
+    urlParams.set('search', searchVal);
+    urlParams.set('status', statusVal);
+    urlParams.set('page', 1);
+    
+    window.location.search = urlParams.toString();
+  }
+
+  function filterByCard(status) {
+    const statusSelect = document.getElementById("filter-status");
+    if (statusSelect) {
+      statusSelect.value = status;
+      submitFilter();
+    }
+  }
+
+  function goToPage(page) {
+    urlParams.set('page', page);
+    window.location.search = urlParams.toString();
+  }
+
+  function changeLimit(limit) {
+    urlParams.set('limit', limit);
+    urlParams.set('page', 1);
+    window.location.search = urlParams.toString();
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // Focus search input end of text if there is text
+    const searchInput = document.getElementById("receipt-search");
+    if (searchInput && searchInput.value) {
+      searchInput.focus();
+      const val = searchInput.value;
+      searchInput.value = '';
+      searchInput.value = val;
+    }
+  });
+</script>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>

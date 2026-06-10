@@ -44,7 +44,58 @@ public class ReceiptServlet extends HttpServlet {
 
     private void listReceipts(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
-        request.setAttribute("receipts", receiptDAO.getAll());
+        
+        // 1. Get all to calculate stats counts
+        List<Receipt> allReceipts = receiptDAO.getAll();
+        int pendingCount = 0;
+        int processingCount = 0;
+        int completedCount = 0;
+        for (Receipt r : allReceipts) {
+            if ("PENDING_APPROVAL".equals(r.getStatus())) {
+                pendingCount++;
+            } else if ("APPROVED".equals(r.getStatus()) || "RECEIVING".equals(r.getStatus())) {
+                processingCount++;
+            } else if ("COMPLETED".equals(r.getStatus())) {
+                completedCount++;
+            }
+        }
+        request.setAttribute("pendingCount", pendingCount);
+        request.setAttribute("processingCount", processingCount);
+        request.setAttribute("completedCount", completedCount);
+
+        // 2. Pagination parameters
+        int page = 1;
+        int limit = 10;
+        String pageParam = request.getParameter("page");
+        String limitParam = request.getParameter("limit");
+        
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try { page = Integer.parseInt(pageParam); } catch (NumberFormatException ignored) {}
+        }
+        if (limitParam != null && !limitParam.isEmpty()) {
+            try { limit = Integer.parseInt(limitParam); } catch (NumberFormatException ignored) {}
+        }
+        
+        String search = request.getParameter("search");
+        if (search != null) search = search.trim();
+        
+        String status = request.getParameter("status");
+        if (status != null) status = status.trim();
+
+        // 3. Query paginated list
+        List<Receipt> paginatedReceipts = receiptDAO.findPaginated(page, limit, search, status);
+        int totalItems = receiptDAO.count(search, status);
+        int totalPages = (int) Math.ceil((double) totalItems / limit);
+        if (totalPages < 1) totalPages = 1;
+        
+        request.setAttribute("receipts", paginatedReceipts);
+        request.setAttribute("totalItems", totalItems);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("limit", limit);
+        request.setAttribute("search", search);
+        request.setAttribute("selectedStatus", status);
+        
         request.getRequestDispatcher("/jsp/admin/receipts.jsp").forward(request, response);
     }
 
@@ -80,6 +131,8 @@ public class ReceiptServlet extends HttpServlet {
         try {
             if ("create".equals(action)) {
                 createReceipt(request, response);
+            } else if ("updateStatus".equals(action)) {
+                updateReceiptStatus(request, response);
             } else {
                 WebUtil.redirect(request, response, "/admin/receipts");
             }
@@ -99,7 +152,12 @@ public class ReceiptServlet extends HttpServlet {
         r.setSupplierId(Long.parseLong(WebUtil.param(request, "supplierId")));
         r.setCreatedBy(currentUser.getId());
         r.setNotes(WebUtil.param(request, "notes"));
-        r.setStatus("COMPLETED"); // Default auto complete
+        
+        String status = WebUtil.param(request, "status");
+        if (status == null || status.trim().isEmpty()) {
+            status = "DRAFT";
+        }
+        r.setStatus(status);
 
         // Get details (for simplicity, we assume single item submission from simple form, or arrays for multi-item)
         String[] productIds = request.getParameterValues("productId[]");
@@ -139,7 +197,28 @@ public class ReceiptServlet extends HttpServlet {
 
         receiptDAO.insertWithDetails(r);
         
-        WebUtil.setFlashSuccess(request, "Đã tạo phiếu nhập kho và cập nhật số lượng tồn thành công");
+        String msg = "DRAFT".equals(status) ? "Đã tạo bản nháp phiếu nhập kho thành công" : "Đã gửi yêu cầu phê duyệt phiếu nhập kho thành công";
+        WebUtil.setFlashSuccess(request, msg);
         WebUtil.redirect(request, response, "/admin/receipts");
+    }
+
+    private void updateReceiptStatus(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, IOException {
+        long id = Long.parseLong(WebUtil.param(request, "id"));
+        String status = WebUtil.param(request, "status");
+        
+        User currentUser = WebUtil.currentUser(request);
+        long userId = currentUser != null ? currentUser.getId() : 1L;
+        receiptDAO.updateStatus(id, status, userId);
+        
+        String msg = "Đã cập nhật trạng thái phiếu nhập";
+        if ("PENDING_APPROVAL".equals(status)) msg = "Đã gửi yêu cầu phê duyệt phiếu nhập";
+        else if ("APPROVED".equals(status)) msg = "Đã phê duyệt phiếu nhập";
+        else if ("RECEIVING".equals(status)) msg = "Bắt đầu nhận hàng vào kho";
+        else if ("COMPLETED".equals(status)) msg = "Đã hoàn thành cất hàng và cập nhật tồn kho";
+        else if ("CANCELLED".equals(status)) msg = "Đã hủy phiếu nhập";
+        
+        WebUtil.setFlashSuccess(request, msg);
+        WebUtil.redirect(request, response, "/admin/receipts?action=view&id=" + id);
     }
 }

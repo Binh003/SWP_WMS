@@ -51,15 +51,15 @@ public class AuthService {
             return false;
         }
 
-        Role viewer = roleDAO.findByCode("VIEWER");
+        Role defaultRole = roleDAO.findByCode("WAREHOUSE STAFF");
 
-        if (viewer == null) {
-            throw new SQLException("Role VIEWER chưa được seed");
+        if (defaultRole == null) {
+            throw new SQLException("Role WAREHOUSE STAFF chưa được seed");
         }
 
         user.setPasswordHash(PasswordUtil.hash(user.getPasswordHash()));
         user.setEnabled(false);
-        user.setRoles(List.of(viewer));
+        user.setRoles(List.of(defaultRole));
 
         userDAO.insert(user);
 

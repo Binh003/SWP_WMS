@@ -37,6 +37,19 @@ public class AppContextListener implements ServletContextListener {
                   CONSTRAINT fk_password_resets_user FOREIGN KEY (user_id) REFERENCES users(id)
                 )
             """);
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS receipt_history (
+                  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                  receipt_id BIGINT NOT NULL,
+                  from_status VARCHAR(50),
+                  to_status VARCHAR(50) NOT NULL,
+                  changed_by BIGINT NOT NULL,
+                  changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  notes TEXT,
+                  CONSTRAINT fk_rh_receipt FOREIGN KEY (receipt_id) REFERENCES receipts(id) ON DELETE CASCADE,
+                  CONSTRAINT fk_rh_user FOREIGN KEY (changed_by) REFERENCES users(id)
+                )
+            """);
             try {
                 stmt.execute("SELECT status FROM users LIMIT 1");
             } catch (SQLException e) {
@@ -63,32 +76,87 @@ public class AppContextListener implements ServletContextListener {
         long prodLineRead = permissionDAO.ensurePermission("PRODUCT_LINE_READ", "Xem danh sách Dòng sản phẩm");
         long prodLineWrite = permissionDAO.ensurePermission("PRODUCT_LINE_WRITE", "Thêm/Sửa/Xóa Dòng sản phẩm");
 
+        // Phase 3 & 4 Permissions
+        long productRead = permissionDAO.ensurePermission("PRODUCT_READ", "Xem Sản phẩm");
+        long productWrite = permissionDAO.ensurePermission("PRODUCT_WRITE", "Quản lý Sản phẩm");
+        long inventoryRead = permissionDAO.ensurePermission("INVENTORY_READ", "Xem Tồn kho");
+        long inventoryWrite = permissionDAO.ensurePermission("INVENTORY_WRITE", "Quản lý Tồn kho");
+        long receiptRead = permissionDAO.ensurePermission("RECEIPT_READ", "Xem Phiếu Nhập");
+        long receiptWrite = permissionDAO.ensurePermission("RECEIPT_WRITE", "Tạo Phiếu Nhập");
+        long shipmentRead = permissionDAO.ensurePermission("SHIPMENT_READ", "Xem Phiếu Xuất");
+        long shipmentWrite = permissionDAO.ensurePermission("SHIPMENT_WRITE", "Tạo Phiếu Xuất");
+        long reportRead = permissionDAO.ensurePermission("REPORT_READ", "Xem Báo cáo");
+
+        // 1. ADMIN
         long adminRoleId = permissionDAO.ensureRole("ADMIN", "Administrator");
         permissionDAO.linkRolePermission(adminRoleId, userRead);
         permissionDAO.linkRolePermission(adminRoleId, userWrite);
         permissionDAO.linkRolePermission(adminRoleId, roleRead);
         permissionDAO.linkRolePermission(adminRoleId, roleWrite);
         permissionDAO.linkRolePermission(adminRoleId, permRead);
-        
-        // Link Phase 2 Permissions to ADMIN
         permissionDAO.linkRolePermission(adminRoleId, brandRead);
         permissionDAO.linkRolePermission(adminRoleId, brandWrite);
         permissionDAO.linkRolePermission(adminRoleId, supplierRead);
         permissionDAO.linkRolePermission(adminRoleId, supplierWrite);
         permissionDAO.linkRolePermission(adminRoleId, prodLineRead);
         permissionDAO.linkRolePermission(adminRoleId, prodLineWrite);
+        permissionDAO.linkRolePermission(adminRoleId, productRead);
+        permissionDAO.linkRolePermission(adminRoleId, productWrite);
+        permissionDAO.linkRolePermission(adminRoleId, inventoryRead);
+        permissionDAO.linkRolePermission(adminRoleId, inventoryWrite);
+        permissionDAO.linkRolePermission(adminRoleId, receiptRead);
+        permissionDAO.linkRolePermission(adminRoleId, receiptWrite);
+        permissionDAO.linkRolePermission(adminRoleId, shipmentRead);
+        permissionDAO.linkRolePermission(adminRoleId, shipmentWrite);
+        permissionDAO.linkRolePermission(adminRoleId, reportRead);
 
+        // 2. WAREHOUSE STAFF
         long warehouseRoleId = permissionDAO.ensureRole("WAREHOUSE STAFF", "Warehouse Staff");
-        // Warehouse Staff only needs READ access for master data
         permissionDAO.linkRolePermission(warehouseRoleId, brandRead);
         permissionDAO.linkRolePermission(warehouseRoleId, supplierRead);
         permissionDAO.linkRolePermission(warehouseRoleId, prodLineRead);
+        permissionDAO.linkRolePermission(warehouseRoleId, productRead);
+        permissionDAO.linkRolePermission(warehouseRoleId, inventoryRead);
+        permissionDAO.linkRolePermission(warehouseRoleId, receiptRead);
+        permissionDAO.linkRolePermission(warehouseRoleId, receiptWrite);
+        permissionDAO.linkRolePermission(warehouseRoleId, shipmentRead);
+        permissionDAO.linkRolePermission(warehouseRoleId, shipmentWrite);
 
-        long viewerRoleId = permissionDAO.ensureRole("VIEWER", "Viewer");
-        // Viewer only needs READ access for master data
-        permissionDAO.linkRolePermission(viewerRoleId, brandRead);
-        permissionDAO.linkRolePermission(viewerRoleId, supplierRead);
-        permissionDAO.linkRolePermission(viewerRoleId, prodLineRead);
+        // 3. WAREHOUSE MANAGER
+        long managerRoleId = permissionDAO.ensureRole("WAREHOUSE MANAGER", "Warehouse Manager");
+        permissionDAO.linkRolePermission(managerRoleId, brandRead);
+        permissionDAO.linkRolePermission(managerRoleId, brandWrite);
+        permissionDAO.linkRolePermission(managerRoleId, supplierRead);
+        permissionDAO.linkRolePermission(managerRoleId, supplierWrite);
+        permissionDAO.linkRolePermission(managerRoleId, prodLineRead);
+        permissionDAO.linkRolePermission(managerRoleId, prodLineWrite);
+        permissionDAO.linkRolePermission(managerRoleId, productRead);
+        permissionDAO.linkRolePermission(managerRoleId, productWrite);
+        permissionDAO.linkRolePermission(managerRoleId, inventoryRead);
+        permissionDAO.linkRolePermission(managerRoleId, inventoryWrite);
+        permissionDAO.linkRolePermission(managerRoleId, receiptRead);
+        permissionDAO.linkRolePermission(managerRoleId, receiptWrite);
+        permissionDAO.linkRolePermission(managerRoleId, shipmentRead);
+        permissionDAO.linkRolePermission(managerRoleId, shipmentWrite);
+        permissionDAO.linkRolePermission(managerRoleId, reportRead);
+
+        // 4. PURCHASING STAFF
+        long purchasingRoleId = permissionDAO.ensureRole("PURCHASING STAFF", "Purchasing Staff");
+        permissionDAO.linkRolePermission(purchasingRoleId, brandRead);
+        permissionDAO.linkRolePermission(purchasingRoleId, supplierRead);
+        permissionDAO.linkRolePermission(purchasingRoleId, supplierWrite);
+        permissionDAO.linkRolePermission(purchasingRoleId, prodLineRead);
+        permissionDAO.linkRolePermission(purchasingRoleId, productRead);
+        permissionDAO.linkRolePermission(purchasingRoleId, receiptRead);
+        permissionDAO.linkRolePermission(purchasingRoleId, receiptWrite);
+
+        // 5. SALES STAFF
+        long salesRoleId = permissionDAO.ensureRole("SALES STAFF", "Sales Staff");
+        permissionDAO.linkRolePermission(salesRoleId, brandRead);
+        permissionDAO.linkRolePermission(salesRoleId, prodLineRead);
+        permissionDAO.linkRolePermission(salesRoleId, productRead);
+        permissionDAO.linkRolePermission(salesRoleId, shipmentRead);
+        permissionDAO.linkRolePermission(salesRoleId, shipmentWrite);
 
         String adminUsername = DBConfig.get("admin.username");
         if (userDAO.findByUsername(adminUsername) == null) {

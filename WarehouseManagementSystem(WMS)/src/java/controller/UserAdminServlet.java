@@ -275,8 +275,8 @@ public class UserAdminServlet extends HttpServlet {
     private List<Role> resolveRoles(HttpServletRequest request) throws SQLException {
         String[] codes = request.getParameterValues("roleCodes");
         if (codes == null || codes.length == 0) {
-            Role viewer = roleDAO.findByCode("VIEWER");
-            return viewer == null ? List.of() : List.of(viewer);
+            Role defaultRole = roleDAO.findByCode("WAREHOUSE STAFF");
+            return defaultRole == null ? List.of() : List.of(defaultRole);
         }
         List<Role> roles = new ArrayList<>();
         for (String code : codes) {

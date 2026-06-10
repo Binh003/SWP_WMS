@@ -62,9 +62,9 @@ public class RegisterServlet extends HttpServlet {
                 request.getRequestDispatcher("/jsp/auth/register.jsp").forward(request, response);
                 return;
             }
-            Role viewer = roleDAO.findByCode("VIEWER");
-            if (viewer == null) {
-                throw new SQLException("Role VIEWER chưa được seed");
+            Role defaultRole = roleDAO.findByCode("WAREHOUSE STAFF");
+            if (defaultRole == null) {
+                throw new SQLException("Role WAREHOUSE STAFF chưa được seed");
             }
 
             User user = new User();
@@ -73,7 +73,7 @@ public class RegisterServlet extends HttpServlet {
             user.setEmail(username);
             user.setPasswordHash(PasswordUtil.hash(password));
             user.setEnabled(false);
-            user.setRoles(List.of(viewer));
+            user.setRoles(List.of(defaultRole));
             userDAO.insert(user);
 
             WebUtil.setFlashSuccess(request, "Đăng ký thành công. Chờ admin phê duyệt.");

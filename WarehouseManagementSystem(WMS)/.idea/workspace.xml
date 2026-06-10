@@ -10,7 +10,33 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bb02d8ec-4e0d-4ea3-9060-dd64b04a364d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/java/model/ReceiptHistory.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/css/subpages.css" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/WMS/css/subpages.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/inventories.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/inventories.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/receipt-detail.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/receipt-detail.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/receipt-form.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/receipt-form.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/receipts.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/receipts.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/roles.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/roles.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/user-create.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/user-create.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/users.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/artifacts/WMS/jsp/admin/users.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sql/phase4.sql" beforeDir="false" afterPath="$PROJECT_DIR$/sql/phase4.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/controller/ReceiptServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/controller/ReceiptServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/controller/RegisterServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/controller/RegisterServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/controller/UserAdminServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/controller/UserAdminServlet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/dao/ReceiptDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/dao/ReceiptDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/listener/AppContextListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/listener/AppContextListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/model/Receipt.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/model/Receipt.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/service/AuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/css/subpages.css" beforeDir="false" afterPath="$PROJECT_DIR$/web/css/subpages.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/jsp/admin/inventories.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/inventories.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/jsp/admin/receipt-detail.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/receipt-detail.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/jsp/admin/receipt-form.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/receipt-form.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/jsp/admin/receipts.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/receipts.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/jsp/admin/roles.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/roles.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/jsp/admin/user-create.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/user-create.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/jsp/admin/users.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/users.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,10 +73,10 @@
     "TomEE Server.TomEE 10.1.55.executor": "Run",
     "TomEE Server.Unnamed.executor": "Run",
     "Tomcat Server.Tomcat 10.1.55.executor": "Run",
-    "git-widget-placeholder": "danh",
+    "git-widget-placeholder": "Merging danh",
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "D:/SP_SWP/Vinh-Phase4.1/SWP_WMS/WarehouseManagementSystem(WMS)",
+    "last_opened_file_path": "D:/SP_SWP/Binh-Phase 1-5/SWP_WMS/WarehouseManagementSystem(WMS)",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -65,17 +91,17 @@
 }]]></component>
   <component name="RunManager">
     <configuration name="Tomcat 10.1.55" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 10.1.55" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
-      <option name="BROWSER_ID" value="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" />
+      <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/wms" />
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
         <artifact name="WMS">
           <settings>
-            <option name="CONTEXT_PATH" value="/WMS" />
+            <option name="CONTEXT_PATH" value="/wms" />
           </settings>
         </artifact>
       </deployment>
       <server-settings>
-        <option name="BASE_DIRECTORY_NAME" value="0175345c-099e-43b8-a614-04cbd03fb2fb" />
+        <option name="BASE_DIRECTORY_NAME" value="c5b36759-6160-4253-8098-94d2b912f08f" />
       </server-settings>
       <predefined_log_file enabled="true" id="Tomcat" />
       <predefined_log_file enabled="true" id="Tomcat Catalina" />
@@ -83,7 +109,7 @@
       <predefined_log_file id="Tomcat Host Manager" />
       <predefined_log_file id="Tomcat Localhost Access" />
       <RunnerSettings RunnerId="AppServerDebuggerRunner">
-        <option name="DEBUG_PORT" value="64991" />
+        <option name="DEBUG_PORT" value="52128" />
       </RunnerSettings>
       <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="AppServerDebuggerRunner">
         <option name="USE_ENV_VARIABLES" value="true" />
@@ -180,7 +206,6 @@
       <workItem from="1780993221586" duration="351000" />
       <workItem from="1781018908863" duration="1299000" />
       <workItem from="1781026536426" duration="1010000" />
-      <workItem from="1781056933378" duration="310000" />
     </task>
     <servers />
   </component>

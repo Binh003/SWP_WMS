@@ -81,6 +81,7 @@ public class ReceiptDAO {
         
         if (r != null) {
             r.setDetails(getDetailsByReceiptId(r.getId()));
+            r.setHistory(getHistoryByReceiptId(r.getId()));
         }
         
         return r;
@@ -117,6 +118,40 @@ public class ReceiptDAO {
         return details;
     }
 
+    private List<ReceiptHistory> getHistoryByReceiptId(long receiptId) throws SQLException {
+        List<ReceiptHistory> history = new ArrayList<>();
+        String sql = "SELECT rh.*, u.full_name as updater_name, u.username as updater_username " +
+                     "FROM receipt_history rh " +
+                     "INNER JOIN users u ON rh.changed_by = u.id " +
+                     "WHERE rh.receipt_id = ? " +
+                     "ORDER BY rh.changed_at ASC";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, receiptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ReceiptHistory rh = new ReceiptHistory();
+                    rh.setId(rs.getLong("id"));
+                    rh.setReceiptId(rs.getLong("receipt_id"));
+                    rh.setFromStatus(rs.getString("from_status"));
+                    rh.setToStatus(rs.getString("to_status"));
+                    rh.setChangedBy(rs.getLong("changed_by"));
+                    rh.setChangedAt(rs.getTimestamp("changed_at"));
+                    rh.setNotes(rs.getString("notes"));
+                    
+                    User u = new User();
+                    u.setId(rs.getLong("changed_by"));
+                    u.setFullName(rs.getString("updater_name"));
+                    u.setUsername(rs.getString("updater_username"));
+                    rh.setUpdater(u);
+                    
+                    history.add(rh);
+                }
+            }
+        }
+        return history;
+    }
+
     public void insertWithDetails(Receipt receipt) throws SQLException {
         Connection conn = null;
         try {
@@ -129,7 +164,7 @@ public class ReceiptDAO {
                 ps.setString(1, receipt.getReceiptCode());
                 ps.setLong(2, receipt.getSupplierId());
                 ps.setLong(3, receipt.getCreatedBy());
-                ps.setString(4, receipt.getStatus() == null ? "COMPLETED" : receipt.getStatus());
+                ps.setString(4, receipt.getStatus() == null ? "DRAFT" : receipt.getStatus());
                 ps.setString(5, receipt.getNotes());
                 ps.executeUpdate();
 
@@ -142,7 +177,18 @@ public class ReceiptDAO {
                 }
             }
 
-            // 2. Insert Receipt Details and update Inventory
+            // 1b. Insert initial history entry
+            String sqlInsertHistory = "INSERT INTO receipt_history (receipt_id, from_status, to_status, changed_by, notes) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement ps = conn.prepareStatement(sqlInsertHistory)) {
+                ps.setLong(1, receipt.getId());
+                ps.setNull(2, java.sql.Types.VARCHAR);
+                ps.setString(3, receipt.getStatus() == null ? "DRAFT" : receipt.getStatus());
+                ps.setLong(4, receipt.getCreatedBy());
+                ps.setString(5, "Tạo mới phiếu nhập kho");
+                ps.executeUpdate();
+            }
+
+            // 2. Insert Receipt Details and update Inventory if status is COMPLETED
             String sqlDetail = "INSERT INTO receipt_details (receipt_id, product_id, quantity) VALUES (?, ?, ?)";
             String sqlUpdateInv = "UPDATE inventories SET quantity_in_stock = quantity_in_stock + ? WHERE product_id = ?";
             
@@ -155,12 +201,16 @@ public class ReceiptDAO {
                     psDetail.setInt(3, detail.getQuantity());
                     psDetail.addBatch();
                     
-                    psInv.setInt(1, detail.getQuantity());
-                    psInv.setLong(2, detail.getProductId());
-                    psInv.addBatch();
+                    if ("COMPLETED".equals(receipt.getStatus())) {
+                        psInv.setInt(1, detail.getQuantity());
+                        psInv.setLong(2, detail.getProductId());
+                        psInv.addBatch();
+                    }
                 }
                 psDetail.executeBatch();
-                psInv.executeBatch();
+                if ("COMPLETED".equals(receipt.getStatus())) {
+                    psInv.executeBatch();
+                }
             }
 
             conn.commit();
@@ -174,5 +224,186 @@ public class ReceiptDAO {
                 try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ex) { ex.printStackTrace(); }
             }
         }
+    }
+
+    public void updateStatus(long id, String newStatus) throws SQLException {
+        updateStatus(id, newStatus, 1L);
+    }
+
+    public void updateStatus(long id, String newStatus, long userId) throws SQLException {
+        Connection conn = null;
+        try {
+            conn = DBConfig.getConnection();
+            conn.setAutoCommit(false);
+            
+            // 1. Get current status
+            String currentStatus = null;
+            String sqlSelect = "SELECT status FROM receipts WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sqlSelect)) {
+                ps.setLong(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        currentStatus = rs.getString("status");
+                    }
+                }
+            }
+            
+            if (currentStatus == null) {
+                throw new SQLException("Receipt not found with id: " + id);
+            }
+            
+            // 2. Update status
+            String sqlUpdateStatus = "UPDATE receipts SET status = ? WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sqlUpdateStatus)) {
+                ps.setString(1, newStatus);
+                ps.setLong(2, id);
+                ps.executeUpdate();
+            }
+
+            // 2b. Insert history
+            String sqlInsertHistory = "INSERT INTO receipt_history (receipt_id, from_status, to_status, changed_by, notes) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement ps = conn.prepareStatement(sqlInsertHistory)) {
+                ps.setLong(1, id);
+                ps.setString(2, currentStatus);
+                ps.setString(3, newStatus);
+                ps.setLong(4, userId);
+                
+                String note = "Cập nhật trạng thái từ " + currentStatus + " sang " + newStatus;
+                ps.setString(5, note);
+                ps.executeUpdate();
+            }
+            
+            // 3. Update inventory if transitioning to COMPLETED from another status
+            if ("COMPLETED".equals(newStatus) && !"COMPLETED".equals(currentStatus)) {
+                List<ReceiptDetail> details = getDetailsByReceiptId(id);
+                String sqlUpdateInv = "UPDATE inventories SET quantity_in_stock = quantity_in_stock + ? WHERE product_id = ?";
+                try (PreparedStatement psInv = conn.prepareStatement(sqlUpdateInv)) {
+                    for (ReceiptDetail d : details) {
+                        psInv.setInt(1, d.getQuantity());
+                        psInv.setLong(2, d.getProductId());
+                        psInv.addBatch();
+                    }
+                    psInv.executeBatch();
+                }
+            }
+            
+            conn.commit();
+        } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
+        }
+    }
+
+    public List<Receipt> findPaginated(int page, int limit, String search, String statusVal) throws SQLException {
+        List<Receipt> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT r.*, s.name as supplier_name, u.full_name as creator_name " +
+            "FROM receipts r " +
+            "INNER JOIN suppliers s ON r.supplier_id = s.id " +
+            "INNER JOIN users u ON r.created_by = u.id WHERE 1=1 "
+        );
+        
+        List<Object> params = new ArrayList<>();
+        
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append("AND (r.receipt_code LIKE ? OR s.name LIKE ? OR u.full_name LIKE ?) ");
+            String searchPattern = "%" + search.trim() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+        
+        if (statusVal != null && !statusVal.trim().isEmpty() && !"ALL".equals(statusVal)) {
+            if ("PROCESSING".equals(statusVal)) {
+                sql.append("AND (r.status = 'APPROVED' OR r.status = 'RECEIVING') ");
+            } else {
+                sql.append("AND r.status = ? ");
+                params.add(statusVal);
+            }
+        }
+        
+        sql.append("ORDER BY r.created_at DESC LIMIT ? OFFSET ?");
+        int offset = (page - 1) * limit;
+        params.add(limit);
+        params.add(offset);
+        
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Receipt r = new Receipt();
+                    r.setId(rs.getLong("id"));
+                    r.setReceiptCode(rs.getString("receipt_code"));
+                    r.setSupplierId(rs.getLong("supplier_id"));
+                    r.setCreatedBy(rs.getLong("created_by"));
+                    r.setStatus(rs.getString("status"));
+                    r.setNotes(rs.getString("notes"));
+                    r.setCreatedAt(rs.getTimestamp("created_at"));
+                    
+                    Supplier s = new Supplier();
+                    s.setId(rs.getLong("supplier_id"));
+                    s.setName(rs.getString("supplier_name"));
+                    r.setSupplier(s);
+                    
+                    User u = new User();
+                    u.setId(rs.getLong("created_by"));
+                    u.setFullName(rs.getString("creator_name"));
+                    r.setCreator(u);
+                    
+                    list.add(r);
+                }
+            }
+        }
+        return list;
+    }
+
+    public int count(String search, String statusVal) throws SQLException {
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(*) " +
+            "FROM receipts r " +
+            "INNER JOIN suppliers s ON r.supplier_id = s.id " +
+            "INNER JOIN users u ON r.created_by = u.id WHERE 1=1 "
+        );
+        
+        List<Object> params = new ArrayList<>();
+        
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append("AND (r.receipt_code LIKE ? OR s.name LIKE ? OR u.full_name LIKE ?) ");
+            String searchPattern = "%" + search.trim() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+        
+        if (statusVal != null && !statusVal.trim().isEmpty() && !"ALL".equals(statusVal)) {
+            if ("PROCESSING".equals(statusVal)) {
+                sql.append("AND (r.status = 'APPROVED' OR r.status = 'RECEIVING') ");
+            } else {
+                sql.append("AND r.status = ? ");
+                params.add(statusVal);
+            }
+        }
+        
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
     }
 }
