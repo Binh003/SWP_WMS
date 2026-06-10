@@ -10,16 +10,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bb02d8ec-4e0d-4ea3-9060-dd64b04a364d" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/admin/brands.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/jsp/admin/brands.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/admin/product-lines.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/jsp/admin/product-lines.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/admin/suppliers.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/jsp/admin/suppliers.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/java/controller/BrandServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/controller/BrandServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/java/controller/ProductLineServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/controller/ProductLineServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/java/controller/SupplierServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/controller/SupplierServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/jsp/admin/brands.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/brands.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/jsp/admin/product-lines.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/product-lines.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/jsp/admin/suppliers.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/suppliers.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,30 +40,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "TomEE Server.TomEE 10.1.55.executor": "Run",
-    "TomEE Server.Unnamed.executor": "Run",
-    "Tomcat Server.Tomcat 10.1.55.executor": "Run",
-    "git-widget-placeholder": "minh",
-    "ignore.virus.scanning.warn.message": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "D:/SP_SWP/Binh-Phase 1-5/SWP_WMS/WarehouseManagementSystem(WMS)",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Artifacts",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.applicationServers",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;TomEE Server.TomEE 10.1.55.executor&quot;: &quot;Run&quot;,
+    &quot;TomEE Server.Unnamed.executor&quot;: &quot;Run&quot;,
+    &quot;Tomcat Server.Tomcat 10.1.55.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/SP_SWP/Binh-Phase 1-5/SWP_WMS/WarehouseManagementSystem(WMS)&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Artifacts&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.applicationServers&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="Tomcat 10.1.55" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 10.1.55" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
       <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/wms" />
@@ -189,6 +181,8 @@
       <workItem from="1780993221586" duration="351000" />
       <workItem from="1781018908863" duration="1299000" />
       <workItem from="1781026536426" duration="1010000" />
+      <workItem from="1781031257184" duration="441000" />
+      <workItem from="1781056008576" duration="750000" />
     </task>
     <servers />
   </component>
