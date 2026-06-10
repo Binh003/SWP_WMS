@@ -273,46 +273,57 @@
       </table>
     </div>
 
-    <!-- Pagination Container -->
-    <div class="pagination-container">
-      <div class="pagination-info">
-        Hiển thị <span style="font-weight: 700; color: var(--text-primary);">${totalCount == 0 ? 0 : (currentPage - 1) * pageSize + 1}</span> - <span style="font-weight: 700; color: var(--text-primary);">${(currentPage * pageSize) > totalCount ? totalCount : (currentPage * pageSize)}</span> trong số <span style="font-weight: 700; color: var(--text-primary);">${totalCount}</span> tài khoản
+    <!-- Pagination Toolbar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1.5px solid var(--card-border); flex-wrap: wrap; gap: 16px;">
+      <div style="font-size: 14px; color: var(--text-secondary); font-weight: 600;">
+        Hiển thị 
+        <c:choose>
+          <c:when test="${totalCount == 0}">0</c:when>
+          <c:otherwise>${(currentPage - 1) * pageSize + 1}</c:otherwise>
+        </c:choose>
+        đến 
+        <c:choose>
+          <c:when test="${currentPage * pageSize > totalCount}">${totalCount}</c:when>
+          <c:otherwise>${currentPage * pageSize}</c:otherwise>
+        </c:choose>
+        trong số <strong>${totalCount}</strong> tài khoản
       </div>
+
       <div style="display: flex; align-items: center; gap: 16px;">
+        <!-- Limit selector -->
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 13.5px; color: var(--text-secondary);">Hiển thị:</span>
-          <select id="pag-size" class="page-size-selector" onchange="changePageSize(this.value)">
+          <span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số dòng:</span>
+          <select id="pag-size" onchange="changePageSize(this.value)" style="padding: 6px 12px; border: 1.5px solid var(--card-border); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer;">
             <option value="5" ${pageSize == 5 ? 'selected' : ''}>5</option>
             <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
             <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
             <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
           </select>
         </div>
-        <div id="pag-controls" class="pagination-controls">
-          <button class="pagination-btn" ${currentPage == 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">&larr;</button>
+
+        <!-- Pagination Buttons -->
+        <div style="display: flex; gap: 6px;">
+          <button onclick="changePage(1)" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang đầu">
+            &laquo;
+          </button>
           
-          <c:set var="startPage" value="${currentPage - 2 < 1 ? 1 : currentPage - 2}"/>
-          <c:set var="endPage" value="${currentPage + 2 > totalPages ? totalPages : currentPage + 2}"/>
-          
-          <c:if test="${startPage > 1}">
-            <button class="pagination-btn" onclick="changePage(1)">1</button>
-            <c:if test="${startPage > 2}">
-              <span style="color: var(--text-secondary); padding: 0 4px;">...</span>
-            </c:if>
-          </c:if>
-          
-          <c:forEach var="p" begin="${startPage}" end="${endPage}">
-            <button class="pagination-btn ${p == currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>
+          <button onclick="changePage(${currentPage - 1})" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang trước">
+            &lsaquo;
+          </button>
+
+          <c:forEach var="p" begin="${currentPage - 2 < 1 ? 1 : currentPage - 2}" end="${currentPage + 2 > totalPages ? totalPages : currentPage + 2}">
+            <button onclick="changePage(${p})" class="pagination-btn ${p == currentPage ? 'pagination-btn--active' : ''}">
+              ${p}
+            </button>
           </c:forEach>
-          
-          <c:if test="${endPage < totalPages}">
-            <c:if test="${endPage < totalPages - 1}">
-              <span style="color: var(--text-secondary); padding: 0 4px;">...</span>
-            </c:if>
-            <button class="pagination-btn" onclick="changePage(${totalPages})">${totalPages}</button>
-          </c:if>
-          
-          <button class="pagination-btn" ${currentPage == totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">&rarr;</button>
+
+          <button onclick="changePage(${currentPage + 1})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang sau">
+            &rsaquo;
+          </button>
+
+          <button onclick="changePage(${totalPages})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang cuối">
+            &raquo;
+          </button>
         </div>
       </div>
     </div>
@@ -396,71 +407,37 @@
     background: rgba(4, 138, 191, 0.02) !important;
   }
 
-  /* Pagination Styling */
-  .pagination-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1.5px solid var(--card-border);
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-  .pagination-info {
-    font-size: 14px;
-    color: var(--text-secondary);
-  }
-  .pagination-controls {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+  /* Pagination Buttons styling */
   .pagination-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    padding: 0 8px;
-    border: 1.5px solid var(--card-border);
-    border-radius: 8px;
-    background: #ffffff;
-    color: var(--text-primary);
-    font-size: 14px;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 6px;
+    font-size: 13px;
     font-weight: 600;
+    border: 1.5px solid var(--card-border);
+    background: #ffffff;
+    color: var(--text-secondary);
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s;
   }
   .pagination-btn:hover:not(:disabled) {
     border-color: var(--primary-color);
     color: var(--primary-color);
     background: rgba(4, 138, 191, 0.02);
   }
-  .pagination-btn.active {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    color: #ffffff;
+  .pagination-btn--active {
+    background: var(--primary-color) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-color) !important;
   }
   .pagination-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     background: #f8fafc;
-  }
-  .page-size-selector {
-    padding: 8px 12px;
-    border: 1.5px solid var(--card-border);
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    outline: none;
-    background: #ffffff;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .page-size-selector:focus {
-    border-color: var(--primary-color);
   }
 
   /* Premium Modal Style */

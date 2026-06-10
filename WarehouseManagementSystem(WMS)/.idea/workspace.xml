@@ -11,15 +11,8 @@
   <component name="ChangeListManager">
     <list default="true" id="bb02d8ec-4e0d-4ea3-9060-dd64b04a364d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/admin/brands.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/jsp/admin/brands.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/admin/product-lines.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/jsp/admin/product-lines.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/jsp/admin/suppliers.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/out/jsp/admin/suppliers.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/java/controller/BrandServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/controller/BrandServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/java/controller/ProductLineServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/controller/ProductLineServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/java/controller/SupplierServlet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/controller/SupplierServlet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/jsp/admin/brands.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/brands.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/jsp/admin/product-lines.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/product-lines.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/jsp/admin/suppliers.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/suppliers.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/jsp/admin/roles.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/roles.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/jsp/admin/users.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/jsp/admin/users.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,10 +49,10 @@
     "TomEE Server.TomEE 10.1.55.executor": "Run",
     "TomEE Server.Unnamed.executor": "Run",
     "Tomcat Server.Tomcat 10.1.55.executor": "Run",
-    "git-widget-placeholder": "minh",
+    "git-widget-placeholder": "vinh",
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "D:/SP_SWP/Binh-Phase 1-5/SWP_WMS/WarehouseManagementSystem(WMS)",
+    "last_opened_file_path": "D:/SP_SWP/Vinh-Phase4.1/SWP_WMS/WarehouseManagementSystem(WMS)",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -75,6 +68,7 @@
   <component name="RunManager">
     <configuration name="Tomcat 10.1.55" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 10.1.55" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
       <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/wms" />
+      <option name="BROWSER_ID" value="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" />
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
         <artifact name="WMS">
@@ -189,6 +183,7 @@
       <workItem from="1780993221586" duration="351000" />
       <workItem from="1781018908863" duration="1299000" />
       <workItem from="1781026536426" duration="1010000" />
+      <workItem from="1781056933378" duration="310000" />
     </task>
     <servers />
   </component>
