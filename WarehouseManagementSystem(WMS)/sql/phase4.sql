@@ -48,6 +48,18 @@ CREATE TABLE IF NOT EXISTS shipment_details (
     CONSTRAINT fk_wms_sd_product FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
+CREATE TABLE IF NOT EXISTS receipt_history (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  receipt_id BIGINT NOT NULL,
+  from_status VARCHAR(50),
+  to_status VARCHAR(50) NOT NULL,
+  changed_by BIGINT NOT NULL,
+  changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  notes TEXT,
+  CONSTRAINT fk_rh_receipt FOREIGN KEY (receipt_id) REFERENCES receipts(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rh_user FOREIGN KEY (changed_by) REFERENCES users(id)
+);
+
 -- ==========================================
 -- 3. Quyền hạn (Permissions)
 -- ==========================================

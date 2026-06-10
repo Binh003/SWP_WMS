@@ -13,6 +13,30 @@
     </div>
   </div>
 
+  <!-- Cảnh báo hết hàng / sắp hết hàng (Safety Stock Alert) -->
+  <c:set var="lowStockCount" value="0"/>
+  <c:forEach var="i" items="${inventories}">
+    <c:if test="${i.quantityInStock <= i.minStockLevel}">
+      <c:set var="lowStockCount" value="${lowStockCount + 1}"/>
+    </c:if>
+  </c:forEach>
+  
+  <c:if test="${lowStockCount > 0}">
+    <div class="premium-card" style="padding: 20px; margin-bottom: 24px; background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+      <div style="display: flex; align-items: center; gap: 12px; color: #d97706;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <div>
+          <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #92400e;">Cảnh báo tồn kho dưới mức tối thiểu (Safety Stock Alert)</h4>
+          <p style="margin: 4px 0 0 0; font-size: 13px; color: #b45309;">Hiện tại đang có <strong>${lowStockCount}</strong> sản phẩm trong danh sách này sắp hết hàng hoặc đã hết hàng. Vui lòng tạo yêu cầu nhập kho để bổ sung hàng.</p>
+        </div>
+      </div>
+    </div>
+  </c:if>
+
   <div class="premium-card" style="padding: 24px; margin-bottom: 24px;">
     <form action="${pageContext.request.contextPath}/admin/inventories" method="get" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
       <div style="flex: 1; min-width: 200px;">
@@ -91,12 +115,22 @@
               </td>
               <c:if test="${currentUser.hasPermission('INVENTORY_WRITE')}">
               <td style="text-align: center;">
-                <a href="${pageContext.request.contextPath}/admin/inventories?action=edit&productId=${i.productId}" class="action-btn" title="Chỉnh sửa cấu hình tồn kho">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                  </svg>
-                </a>
+                <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                  <a href="${pageContext.request.contextPath}/admin/inventories?action=edit&productId=${i.productId}" class="action-btn" title="Chỉnh sửa cấu hình tồn kho">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                  </a>
+                  <c:if test="${i.quantityInStock <= i.minStockLevel}">
+                    <a href="${pageContext.request.contextPath}/admin/receipts?action=create&productId=${i.productId}" class="action-btn" title="Tạo Yêu Cầu Nhập Kho" style="border-color: #fcd34d; background: #fffbeb; color: #d97706;">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                    </a>
+                  </c:if>
+                </div>
               </td>
               </c:if>
             </tr>

@@ -43,8 +43,8 @@ public class UserService {
 
     public List<Role> resolveRoles(String[] codes) throws SQLException {
         if (codes == null || codes.length == 0) {
-            Role viewer = roleDAO.findByCode("VIEWER");
-            return viewer == null ? List.of() : List.of(viewer);
+            Role defaultRole = roleDAO.findByCode("WAREHOUSE STAFF");
+            return defaultRole == null ? List.of() : List.of(defaultRole);
         }
 
         List<Role> roles = new ArrayList<>();

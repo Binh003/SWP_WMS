@@ -17,6 +17,7 @@ public class Receipt {
     private Supplier supplier;
     private User creator;
     private List<ReceiptDetail> details = new ArrayList<>();
+    private List<ReceiptHistory> history = new ArrayList<>();
 
     public Receipt() {}
 
@@ -49,4 +50,7 @@ public class Receipt {
 
     public List<ReceiptDetail> getDetails() { return details; }
     public void setDetails(List<ReceiptDetail> details) { this.details = details; }
+
+    public List<ReceiptHistory> getHistory() { return history; }
+    public void setHistory(List<ReceiptHistory> history) { this.history = history; }
 }
