@@ -114,22 +114,33 @@
                 <fmt:formatDate value="${i.lastUpdated}" pattern="dd/MM/yyyy HH:mm"/>
               </td>
               <c:if test="${currentUser.hasPermission('INVENTORY_WRITE')}">
-              <td style="text-align: center;">
-                <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
-                  <a href="${pageContext.request.contextPath}/admin/inventories?action=edit&productId=${i.productId}" class="action-btn" title="Chỉnh sửa cấu hình tồn kho">
+              <td style="text-align: center; vertical-align: middle;">
+                <div class="action-dropdown-container" style="position: relative; display: inline-block; text-align: left;">
+                  <button type="button" class="action-dropdown-trigger" onclick="toggleDropdown(this)" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                      <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="5" r="1.5"></circle>
+                      <circle cx="12" cy="19" r="1.5"></circle>
                     </svg>
-                  </a>
-                  <c:if test="${i.quantityInStock <= i.minStockLevel}">
-                    <a href="${pageContext.request.contextPath}/admin/receipts?action=create&productId=${i.productId}" class="action-btn" title="Tạo Yêu Cầu Nhập Kho" style="border-color: #fcd34d; background: #fffbeb; color: #d97706;">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </button>
+                  <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 180px; overflow: hidden; animation: slideDown 0.15s ease-out;">
+                    <a href="${pageContext.request.contextPath}/admin/inventories?action=edit&productId=${i.productId}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                       </svg>
+                      Cấu hình tồn kho
                     </a>
-                  </c:if>
+                    <c:if test="${i.quantityInStock <= i.minStockLevel}">
+                      <a href="${pageContext.request.contextPath}/admin/receipts?action=create&productId=${i.productId}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: #d97706; text-decoration: none; transition: background 0.15s; background: #fffbeb;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="12" y1="5" x2="12" y2="19"></line>
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Tạo yêu cầu nhập kho
+                      </a>
+                    </c:if>
+                  </div>
                 </div>
               </td>
               </c:if>
@@ -196,14 +207,16 @@
 </div>
 
 <style>
-  .premium-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .premium-table { width: 100%; min-width: 1000px; border-collapse: collapse; margin-top: 8px; }
   .premium-table th { background: #f8fafc; color: var(--text-secondary); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; padding: 16px 20px; border-bottom: 1.5px solid var(--card-border); text-align: left; white-space: nowrap; }
-  .premium-table td { padding: 16px 20px; border-bottom: 1px solid var(--card-border); font-size: 14px; color: var(--text-primary); vertical-align: middle; }
+  .premium-table td { padding: 16px 20px; border-bottom: 1px solid var(--card-border); font-size: 14px; color: var(--text-primary); vertical-align: middle; white-space: nowrap; }
   .user-row { transition: opacity 0.2s ease, transform 0.2s ease; }
   .premium-table tr.user-row:hover td { background: rgba(4, 138, 191, 0.02); }
   .premium-tag--manager { background: rgba(245, 158, 11, 0.1) !important; color: #d97706 !important; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; }
-  .action-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
-  .action-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(4, 138, 191, 0.02); }
+  .action-dropdown-item { color: var(--text-primary); }
+  .action-dropdown-item:hover { background-color: #f1f5f9; }
+  .action-dropdown-trigger:hover { border-color: var(--primary-color) !important; color: var(--primary-color) !important; background: rgba(4, 138, 191, 0.02) !important; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
   select:focus, input:focus { border-color: var(--primary-color) !important; box-shadow: 0 0 0 3px rgba(4, 138, 191, 0.1) !important; }
   
   /* Pagination Buttons styling */
@@ -244,6 +257,22 @@
 </style>
 
 <script>
+  function toggleDropdown(button) {
+    event.stopPropagation();
+    const currentMenu = button.nextElementSibling;
+    document.querySelectorAll('.action-dropdown-menu').forEach(menu => {
+      if (menu !== currentMenu) menu.style.display = 'none';
+    });
+    currentMenu.style.display = currentMenu.style.display === 'block' ? 'none' : 'block';
+  }
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('.action-dropdown-container')) {
+      document.querySelectorAll('.action-dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
+      });
+    }
+  });
+
   const urlParams = new URLSearchParams(window.location.search);
   
   function goToPage(page) {

@@ -122,9 +122,6 @@ public class InventoryServlet extends HttpServlet {
         long productId = Long.parseLong(WebUtil.param(request, "productId"));
         Inventory i = inventoryDAO.getByProductId(productId);
         if (i != null) {
-            // Note: quantityInStock should ideally be updated via Inbound/Outbound, 
-            // but we might allow admin to override it or set initial stock.
-            i.setQuantityInStock(Integer.parseInt(WebUtil.param(request, "quantityInStock")));
             i.setMinStockLevel(Integer.parseInt(WebUtil.param(request, "minStockLevel")));
             
             inventoryDAO.update(i);
