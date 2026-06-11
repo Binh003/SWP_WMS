@@ -20,6 +20,8 @@
     <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">Cập nhật Tồn kho</h2>
     <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">Cấu hình mức cảnh báo tồn kho tối thiểu cho SKU <strong>${inventory.product.sku}</strong></p>
   </div>
+
+  <!-- Row 1: Product details and Current Stock side by side -->
   <div class="inventory-grid-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
     <!-- Product Details Panel -->
     <div class="premium-card" style="padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">

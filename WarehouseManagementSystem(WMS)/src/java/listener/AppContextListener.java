@@ -57,6 +57,11 @@ public class AppContextListener implements ServletContextListener {
                 stmt.execute("UPDATE users SET status = 'ACTIVE' WHERE enabled = 1");
                 stmt.execute("UPDATE users SET status = 'LOCKED' WHERE enabled = 0");
             }
+            try {
+                stmt.execute("SELECT invoice_image FROM receipts LIMIT 1");
+            } catch (SQLException e) {
+                stmt.execute("ALTER TABLE receipts ADD COLUMN invoice_image VARCHAR(255) NULL");
+            }
         }
 
         PermissionDAO permissionDAO = new PermissionDAO();

@@ -11,6 +11,8 @@ public class Receipt {
     private Long createdBy;
     private String status;
     private String notes;
+    private String invoiceImage;
+    private String receivingImages;
     private Timestamp createdAt;
 
     // Extended properties
@@ -38,6 +40,24 @@ public class Receipt {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public String getInvoiceImage() { return invoiceImage; }
+    public void setInvoiceImage(String invoiceImage) { this.invoiceImage = invoiceImage; }
+
+    public String getReceivingImages() { return receivingImages; }
+    public void setReceivingImages(String receivingImages) { this.receivingImages = receivingImages; }
+
+    public List<String> getReceivingImagesList() {
+        List<String> list = new ArrayList<>();
+        if (receivingImages != null && !receivingImages.trim().isEmpty()) {
+            for (String img : receivingImages.split(",")) {
+                if (!img.trim().isEmpty()) {
+                    list.add(img.trim());
+                }
+            }
+        }
+        return list;
+    }
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }

@@ -27,6 +27,8 @@ public class ReceiptDAO {
                 r.setCreatedBy(rs.getLong("created_by"));
                 r.setStatus(rs.getString("status"));
                 r.setNotes(rs.getString("notes"));
+                r.setInvoiceImage(rs.getString("invoice_image"));
+                r.setReceivingImages(rs.getString("receiving_images"));
                 r.setCreatedAt(rs.getTimestamp("created_at"));
                 
                 Supplier s = new Supplier();
@@ -64,6 +66,8 @@ public class ReceiptDAO {
                     r.setCreatedBy(rs.getLong("created_by"));
                     r.setStatus(rs.getString("status"));
                     r.setNotes(rs.getString("notes"));
+                    r.setInvoiceImage(rs.getString("invoice_image"));
+                    r.setReceivingImages(rs.getString("receiving_images"));
                     r.setCreatedAt(rs.getTimestamp("created_at"));
                     
                     Supplier s = new Supplier();
@@ -159,13 +163,15 @@ public class ReceiptDAO {
             conn.setAutoCommit(false);
 
             // 1. Insert Receipt
-            String sqlReceipt = "INSERT INTO receipts (receipt_code, supplier_id, created_by, status, notes) VALUES (?, ?, ?, ?, ?)";
+            String sqlReceipt = "INSERT INTO receipts (receipt_code, supplier_id, created_by, status, notes, invoice_image, receiving_images) VALUES (?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(sqlReceipt, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setString(1, receipt.getReceiptCode());
                 ps.setLong(2, receipt.getSupplierId());
                 ps.setLong(3, receipt.getCreatedBy());
                 ps.setString(4, receipt.getStatus() == null ? "DRAFT" : receipt.getStatus());
                 ps.setString(5, receipt.getNotes());
+                ps.setString(6, receipt.getInvoiceImage());
+                ps.setString(7, receipt.getReceivingImages());
                 ps.executeUpdate();
 
                 try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -231,6 +237,10 @@ public class ReceiptDAO {
     }
 
     public void updateStatus(long id, String newStatus, long userId) throws SQLException {
+        updateStatus(id, newStatus, null, userId);
+    }
+
+    public void updateStatus(long id, String newStatus, String receivingImages, long userId) throws SQLException {
         Connection conn = null;
         try {
             conn = DBConfig.getConnection();
@@ -253,10 +263,21 @@ public class ReceiptDAO {
             }
             
             // 2. Update status
-            String sqlUpdateStatus = "UPDATE receipts SET status = ? WHERE id = ?";
+            String sqlUpdateStatus;
+            if (receivingImages != null) {
+                sqlUpdateStatus = "UPDATE receipts SET status = ?, receiving_images = ? WHERE id = ?";
+            } else {
+                sqlUpdateStatus = "UPDATE receipts SET status = ? WHERE id = ?";
+            }
             try (PreparedStatement ps = conn.prepareStatement(sqlUpdateStatus)) {
-                ps.setString(1, newStatus);
-                ps.setLong(2, id);
+                if (receivingImages != null) {
+                    ps.setString(1, newStatus);
+                    ps.setString(2, receivingImages);
+                    ps.setLong(3, id);
+                } else {
+                    ps.setString(1, newStatus);
+                    ps.setLong(2, id);
+                }
                 ps.executeUpdate();
             }
 
@@ -300,7 +321,7 @@ public class ReceiptDAO {
         }
     }
 
-    public List<Receipt> findPaginated(int page, int limit, String search, String statusVal) throws SQLException {
+    public List<Receipt> findPaginated(int page, int limit, String search, String statusVal, Long supplierId, Long creatorId, String startDate, String endDate) throws SQLException {
         List<Receipt> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT r.*, s.name as supplier_name, u.full_name as creator_name " +
@@ -327,6 +348,26 @@ public class ReceiptDAO {
                 params.add(statusVal);
             }
         }
+
+        if (supplierId != null) {
+            sql.append("AND r.supplier_id = ? ");
+            params.add(supplierId);
+        }
+
+        if (creatorId != null) {
+            sql.append("AND r.created_by = ? ");
+            params.add(creatorId);
+        }
+
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append("AND r.created_at >= ? ");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append("AND r.created_at <= ? ");
+            params.add(endDate.trim() + " 23:59:59");
+        }
         
         sql.append("ORDER BY r.created_at DESC LIMIT ? OFFSET ?");
         int offset = (page - 1) * limit;
@@ -347,6 +388,8 @@ public class ReceiptDAO {
                     r.setCreatedBy(rs.getLong("created_by"));
                     r.setStatus(rs.getString("status"));
                     r.setNotes(rs.getString("notes"));
+                    r.setInvoiceImage(rs.getString("invoice_image"));
+                    r.setReceivingImages(rs.getString("receiving_images"));
                     r.setCreatedAt(rs.getTimestamp("created_at"));
                     
                     Supplier s = new Supplier();
@@ -366,7 +409,7 @@ public class ReceiptDAO {
         return list;
     }
 
-    public int count(String search, String statusVal) throws SQLException {
+    public int count(String search, String statusVal, Long supplierId, Long creatorId, String startDate, String endDate) throws SQLException {
         StringBuilder sql = new StringBuilder(
             "SELECT COUNT(*) " +
             "FROM receipts r " +
@@ -392,6 +435,26 @@ public class ReceiptDAO {
                 params.add(statusVal);
             }
         }
+
+        if (supplierId != null) {
+            sql.append("AND r.supplier_id = ? ");
+            params.add(supplierId);
+        }
+
+        if (creatorId != null) {
+            sql.append("AND r.created_by = ? ");
+            params.add(creatorId);
+        }
+
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append("AND r.created_at >= ? ");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append("AND r.created_at <= ? ");
+            params.add(endDate.trim() + " 23:59:59");
+        }
         
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -405,5 +468,97 @@ public class ReceiptDAO {
             }
         }
         return 0;
+    }
+
+    public List<User> getCreators() throws SQLException {
+        List<User> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT u.id, u.full_name FROM receipts r INNER JOIN users u ON r.created_by = u.id ORDER BY u.full_name";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                User u = new User();
+                u.setId(rs.getLong("id"));
+                u.setFullName(rs.getString("full_name"));
+                list.add(u);
+            }
+        }
+        return list;
+    }
+
+    public void updateInvoiceImage(long id, String invoiceImage) throws SQLException {
+        String sql = "UPDATE receipts SET invoice_image = ? WHERE id = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, invoiceImage);
+            ps.setLong(2, id);
+            ps.executeUpdate();
+        }
+    }
+
+    public void updateReceivingImages(long id, String receivingImages) throws SQLException {
+        String sql = "UPDATE receipts SET receiving_images = ? WHERE id = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, receivingImages);
+            ps.setLong(2, id);
+            ps.executeUpdate();
+        }
+    }
+
+    public void deleteDraft(long id) throws SQLException {
+        Connection conn = null;
+        try {
+            conn = DBConfig.getConnection();
+            conn.setAutoCommit(false);
+
+            // Verify status is DRAFT first to be safe
+            String status = null;
+            String sqlCheck = "SELECT status FROM receipts WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sqlCheck)) {
+                ps.setLong(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        status = rs.getString("status");
+                    }
+                }
+            }
+
+            if (!"DRAFT".equals(status)) {
+                throw new SQLException("Chỉ có thể xóa phiếu ở trạng thái Nháp (DRAFT).");
+            }
+
+            // 1. Delete details
+            String sqlDeleteDetails = "DELETE FROM receipt_details WHERE receipt_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sqlDeleteDetails)) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+
+            // 2. Delete history
+            String sqlDeleteHistory = "DELETE FROM receipt_history WHERE receipt_id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sqlDeleteHistory)) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+
+            // 3. Delete receipt
+            String sqlDeleteReceipt = "DELETE FROM receipts WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sqlDeleteReceipt)) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
+        }
     }
 }

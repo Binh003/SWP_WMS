@@ -89,31 +89,96 @@
   </div>
 
   <!-- Search & Filter Toolbar -->
-  <div style="display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
-    <div style="display: flex; gap: 12px; flex: 1; min-width: 300px; max-width: 500px; position: relative;">
-      <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 16px;">⌕</span>
-      <input type="text" id="receipt-search" placeholder="Tìm kiếm theo Mã phiếu, Nhà cung cấp, Người tạo..." 
-             oninput="filterReceipts()"
-             value="<c:out value="${search}"/>"
-             style="width: 100%; padding: 10px 16px 10px 40px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background: #ffffff;"
-             onfocus="this.style.borderColor='var(--primary-color)';" 
-             onblur="this.style.borderColor='var(--card-border)';"/>
+  <div class="premium-card" style="padding: 20px; margin-bottom: 24px; background: #f8fafc; border: 1.5px solid var(--card-border); border-radius: 12px; display: flex; flex-direction: column; gap: 16px;">
+    <!-- Row 1: Search, Status, Supplier, Creator -->
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+      <!-- Search -->
+      <div style="flex: 2; min-width: 260px; position: relative;">
+        <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 16px;">⌕</span>
+        <input type="text" id="receipt-search" placeholder="Tìm kiếm theo mã phiếu, ghi chú..." 
+               oninput="filterReceipts()"
+               value="<c:out value="${search}"/>"
+               style="width: 100%; padding: 10px 16px 10px 40px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background: #ffffff; box-sizing: border-box;"
+               onfocus="this.style.borderColor='var(--primary-color)';" 
+               onblur="this.style.borderColor='var(--card-border)';"/>
+      </div>
+      
+      <!-- Status -->
+      <div style="flex: 1; min-width: 150px;">
+        <select id="filter-status" onchange="submitFilter()" 
+                style="width: 100%; padding: 10px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
+                onfocus="this.style.borderColor='var(--primary-color)';" 
+                onblur="this.style.borderColor='var(--card-border)';">
+          <option value="ALL" ${selectedStatus == 'ALL' || empty selectedStatus ? 'selected' : ''}>Tất cả trạng thái</option>
+          <option value="DRAFT" ${selectedStatus == 'DRAFT' ? 'selected' : ''}>Nháp</option>
+          <option value="PENDING_APPROVAL" ${selectedStatus == 'PENDING_APPROVAL' ? 'selected' : ''}>Chờ phê duyệt</option>
+          <option value="APPROVED" ${selectedStatus == 'APPROVED' ? 'selected' : ''}>Đã duyệt</option>
+          <option value="RECEIVING" ${selectedStatus == 'RECEIVING' ? 'selected' : ''}>Đang nhận hàng</option>
+          <option value="PROCESSING" ${selectedStatus == 'PROCESSING' ? 'selected' : ''}>Đang thực hiện</option>
+          <option value="COMPLETED" ${selectedStatus == 'COMPLETED' ? 'selected' : ''}>Đã hoàn thành</option>
+          <option value="CANCELLED" ${selectedStatus == 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
+        </select>
+      </div>
+
+      <!-- Supplier -->
+      <div style="flex: 1.5; min-width: 180px;">
+        <select id="filter-supplier" onchange="submitFilter()" 
+                style="width: 100%; padding: 10px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
+                onfocus="this.style.borderColor='var(--primary-color)';" 
+                onblur="this.style.borderColor='var(--card-border)';">
+          <option value="">Tất cả Nhà cung cấp</option>
+          <c:forEach var="s" items="${suppliers}">
+            <option value="${s.id}" ${selectedSupplierId == s.id ? 'selected' : ''}>${s.name}</option>
+          </c:forEach>
+        </select>
+      </div>
+
+      <!-- Creator -->
+      <div style="flex: 1.2; min-width: 160px;">
+        <select id="filter-creator" onchange="submitFilter()" 
+                style="width: 100%; padding: 10px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
+                onfocus="this.style.borderColor='var(--primary-color)';" 
+                onblur="this.style.borderColor='var(--card-border)';">
+          <option value="">Tất cả Người tạo</option>
+          <c:forEach var="c" items="${creators}">
+            <option value="${c.id}" ${selectedCreatorId == c.id ? 'selected' : ''}>${c.fullName}</option>
+          </c:forEach>
+        </select>
+      </div>
     </div>
-    
-    <div style="display: flex; gap: 12px; align-items: center;">
-      <select id="filter-status" onchange="submitFilter()" 
-              style="padding: 10px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s;"
-              onfocus="this.style.borderColor='var(--primary-color)';" 
-              onblur="this.style.borderColor='var(--card-border)';">
-        <option value="ALL" ${selectedStatus == 'ALL' || empty selectedStatus ? 'selected' : ''}>Tất cả trạng thái</option>
-        <option value="DRAFT" ${selectedStatus == 'DRAFT' ? 'selected' : ''}>Nháp</option>
-        <option value="PENDING_APPROVAL" ${selectedStatus == 'PENDING_APPROVAL' ? 'selected' : ''}>Chờ phê duyệt</option>
-        <option value="APPROVED" ${selectedStatus == 'APPROVED' ? 'selected' : ''}>Đã duyệt</option>
-        <option value="RECEIVING" ${selectedStatus == 'RECEIVING' ? 'selected' : ''}>Đang nhận hàng</option>
-        <option value="PROCESSING" ${selectedStatus == 'PROCESSING' ? 'selected' : ''}>Đang thực hiện (Đã duyệt & Đang nhận)</option>
-        <option value="COMPLETED" ${selectedStatus == 'COMPLETED' ? 'selected' : ''}>Đã hoàn thành</option>
-        <option value="CANCELLED" ${selectedStatus == 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
-      </select>
+
+    <!-- Row 2: Date Filters + Reset Button -->
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+      <!-- Start Date -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">Từ ngày:</span>
+        <input type="date" id="filter-start-date" onchange="submitFilter()"
+               value="${startDate}"
+               style="padding: 8px 12px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s;"
+               onfocus="this.style.borderColor='var(--primary-color)';" 
+               onblur="this.style.borderColor='var(--card-border)';"/>
+      </div>
+
+      <!-- End Date -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">Đến ngày:</span>
+        <input type="date" id="filter-end-date" onchange="submitFilter()"
+               value="${endDate}"
+               style="padding: 8px 12px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s;"
+               onfocus="this.style.borderColor='var(--primary-color)';" 
+               onblur="this.style.borderColor='var(--card-border)';"/>
+      </div>
+
+      <!-- Clear Button -->
+      <c:if test="${not empty search || (not empty selectedStatus && selectedStatus != 'ALL') || not empty selectedSupplierId || not empty selectedCreatorId || not empty startDate || not empty endDate}">
+        <div style="margin-left: auto;">
+          <button type="button" onclick="clearAllFilters()" class="premium-btn-outline" style="height: 38px !important; padding: 0 16px; font-size: 13px; color: #ef4444; border-color: rgba(239, 68, 68, 0.3); font-weight: 600; border-radius: 8px; transition: all 0.2s;"
+                  onmouseover="this.style.background='rgba(239, 68, 68, 0.05)';"
+                  onmouseout="this.style.background='transparent';">
+            Xóa bộ lọc
+          </button>
+        </div>
+      </c:if>
     </div>
   </div>
 
@@ -127,7 +192,7 @@
             <th>Ngày tạo</th>
             <th>Người tạo</th>
             <th>Trạng thái</th>
-            <th style="text-align: center; width: 100px;">Chi tiết</th>
+            <th style="text-align: center; width: 100px;">Hành động</th>
           </tr>
         </thead>
         <tbody>
@@ -159,13 +224,38 @@
                   </c:otherwise>
                 </c:choose>
               </td>
-              <td style="text-align: center;">
-                <a href="${pageContext.request.contextPath}/admin/receipts?action=view&id=${r.id}" class="action-btn" title="Xem chi tiết">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                </a>
+              <td style="text-align: center; vertical-align: middle;">
+                <div class="action-dropdown-container" style="position: relative; display: inline-block; text-align: left;">
+                  <button type="button" class="action-dropdown-trigger" onclick="toggleDropdown(this)" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="5" r="1.5"></circle>
+                      <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                  </button>
+                  
+                  <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 160px; overflow: hidden; animation: slideDown 0.15s ease-out;">
+                    <a href="${pageContext.request.contextPath}/admin/receipts?action=view&id=${r.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                      Xem chi tiết
+                    </a>
+                    
+                    <c:if test="${r.status == 'DRAFT'}">
+                      <c:if test="${currentUser.hasPermission('RECEIPT_WRITE')}">
+                        <a href="${pageContext.request.contextPath}/admin/receipts?action=delete&id=${r.id}" class="action-dropdown-item action-dropdown-item--danger" onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu nhập nháp này không? Hành động này không thể hoàn tác.');" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: #ef4444; text-decoration: none; transition: background 0.15s;">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                          </svg>
+                          Xóa phiếu nháp
+                        </a>
+                      </c:if>
+                    </c:if>
+                  </div>
+                </div>
               </td>
             </tr>
           </c:forEach>
@@ -242,8 +332,30 @@
   .user-row { transition: opacity 0.2s ease, transform 0.2s ease; }
   .premium-table tr.user-row:hover td { background: rgba(4, 138, 191, 0.02); }
   .premium-tag--manager { background: rgba(245, 158, 11, 0.1) !important; color: #d97706 !important; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; }
-  .action-btn { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
-  .action-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(4, 138, 191, 0.02); }
+  .action-dropdown-item {
+    color: var(--text-primary);
+  }
+  .action-dropdown-item:hover {
+    background-color: #f1f5f9;
+  }
+  .action-dropdown-item--danger {
+    color: #ef4444 !important;
+  }
+  .action-dropdown-trigger:hover {
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+    background: rgba(4, 138, 191, 0.02) !important;
+  }
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
   
   .stats-card {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -301,11 +413,30 @@
   function submitFilter() {
     const searchVal = document.getElementById("receipt-search").value.trim();
     const statusVal = document.getElementById("filter-status").value;
+    const supplierVal = document.getElementById("filter-supplier").value;
+    const creatorVal = document.getElementById("filter-creator").value;
+    const startDateVal = document.getElementById("filter-start-date").value;
+    const endDateVal = document.getElementById("filter-end-date").value;
     
-    urlParams.set('search', searchVal);
-    urlParams.set('status', statusVal);
+    if (searchVal) urlParams.set('search', searchVal); else urlParams.delete('search');
+    if (statusVal) urlParams.set('status', statusVal); else urlParams.delete('status');
+    if (supplierVal) urlParams.set('supplierId', supplierVal); else urlParams.delete('supplierId');
+    if (creatorVal) urlParams.set('creatorId', creatorVal); else urlParams.delete('creatorId');
+    if (startDateVal) urlParams.set('startDate', startDateVal); else urlParams.delete('startDate');
+    if (endDateVal) urlParams.set('endDate', endDateVal); else urlParams.delete('endDate');
+    
     urlParams.set('page', 1);
-    
+    window.location.search = urlParams.toString();
+  }
+
+  function clearAllFilters() {
+    urlParams.delete('search');
+    urlParams.delete('status');
+    urlParams.delete('supplierId');
+    urlParams.delete('creatorId');
+    urlParams.delete('startDate');
+    urlParams.delete('endDate');
+    urlParams.set('page', 1);
     window.location.search = urlParams.toString();
   }
 
@@ -327,6 +458,33 @@
     urlParams.set('page', 1);
     window.location.search = urlParams.toString();
   }
+
+  function toggleDropdown(button) {
+    event.stopPropagation();
+    const currentMenu = button.nextElementSibling;
+    
+    // Close other dropdowns first
+    document.querySelectorAll('.action-dropdown-menu').forEach(menu => {
+      if (menu !== currentMenu) {
+        menu.style.display = 'none';
+      }
+    });
+    
+    if (currentMenu.style.display === 'block') {
+      currentMenu.style.display = 'none';
+    } else {
+      currentMenu.style.display = 'block';
+    }
+  }
+
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('.action-dropdown-container')) {
+      document.querySelectorAll('.action-dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
+      });
+    }
+  });
 
   document.addEventListener("DOMContentLoaded", function() {
     // Focus search input end of text if there is text

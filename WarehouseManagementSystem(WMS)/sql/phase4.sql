@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS receipts (
     created_by BIGINT NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'COMPLETED', -- DRAFT, COMPLETED, CANCELLED
     notes TEXT,
+    invoice_image VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_wms_receipts_code UNIQUE (receipt_code),
     CONSTRAINT fk_wms_receipts_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id),
