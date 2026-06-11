@@ -74,7 +74,7 @@
               <td><span class="premium-tag premium-tag--manager" style="font-family: monospace;">${p.sku}</span></td>
               <td>
                 <strong style="color: var(--text-primary); font-size: 14px;">${p.name}</strong><br/>
-                <small style="color: var(--text-secondary);">${p.description}</small>
+                <small style="color: var(--text-secondary); display: block; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${p.description}">${p.description}</small>
               </td>
               <td>
                 <span style="font-weight: 600;">${p.productLine.name}</span><br/>
@@ -190,9 +190,9 @@
 </div>
 
 <style>
-  .premium-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .premium-table { width: 100%; min-width: 1000px; border-collapse: collapse; margin-top: 8px; }
   .premium-table th { background: #f8fafc; color: var(--text-secondary); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; padding: 16px 20px; border-bottom: 1.5px solid var(--card-border); text-align: left; white-space: nowrap; }
-  .premium-table td { padding: 16px 20px; border-bottom: 1px solid var(--card-border); font-size: 14px; color: var(--text-primary); vertical-align: middle; }
+  .premium-table td { padding: 16px 20px; border-bottom: 1px solid var(--card-border); font-size: 14px; color: var(--text-primary); vertical-align: middle; white-space: nowrap; }
   .user-row { transition: opacity 0.2s ease, transform 0.2s ease; }
   .premium-table tr.user-row:hover td { background: rgba(4, 138, 191, 0.02); }
   .action-dropdown-item { color: var(--text-primary); }
