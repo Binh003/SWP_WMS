@@ -24,6 +24,59 @@
     </c:if>
   </div>
 
+  <!-- Search & Filter Toolbar -->
+  <div class="premium-card" style="padding: 20px; margin-bottom: 24px; background: #f8fafc; border: 1.5px solid var(--card-border); border-radius: 12px; display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+      <!-- Search -->
+      <div style="flex: 2; min-width: 260px; position: relative;">
+        <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 16px;">⌕</span>
+        <input type="text" id="product-search" placeholder="Tìm kiếm theo SKU, tên sản phẩm..." 
+               oninput="filterProducts()"
+               value="<c:out value="${search}"/>"
+               style="width: 100%; padding: 10px 16px 10px 40px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background: #ffffff; box-sizing: border-box;"
+               onfocus="this.style.borderColor='var(--primary-color)';" 
+               onblur="this.style.borderColor='var(--card-border)';"/>
+      </div>
+      
+      <!-- Brand -->
+      <div style="flex: 1; min-width: 180px;">
+        <select id="filter-brand" onchange="submitFilter()" 
+                style="width: 100%; padding: 10px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
+                onfocus="this.style.borderColor='var(--primary-color)';" 
+                onblur="this.style.borderColor='var(--card-border)';">
+          <option value="">Tất cả Thương hiệu</option>
+          <c:forEach var="b" items="${brands}">
+            <option value="${b.id}" ${selectedBrandId == b.id ? 'selected' : ''}>${b.name}</option>
+          </c:forEach>
+        </select>
+      </div>
+
+      <!-- Product Line -->
+      <div style="flex: 1.2; min-width: 200px;">
+        <select id="filter-product-line" onchange="submitFilter()" 
+                style="width: 100%; padding: 10px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
+                onfocus="this.style.borderColor='var(--primary-color)';" 
+                onblur="this.style.borderColor='var(--card-border)';">
+          <option value="">Tất cả Dòng sản phẩm</option>
+          <c:forEach var="pl" items="${productLines}">
+            <option value="${pl.id}" ${selectedProductLineId == pl.id ? 'selected' : ''}>${pl.brand.name} - ${pl.name}</option>
+          </c:forEach>
+        </select>
+      </div>
+
+      <!-- Clear filters -->
+      <c:if test="${not empty search || not empty selectedBrandId || not empty selectedProductLineId}">
+        <div>
+          <button type="button" onclick="clearAllFilters()" class="premium-btn-outline" style="height: 38px !important; padding: 0 16px; font-size: 13px; color: #ef4444; border-color: rgba(239, 68, 68, 0.3); font-weight: 600; border-radius: 8px; transition: all 0.2s;"
+                  onmouseover="this.style.background='rgba(239, 68, 68, 0.05)';"
+                  onmouseout="this.style.background='transparent';">
+            Xóa bộ lọc
+          </button>
+        </div>
+      </c:if>
+    </div>
+  </div>
+
   <div class="premium-card" style="padding: 32px;">
     <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--card-border);">
       <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
@@ -111,17 +164,13 @@
                         </svg>
                         Chỉnh sửa
                       </a>
-                      <form method="post" action="${pageContext.request.contextPath}/admin/products" style="margin: 0;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">
-                        <input type="hidden" name="action" value="delete"/>
-                        <input type="hidden" name="id" value="${p.id}"/>
-                        <button type="submit" class="action-dropdown-item action-dropdown-item--danger" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                          </svg>
-                          Xóa
-                        </button>
-                      </form>
+                      <button type="button" onclick="openDeleteModal('${p.id}', '<c:out value="${p.name}"/>', '<c:out value="${p.sku}"/>')" class="action-dropdown-item action-dropdown-item--danger" style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        Xóa
+                      </button>
                     </c:if>
                   </div>
                 </div>
@@ -198,6 +247,7 @@
   .action-dropdown-item { color: var(--text-primary); }
   .action-dropdown-item:hover { background-color: #f1f5f9; }
   .action-dropdown-item--danger { color: #ef4444 !important; }
+  .action-dropdown-item--danger:hover { background-color: #fef2f2 !important; }
   .premium-tag--manager { background: rgba(245, 158, 11, 0.1) !important; color: #d97706 !important; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; }
   .premium-tag--admin { background: rgba(30, 64, 175, 0.1) !important; color: #1e40af !important; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; }
   .action-dropdown-trigger:hover { border-color: var(--primary-color) !important; color: var(--primary-color) !important; background: rgba(4, 138, 191, 0.02) !important; }
@@ -256,6 +306,35 @@
 
   const urlParams = new URLSearchParams(window.location.search);
   
+  let searchTimeout;
+  function filterProducts() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      submitFilter();
+    }, 500);
+  }
+
+  function submitFilter() {
+    const searchVal = document.getElementById("product-search").value.trim();
+    const brandVal = document.getElementById("filter-brand").value;
+    const productLineVal = document.getElementById("filter-product-line").value;
+    
+    if (searchVal) urlParams.set('search', searchVal); else urlParams.delete('search');
+    if (brandVal) urlParams.set('brandId', brandVal); else urlParams.delete('brandId');
+    if (productLineVal) urlParams.set('productLineId', productLineVal); else urlParams.delete('productLineId');
+    
+    urlParams.set('page', 1);
+    window.location.search = urlParams.toString();
+  }
+
+  function clearAllFilters() {
+    urlParams.delete('search');
+    urlParams.delete('brandId');
+    urlParams.delete('productLineId');
+    urlParams.set('page', 1);
+    window.location.search = urlParams.toString();
+  }
+
   function goToPage(page) {
     urlParams.set('page', page);
     window.location.search = urlParams.toString();
@@ -266,6 +345,98 @@
     urlParams.set('page', 1);
     window.location.search = urlParams.toString();
   }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // Focus search input end of text if there is text
+    const searchInput = document.getElementById("product-search");
+    if (searchInput && searchInput.value) {
+      searchInput.focus();
+      const val = searchInput.value;
+      searchInput.value = '';
+      searchInput.value = val;
+    }
+
+    // Modal background close
+    const modal = document.getElementById('delete-modal');
+    if (modal) {
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          closeDeleteModal();
+        }
+      });
+    }
+  });
+
+  function openDeleteModal(productId, productName, productSku) {
+    // Hide dropdown menu first
+    document.querySelectorAll('.action-dropdown-menu').forEach(menu => {
+      menu.style.display = 'none';
+    });
+
+    document.getElementById('delete-product-id').value = productId;
+    document.getElementById('delete-product-name').textContent = productName;
+    document.getElementById('delete-product-sku').textContent = productSku;
+    
+    const modal = document.getElementById('delete-modal');
+    const card = modal.querySelector('.modal-card');
+    
+    modal.style.display = 'flex';
+    // Reflow
+    modal.offsetHeight;
+    modal.style.opacity = '1';
+    card.style.transform = 'scale(1)';
+  }
+
+  function closeDeleteModal() {
+    const modal = document.getElementById('delete-modal');
+    const card = modal.querySelector('.modal-card');
+    
+    modal.style.opacity = '0';
+    card.style.transform = 'scale(0.95)';
+    
+    setTimeout(() => {
+      modal.style.display = 'none';
+    }, 200);
+  }
 </script>
+
+<!-- Premium Modal for Delete Confirmation -->
+<div id="delete-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease-out;">
+  <div class="modal-card" style="background: #ffffff; border-radius: 16px; width: 440px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); border: 1px solid var(--card-border); transform: scale(0.95); transition: transform 0.2s ease-out; overflow: hidden;">
+    <!-- Header -->
+    <div style="padding: 24px 24px 12px 24px; display: flex; align-items: center; gap: 16px;">
+      <div style="width: 44px; height: 44px; border-radius: 50%; background: #fef2f2; display: flex; align-items: center; justify-content: center; color: #ef4444; flex-shrink: 0;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <div>
+        <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--text-primary);">Xác nhận xóa sản phẩm</h3>
+        <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary);">Hành động này không thể hoàn tác.</p>
+      </div>
+    </div>
+    
+    <!-- Body -->
+    <div style="padding: 12px 24px 24px 24px; font-size: 14px; color: var(--text-secondary); line-height: 1.5;">
+      Bạn có chắc chắn muốn xóa sản phẩm <strong id="delete-product-name" style="color: var(--text-primary);"></strong> (SKU: <span id="delete-product-sku" style="font-family: monospace; font-weight: 600;"></span>) khỏi hệ thống?
+    </div>
+    
+    <!-- Footer / Actions -->
+    <div style="background: #f8fafc; padding: 16px 24px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--card-border);">
+      <button type="button" onclick="closeDeleteModal()" class="premium-btn-outline" style="height: 38px !important; padding: 0 16px !important; font-size: 13px !important; border-radius: 8px !important;">
+        Hủy bỏ
+      </button>
+      <form id="delete-form" method="post" action="${pageContext.request.contextPath}/admin/products" style="margin: 0;">
+        <input type="hidden" name="action" value="delete"/>
+        <input type="hidden" name="id" id="delete-product-id" value=""/>
+        <button type="submit" class="premium-btn-primary" style="height: 38px !important; padding: 0 16px !important; font-size: 13px !important; border-radius: 8px !important; background: #ef4444 !important; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2) !important;">
+          Xác nhận xóa
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>

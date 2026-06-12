@@ -3,6 +3,7 @@ package controller;
 import dao.ProductDAO;
 import dao.ProductLineDAO;
 import dao.InventoryDAO;
+import dao.BrandDAO;
 import model.Product;
 import model.Inventory;
 import util.WebUtil;
@@ -24,6 +25,7 @@ public class ProductServlet extends HttpServlet {
     private final ProductDAO productDAO = new ProductDAO();
     private final ProductLineDAO productLineDAO = new ProductLineDAO();
     private final InventoryDAO inventoryDAO = new InventoryDAO();
+    private final BrandDAO brandDAO = new BrandDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -78,8 +80,21 @@ public class ProductServlet extends HttpServlet {
         String search = request.getParameter("search");
         if (search != null) search = search.trim();
         
-        java.util.List<Product> products = productDAO.findPaginated(page, limit, search);
-        int totalItems = productDAO.count(search);
+        String brandIdParam = request.getParameter("brandId");
+        String productLineIdParam = request.getParameter("productLineId");
+        
+        Long brandId = null;
+        Long productLineId = null;
+        
+        if (brandIdParam != null && !brandIdParam.isEmpty()) {
+            try { brandId = Long.parseLong(brandIdParam); } catch (NumberFormatException ignored) {}
+        }
+        if (productLineIdParam != null && !productLineIdParam.isEmpty()) {
+            try { productLineId = Long.parseLong(productLineIdParam); } catch (NumberFormatException ignored) {}
+        }
+        
+        java.util.List<Product> products = productDAO.findPaginated(page, limit, search, brandId, productLineId);
+        int totalItems = productDAO.count(search, brandId, productLineId);
         int totalPages = (int) Math.ceil((double) totalItems / limit);
         
         request.setAttribute("products", products);
@@ -88,6 +103,10 @@ public class ProductServlet extends HttpServlet {
         request.setAttribute("currentPage", page);
         request.setAttribute("limit", limit);
         request.setAttribute("search", search);
+        request.setAttribute("selectedBrandId", brandId);
+        request.setAttribute("selectedProductLineId", productLineId);
+        request.setAttribute("brands", brandDAO.getAll());
+        request.setAttribute("productLines", productLineDAO.getAll());
         
         request.getRequestDispatcher("/jsp/admin/products.jsp").forward(request, response);
     }

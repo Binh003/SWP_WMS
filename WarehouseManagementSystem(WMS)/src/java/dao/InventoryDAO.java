@@ -5,6 +5,7 @@ import model.Inventory;
 import model.Product;
 import model.ProductLine;
 import model.Brand;
+import model.InventoryHistory;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -190,5 +191,59 @@ public class InventoryDAO {
             }
         }
         return 0;
+    }
+
+    public List<InventoryHistory> getUpdateHistoryByProductId(long productId) throws SQLException {
+        List<InventoryHistory> historyList = new ArrayList<>();
+        String sql = "SELECT " +
+                     "    'IMPORT' as transaction_type, " +
+                     "    r.id as transaction_id, " +
+                     "    r.receipt_code as transaction_code, " +
+                     "    r.created_at as transaction_date, " +
+                     "    rd.quantity as quantity, " +
+                     "    s.name as partner_name, " +
+                     "    u.full_name as creator_name, " +
+                     "    r.notes as notes " +
+                     "FROM receipt_details rd " +
+                     "INNER JOIN receipts r ON rd.receipt_id = r.id " +
+                     "INNER JOIN suppliers s ON r.supplier_id = s.id " +
+                     "INNER JOIN users u ON r.created_by = u.id " +
+                     "WHERE rd.product_id = ? AND r.status = 'COMPLETED' " +
+                     "UNION ALL " +
+                     "SELECT " +
+                     "    'EXPORT' as transaction_type, " +
+                     "    sh.id as transaction_id, " +
+                     "    sh.shipment_code as transaction_code, " +
+                     "    sh.created_at as transaction_date, " +
+                     "    sd.quantity as quantity, " +
+                     "    sh.destination as partner_name, " +
+                     "    u.full_name as creator_name, " +
+                     "    sh.notes as notes " +
+                     "FROM shipment_details sd " +
+                     "INNER JOIN shipments sh ON sd.shipment_id = sh.id " +
+                     "INNER JOIN users u ON sh.created_by = u.id " +
+                     "WHERE sd.product_id = ? AND sh.status = 'COMPLETED' " +
+                     "ORDER BY transaction_date DESC";
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, productId);
+            ps.setLong(2, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    InventoryHistory h = new InventoryHistory();
+                    h.setTransactionType(rs.getString("transaction_type"));
+                    h.setTransactionId(rs.getLong("transaction_id"));
+                    h.setTransactionCode(rs.getString("transaction_code"));
+                    h.setTransactionDate(rs.getTimestamp("transaction_date"));
+                    h.setQuantity(rs.getInt("quantity"));
+                    h.setPartnerName(rs.getString("partner_name"));
+                    h.setCreatorName(rs.getString("creator_name"));
+                    h.setNotes(rs.getString("notes"));
+                    historyList.add(h);
+                }
+            }
+        }
+        return historyList;
     }
 }

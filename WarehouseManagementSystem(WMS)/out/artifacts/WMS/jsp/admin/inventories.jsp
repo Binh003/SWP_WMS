@@ -61,8 +61,15 @@
           </c:forEach>
         </select>
       </div>
-      <div>
-        <button type="submit" class="premium-btn-primary" style="height: 40px; padding: 0 20px; font-size: 14px;">Lọc / Tìm kiếm</button>
+      <div style="display: flex; gap: 8px;">
+        <button type="submit" class="premium-btn-primary" style="height: 40px; padding: 0 20px; font-size: 14px; cursor: pointer;">Lọc / Tìm kiếm</button>
+        <c:if test="${not empty param.sku || not empty param.brandId || not empty param.productLineId}">
+          <a href="${pageContext.request.contextPath}/admin/inventories" class="premium-btn-outline" style="display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 20px; font-size: 14px; text-decoration: none; color: #ef4444; border-color: rgba(239, 68, 68, 0.3); border-radius: 8px; font-weight: 600; box-sizing: border-box; transition: all 0.2s;"
+             onmouseover="this.style.background='rgba(239, 68, 68, 0.05)';"
+             onmouseout="this.style.background='transparent';">
+            Xóa bộ lọc
+          </a>
+        </c:if>
       </div>
     </form>
   </div>
@@ -78,17 +85,21 @@
             <th style="text-align: right;">Tồn tối thiểu</th>
             <th>Trạng thái</th>
             <th>Cập nhật lần cuối</th>
-            <c:if test="${currentUser.hasPermission('INVENTORY_WRITE')}">
             <th style="text-align: center; width: 100px;">Hành động</th>
-            </c:if>
           </tr>
         </thead>
         <tbody>
           <c:forEach var="i" items="${inventories}">
             <tr class="user-row">
-              <td><span class="premium-tag premium-tag--manager" style="font-family: monospace;">${i.product.sku}</span></td>
               <td>
-                <strong style="color: var(--text-primary); font-size: 14px;">${i.product.name}</strong><br/>
+                <a href="${pageContext.request.contextPath}/admin/inventories?action=detail&productId=${i.productId}" style="text-decoration: none;">
+                  <span class="premium-tag premium-tag--manager" style="font-family: monospace; cursor: pointer;">${i.product.sku}</span>
+                </a>
+              </td>
+              <td>
+                <a href="${pageContext.request.contextPath}/admin/inventories?action=detail&productId=${i.productId}" style="text-decoration: none;">
+                  <strong style="color: var(--primary-color); font-size: 14px; cursor: pointer;">${i.product.name}</strong>
+                </a><br/>
                 <small style="color: var(--text-secondary);">${i.product.productLine.brand.name} - ${i.product.productLine.name}</small>
               </td>
               <td class="${i.quantityInStock <= i.minStockLevel ? 'stock-low' : 'stock-ok'}" style="text-align: right; font-weight: 700; font-size: 16px;">
@@ -113,7 +124,6 @@
               <td style="color: var(--text-secondary); font-size: 13px;">
                 <fmt:formatDate value="${i.lastUpdated}" pattern="dd/MM/yyyy HH:mm"/>
               </td>
-              <c:if test="${currentUser.hasPermission('INVENTORY_WRITE')}">
               <td style="text-align: center; vertical-align: middle;">
                 <div class="action-dropdown-container" style="position: relative; display: inline-block; text-align: left;">
                   <button type="button" class="action-dropdown-trigger" onclick="toggleDropdown(this)" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
@@ -124,14 +134,24 @@
                     </svg>
                   </button>
                   <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 180px; overflow: hidden; animation: slideDown 0.15s ease-out;">
-                    <a href="${pageContext.request.contextPath}/admin/inventories?action=edit&productId=${i.productId}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
+                    <a href="${pageContext.request.contextPath}/admin/inventories?action=detail&productId=${i.productId}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
                       </svg>
-                      Cấu hình tồn kho
+                      Xem chi tiết
                     </a>
-                    <c:if test="${i.quantityInStock <= i.minStockLevel}">
+                    <c:if test="${currentUser.hasPermission('INVENTORY_WRITE')}">
+                      <a href="${pageContext.request.contextPath}/admin/inventories?action=edit&productId=${i.productId}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                          <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Cấu hình tồn kho
+                      </a>
+                    </c:if>
+                    <c:if test="${currentUser.hasPermission('RECEIPT_WRITE') && i.quantityInStock <= i.minStockLevel}">
                       <a href="${pageContext.request.contextPath}/admin/receipts?action=create&productId=${i.productId}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: #d97706; text-decoration: none; transition: background 0.15s; background: #fffbeb;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -143,7 +163,6 @@
                   </div>
                 </div>
               </td>
-              </c:if>
             </tr>
           </c:forEach>
         </tbody>

@@ -4,6 +4,7 @@ import dao.InventoryDAO;
 import dao.ProductLineDAO;
 import dao.BrandDAO;
 import model.Inventory;
+import model.InventoryHistory;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -32,6 +33,7 @@ public class InventoryServlet extends HttpServlet {
             WebUtil.consumeFlash(request);
             switch (action) {
                 case "edit" -> showEditForm(request, response);
+                case "detail" -> showInventoryDetail(request, response);
                 default -> listInventories(request, response);
             }
         } catch (SQLException ex) {
@@ -99,6 +101,23 @@ public class InventoryServlet extends HttpServlet {
         }
         request.setAttribute("inventory", inventory);
         request.getRequestDispatcher("/jsp/admin/inventory-form.jsp").forward(request, response);
+    }
+
+    private void showInventoryDetail(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, ServletException, IOException {
+        long productId = Long.parseLong(WebUtil.param(request, "productId"));
+        Inventory inventory = inventoryDAO.getByProductId(productId);
+        if (inventory == null) {
+            WebUtil.setFlashError(request, "Không tìm thấy thông tin tồn kho cho sản phẩm này");
+            WebUtil.redirect(request, response, "/admin/inventories");
+            return;
+        }
+        
+        List<InventoryHistory> historyList = inventoryDAO.getUpdateHistoryByProductId(productId);
+        
+        request.setAttribute("inventory", inventory);
+        request.setAttribute("historyList", historyList);
+        request.getRequestDispatcher("/jsp/admin/inventory-detail.jsp").forward(request, response);
     }
 
     @Override

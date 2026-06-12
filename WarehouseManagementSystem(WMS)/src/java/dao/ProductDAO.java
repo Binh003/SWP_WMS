@@ -152,18 +152,24 @@ public class ProductDAO {
         return p;
     }
 
-    public List<Product> findPaginated(int page, int limit, String search) throws SQLException {
+    public List<Product> findPaginated(int page, int limit, String search, Long brandId, Long productLineId) throws SQLException {
         List<Product> list = new ArrayList<>();
         int offset = (page - 1) * limit;
         String sql = "SELECT p.*, pl.name as product_line_name, pl.code as product_line_code, " +
                      "b.id as brand_id, b.name as brand_name, b.code as brand_code " +
                      "FROM products p " +
                      "INNER JOIN product_lines pl ON p.product_line_id = pl.id " +
-                     "INNER JOIN brands b ON pl.brand_id = b.id ";
+                     "INNER JOIN brands b ON pl.brand_id = b.id WHERE 1=1 ";
         
         boolean hasSearch = search != null && !search.trim().isEmpty();
         if (hasSearch) {
-            sql += "WHERE p.sku LIKE ? OR p.name LIKE ? ";
+            sql += "AND (p.sku LIKE ? OR p.name LIKE ?) ";
+        }
+        if (brandId != null) {
+            sql += "AND b.id = ? ";
+        }
+        if (productLineId != null) {
+            sql += "AND pl.id = ? ";
         }
         
         sql += "ORDER BY p.name ASC LIMIT ? OFFSET ?";
@@ -175,6 +181,12 @@ public class ProductDAO {
                 String searchPattern = "%" + search.trim() + "%";
                 ps.setString(paramIndex++, searchPattern);
                 ps.setString(paramIndex++, searchPattern);
+            }
+            if (brandId != null) {
+                ps.setLong(paramIndex++, brandId);
+            }
+            if (productLineId != null) {
+                ps.setLong(paramIndex++, productLineId);
             }
             ps.setInt(paramIndex++, limit);
             ps.setInt(paramIndex++, offset);
@@ -188,19 +200,34 @@ public class ProductDAO {
         return list;
     }
 
-    public int count(String search) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM products p ";
+    public int count(String search, Long brandId, Long productLineId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM products p " +
+                     "INNER JOIN product_lines pl ON p.product_line_id = pl.id " +
+                     "INNER JOIN brands b ON pl.brand_id = b.id WHERE 1=1 ";
         boolean hasSearch = search != null && !search.trim().isEmpty();
         if (hasSearch) {
-            sql += "WHERE p.sku LIKE ? OR p.name LIKE ? ";
+            sql += "AND (p.sku LIKE ? OR p.name LIKE ?) ";
+        }
+        if (brandId != null) {
+            sql += "AND b.id = ? ";
+        }
+        if (productLineId != null) {
+            sql += "AND pl.id = ? ";
         }
         
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
+            int paramIndex = 1;
             if (hasSearch) {
                 String searchPattern = "%" + search.trim() + "%";
-                ps.setString(1, searchPattern);
-                ps.setString(2, searchPattern);
+                ps.setString(paramIndex++, searchPattern);
+                ps.setString(paramIndex++, searchPattern);
+            }
+            if (brandId != null) {
+                ps.setLong(paramIndex++, brandId);
+            }
+            if (productLineId != null) {
+                ps.setLong(paramIndex++, productLineId);
             }
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
