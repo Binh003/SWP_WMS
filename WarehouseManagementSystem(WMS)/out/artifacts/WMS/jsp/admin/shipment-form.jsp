@@ -5,6 +5,16 @@
 <jsp:include page="../includes/dashboard-layout-start.jsp"/>
 
 <div class="subpage-container">
+  <div style="margin-bottom: 16px;">
+    <a href="${pageContext.request.contextPath}/admin/shipments" class="back-link" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text-secondary); font-weight: 600; font-size: 14px; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Quay lại danh sách
+    </a>
+  </div>
+
   <div class="subpage-header" style="margin-bottom: 24px;">
     <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0;">Tạo Phiếu Xuất Kho</h2>
     <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">Xuất hàng hóa. Hệ thống sẽ kiểm tra số lượng tồn kho trước khi cho phép xuất.</p>
@@ -29,7 +39,9 @@
       <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden; margin-top: 8px;">
         <div style="background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
           <span>Chi tiết sản phẩm xuất</span>
-          <button type="button" onclick="addRow()" class="premium-btn-secondary" style="height: 32px; padding: 0 12px; font-size: 13px;">+ Thêm dòng</button>
+          <button type="button" onclick="addRow()" style="height: 32px; padding: 0 16px; font-size: 13px; font-weight: 600; color: var(--primary-color); border: 1.5px solid var(--primary-color); background: rgba(4, 138, 191, 0.05); border-radius: 8px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" onmouseover="this.style.background='rgba(4, 138, 191, 0.1)'" onmouseout="this.style.background='rgba(4, 138, 191, 0.05)'">
+            + Thêm dòng
+          </button>
         </div>
         <div style="padding: 16px; display: flex; flex-direction: column; gap: 16px;" id="productRows">
           
@@ -53,8 +65,11 @@
               <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: block;">Số lượng <span style="color: #ef4444;">*</span></label>
               <input type="number" name="quantity[]" required min="1" value="1" style="width: 100%; padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 8px; font-size: 14px; outline: none; background: white;">
             </div>
-            <button type="button" onclick="removeRow(this)" class="action-btn" style="color: #ef4444; border-color: #fecaca; background: #fef2f2; width: 42px; height: 42px; display: none;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <button type="button" onclick="removeRow(this)" style="color: #ef4444; border: 1.5px solid #fecaca; background: #fef2f2; width: 38px; height: 38px; border-radius: 8px; cursor: pointer; display: none; align-items: center; justify-content: center; transition: all 0.2s; padding: 0; box-sizing: border-box;" onmouseover="this.style.background='#fee2e2'; this.style.borderColor='#ef4444'" onmouseout="this.style.background='#fef2f2'; this.style.borderColor='#fecaca'">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
             </button>
           </div>
 
@@ -66,12 +81,16 @@
         <textarea id="notes" name="notes" rows="3" placeholder="Nhập ghi chú cho phiếu xuất kho này..." style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary); resize: vertical;"></textarea>
       </div>
 
+      <input type="hidden" id="statusField" name="status" value="DRAFT"/>
       <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; border-top: 1px solid var(--card-border); padding-top: 24px;">
-        <a href="${pageContext.request.contextPath}/admin/shipments" class="premium-btn-secondary" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: 44px; padding: 0 24px; box-sizing: border-box;">
+        <a href="${pageContext.request.contextPath}/admin/shipments" class="premium-btn-outline" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: 44px; padding: 0 24px; box-sizing: border-box;">
           Hủy bỏ
         </a>
-        <button type="submit" class="premium-btn-primary" style="height: 44px; padding: 0 24px;">
-          Lưu Phiếu Xuất
+        <button type="submit" onclick="document.getElementById('statusField').value='DRAFT'" class="premium-btn-outline" style="height: 44px; padding: 0 24px; cursor: pointer;">
+          Lưu Nháp
+        </button>
+        <button type="submit" onclick="document.getElementById('statusField').value='PENDING'" class="premium-btn-primary" style="height: 44px; padding: 0 24px; cursor: pointer;">
+          Gửi Yêu Cầu Duyệt
         </button>
       </div>
     </form>
@@ -80,7 +99,6 @@
 
 <style>
   input:focus, select:focus, textarea:focus { border-color: var(--primary-color) !important; background-color: #ffffff !important; box-shadow: 0 0 0 4px rgba(4, 138, 191, 0.1) !important; }
-  .action-btn:hover { background: #fee2e2 !important; border-color: #ef4444 !important; }
   select option[disabled] { color: #9ca3af; }
 </style>
 

@@ -11,11 +11,14 @@ public class Shipment {
     private Long createdBy;
     private String status;
     private String notes;
+    private String deliveryNoteImage;
+    private String shippingImages;
     private Timestamp createdAt;
 
     // Extended properties
     private User creator;
     private List<ShipmentDetail> details = new ArrayList<>();
+    private List<ShipmentHistory> history = new ArrayList<>();
 
     public Shipment() {}
 
@@ -37,6 +40,24 @@ public class Shipment {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
 
+    public String getDeliveryNoteImage() { return deliveryNoteImage; }
+    public void setDeliveryNoteImage(String deliveryNoteImage) { this.deliveryNoteImage = deliveryNoteImage; }
+
+    public String getShippingImages() { return shippingImages; }
+    public void setShippingImages(String shippingImages) { this.shippingImages = shippingImages; }
+
+    public List<String> getShippingImagesList() {
+        List<String> list = new ArrayList<>();
+        if (shippingImages != null && !shippingImages.trim().isEmpty()) {
+            for (String img : shippingImages.split(",")) {
+                if (!img.trim().isEmpty()) {
+                    list.add(img.trim());
+                }
+            }
+        }
+        return list;
+    }
+
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 
@@ -45,4 +66,7 @@ public class Shipment {
 
     public List<ShipmentDetail> getDetails() { return details; }
     public void setDetails(List<ShipmentDetail> details) { this.details = details; }
+
+    public List<ShipmentHistory> getHistory() { return history; }
+    public void setHistory(List<ShipmentHistory> history) { this.history = history; }
 }

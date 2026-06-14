@@ -17,6 +17,7 @@ public class AppContextListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         try {
             seedRbac();
         } catch (SQLException ex) {
