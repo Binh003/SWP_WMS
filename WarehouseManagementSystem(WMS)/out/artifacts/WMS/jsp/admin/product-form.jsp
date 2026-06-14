@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="isEdit" value="${not empty product}"/>
 <c:set var="pageTitle" value="${isEdit ? 'Sửa Sản phẩm' : 'Thêm Sản phẩm'}"/>
 <c:set var="activePage" value="products" scope="request"/>
@@ -24,7 +25,7 @@
   </div>
 
   <div class="premium-card" style="padding: 32px; max-width: 800px;">
-    <form action="${pageContext.request.contextPath}/admin/products" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 24px;">
+    <form id="productForm" action="${pageContext.request.contextPath}/admin/products" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 24px;">
       <input type="hidden" name="action" value="${isEdit ? 'update' : 'create'}"/>
       <c:if test="${isEdit}">
         <input type="hidden" name="id" value="${product.id}"/>
@@ -59,8 +60,16 @@
         </div>
 
         <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-          <label for="price" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Giá bán</label>
-          <input type="number" id="price" name="price" value="${isEdit ? product.price : ''}" placeholder="Nhập giá bán (VNĐ)" style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary);" />
+          <label for="price-display" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Giá bán</label>
+          <c:if test="${isEdit && not empty product.price}">
+            <fmt:formatNumber value="${product.price}" pattern="0" var="formattedPrice"/>
+          </c:if>
+          <div style="position: relative; display: flex; align-items: center; width: 100%;">
+            <input type="text" id="price-display" placeholder="Nhập giá bán" style="width: 100%; padding: 12px 48px 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary); box-sizing: border-box;" />
+            <span style="position: absolute; right: 16px; color: var(--text-secondary); font-weight: 600; font-size: 14px; pointer-events: none;">đ</span>
+          </div>
+          <input type="hidden" id="price" name="price" value="${isEdit && not empty product.price ? formattedPrice : ''}" />
+          <span id="priceError" style="color: #ef4444; font-size: 13px; margin-top: 2px; display: none;">Giá bán không hợp lệ (chỉ nhập số nguyên hệ 10 và không âm)</span>
         </div>
       </div>
 
@@ -294,6 +303,62 @@
           }
         }
       }, false);
+    }
+
+    // Sell price VND formatting and validation
+    const priceDisplay = document.getElementById('price-display');
+    const priceHidden = document.getElementById('price');
+    const priceError = document.getElementById('priceError');
+    const form = document.getElementById('productForm');
+
+    function formatVND(value) {
+      const cleanValue = value.replace(/\D/g, '');
+      if (cleanValue === '') return '';
+      return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    if (priceDisplay && priceHidden) {
+      // Format initial value on load
+      if (priceHidden.value) {
+        priceDisplay.value = formatVND(priceHidden.value);
+      }
+
+      priceDisplay.addEventListener('input', function(e) {
+        let cursorPosition = this.selectionStart;
+        const originalLength = this.value.length;
+        
+        const cleanValue = this.value.replace(/\D/g, '');
+        priceHidden.value = cleanValue;
+        
+        const formatted = formatVND(cleanValue);
+        this.value = formatted;
+        
+        const newLength = this.value.length;
+        cursorPosition = cursorPosition + (newLength - originalLength);
+        this.setSelectionRange(cursorPosition, cursorPosition);
+      });
+    }
+
+    if (form && priceHidden && priceDisplay && priceError) {
+      form.addEventListener('submit', function(e) {
+        const val = priceHidden.value.trim();
+        if (val !== '') {
+          if (!/^\d+$/.test(val)) {
+            e.preventDefault();
+            priceError.style.display = 'block';
+            priceDisplay.focus();
+            return;
+          }
+          const priceNum = parseInt(val, 10);
+          if (priceNum < 0) {
+            e.preventDefault();
+            priceError.style.display = 'block';
+            priceDisplay.focus();
+            return;
+          }
+        }
+        priceError.style.display = 'none';
+      });
     }
   });
 </script>

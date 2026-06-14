@@ -104,14 +104,15 @@
       Cấu hình Cảnh báo Tồn kho
     </h3>
 
-    <form action="${pageContext.request.contextPath}/admin/inventories" method="post" style="display: flex; flex-direction: column; gap: 24px;">
+    <form id="inventoryForm" action="${pageContext.request.contextPath}/admin/inventories" method="post" style="display: flex; flex-direction: column; gap: 24px;">
       <input type="hidden" name="action" value="update"/>
       <input type="hidden" name="productId" value="${inventory.productId}"/>
 
       <div class="form-group" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 0;">
         <label for="minStockLevel" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Mức tồn kho tối thiểu (Cảnh báo) <span style="color: #ef4444;">*</span></label>
         <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; line-height: 1.4;">Hệ thống sẽ tự động hiển thị nhãn "Sắp hết hàng" hoặc gửi cảnh báo nếu số lượng tồn kho giảm xuống bằng hoặc dưới mức này.</div>
-        <input type="number" id="minStockLevel" name="minStockLevel" value="${inventory.minStockLevel}" required min="0" style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 16px; outline: none; transition: all 0.2s; color: var(--text-primary);" />
+        <input type="number" id="minStockLevel" name="minStockLevel" value="${inventory.minStockLevel}" required min="0" step="1" style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 16px; outline: none; transition: all 0.2s; color: var(--text-primary);" />
+        <span id="minStockLevelError" style="color: #ef4444; font-size: 13px; margin-top: 2px; display: none;">Mức tồn kho tối thiểu không hợp lệ (chỉ nhập số nguyên không âm)</span>
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; border-top: 1px solid var(--card-border); padding-top: 24px;">
@@ -134,5 +135,57 @@
     }
   }
 </style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const minStockInput = document.getElementById('minStockLevel');
+    const minStockError = document.getElementById('minStockLevelError');
+    const form = document.getElementById('inventoryForm');
+
+    if (minStockInput) {
+      minStockInput.addEventListener('keydown', function(e) {
+        if (['e', 'E', '+', '-', '.', ','].includes(e.key)) {
+          e.preventDefault();
+        }
+      });
+
+      minStockInput.addEventListener('paste', function(e) {
+        const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+        if (!/^\d+$/.test(pasteData)) {
+          e.preventDefault();
+        }
+      });
+    }
+
+    if (form && minStockInput && minStockError) {
+      form.addEventListener('submit', function(e) {
+        const val = minStockInput.value.trim();
+        if (val === '') {
+          e.preventDefault();
+          minStockError.innerText = 'Vui lòng nhập mức tồn kho tối thiểu';
+          minStockError.style.display = 'block';
+          minStockInput.focus();
+          return;
+        }
+        if (!/^\d+$/.test(val)) {
+          e.preventDefault();
+          minStockError.innerText = 'Mức tồn kho tối thiểu không hợp lệ (chỉ nhập số nguyên không âm)';
+          minStockError.style.display = 'block';
+          minStockInput.focus();
+          return;
+        }
+        const num = parseInt(val, 10);
+        if (num < 0) {
+          e.preventDefault();
+          minStockError.innerText = 'Mức tồn kho tối thiểu không được nhỏ hơn 0';
+          minStockError.style.display = 'block';
+          minStockInput.focus();
+          return;
+        }
+        minStockError.style.display = 'none';
+      });
+    }
+  });
+</script>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>

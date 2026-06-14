@@ -141,10 +141,21 @@ public class InventoryServlet extends HttpServlet {
         long productId = Long.parseLong(WebUtil.param(request, "productId"));
         Inventory i = inventoryDAO.getByProductId(productId);
         if (i != null) {
-            i.setMinStockLevel(Integer.parseInt(WebUtil.param(request, "minStockLevel")));
-            
-            inventoryDAO.update(i);
-            WebUtil.setFlashSuccess(request, "Đã cập nhật cấu hình tồn kho");
+            try {
+                int minStockLevel = Integer.parseInt(WebUtil.param(request, "minStockLevel"));
+                if (minStockLevel < 0) {
+                    WebUtil.setFlashError(request, "Lỗi: Mức tồn kho tối thiểu không được nhỏ hơn 0!");
+                    WebUtil.redirect(request, response, "/admin/inventories?action=edit&productId=" + productId);
+                    return;
+                }
+                i.setMinStockLevel(minStockLevel);
+                inventoryDAO.update(i);
+                WebUtil.setFlashSuccess(request, "Đã cập nhật cấu hình tồn kho");
+            } catch (NumberFormatException e) {
+                WebUtil.setFlashError(request, "Lỗi: Mức tồn kho tối thiểu không hợp lệ!");
+                WebUtil.redirect(request, response, "/admin/inventories?action=edit&productId=" + productId);
+                return;
+            }
         }
         WebUtil.redirect(request, response, "/admin/inventories");
     }

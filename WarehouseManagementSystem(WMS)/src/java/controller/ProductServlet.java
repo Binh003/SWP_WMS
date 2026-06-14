@@ -167,7 +167,19 @@ public class ProductServlet extends HttpServlet {
         
         String priceStr = WebUtil.param(request, "price");
         if (priceStr != null && !priceStr.isEmpty()) {
-            p.setPrice(Double.parseDouble(priceStr));
+            try {
+                double price = Double.parseDouble(priceStr);
+                if (price < 0) {
+                    WebUtil.setFlashError(request, "Lỗi: Giá bán không được nhỏ hơn 0!");
+                    WebUtil.redirect(request, response, "/admin/products?action=create");
+                    return;
+                }
+                p.setPrice(price);
+            } catch (NumberFormatException e) {
+                WebUtil.setFlashError(request, "Lỗi: Giá bán không hợp lệ!");
+                WebUtil.redirect(request, response, "/admin/products?action=create");
+                return;
+            }
         }
         p.setDescription(WebUtil.param(request, "description"));
         p.setImageUrl(handleFileUpload(request));
@@ -206,7 +218,19 @@ public class ProductServlet extends HttpServlet {
             
             String priceStr = WebUtil.param(request, "price");
             if (priceStr != null && !priceStr.isEmpty()) {
-                p.setPrice(Double.parseDouble(priceStr));
+                try {
+                    double price = Double.parseDouble(priceStr);
+                    if (price < 0) {
+                        WebUtil.setFlashError(request, "Lỗi: Giá bán không được nhỏ hơn 0!");
+                        WebUtil.redirect(request, response, "/admin/products?action=edit&id=" + id);
+                        return;
+                    }
+                    p.setPrice(price);
+                } catch (NumberFormatException e) {
+                    WebUtil.setFlashError(request, "Lỗi: Giá bán không hợp lệ!");
+                    WebUtil.redirect(request, response, "/admin/products?action=edit&id=" + id);
+                    return;
+                }
             } else {
                 p.setPrice(null);
             }
