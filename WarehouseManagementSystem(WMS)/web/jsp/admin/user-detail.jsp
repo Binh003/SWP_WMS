@@ -91,7 +91,7 @@
             <polyline points="2 17 12 22 22 17"></polyline>
             <polyline points="2 12 12 17 22 12"></polyline>
           </svg>
-          Vai trò được gán (${user.roles.size()})
+          Vai trò được gán
         </h3>
         
         <c:choose>

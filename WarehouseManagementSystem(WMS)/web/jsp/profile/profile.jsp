@@ -5,7 +5,7 @@
 <jsp:include page="../includes/dashboard-layout-start.jsp"/>
 
 <div class="subpage-container">
-  <div class="subpage-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
+  <div class="subpage-header" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; margin-bottom: 24px;">
     <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">Hồ sơ cá nhân</h2>
     <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">Thông tin tài khoản đang đăng nhập.</p>
   </div>
@@ -95,14 +95,7 @@
             Đổi mật khẩu
           </a>
           
-          <!-- Inactive Button 3: Hoạt động -->
-          <a href="#" class="profile-nav-btn profile-nav-btn--inactive">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" stroke="currentColor" stroke-width="2"/>
-              <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            Hoạt động
-          </a>
+
         </div>
       </div>
       

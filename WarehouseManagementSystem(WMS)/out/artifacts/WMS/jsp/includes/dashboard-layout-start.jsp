@@ -4,7 +4,7 @@
 <html lang="vi">
 <head>
   <jsp:include page="head.jsp"/>
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/subpages.css?v=3"/>
+  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/subpages.css?v=4"/>
   <title>${pageTitle} - WarehouseManagementSystem(WMS)</title>
   <style>
     .flash { margin: 12px 24px; padding: 12px 16px; border-radius: 8px; font-size: 14px; }

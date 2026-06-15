@@ -88,12 +88,21 @@
           <label class="form-label">Vai trò thành viên</label>
           <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
             <c:forEach var="role" items="${roles}">
-              <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; background: #ffffff; padding: 8px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s;">
-                <input type="checkbox" name="roleCodes" value="${role.code}" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary-color);"
-                  <c:forEach var="code" items="${roleCodes}"><c:if test="${code == role.code}">checked</c:if></c:forEach>
-                />
-                <span>${role.code}</span>
-              </label>
+              <c:if test="${role.code != 'ADMIN'}">
+                <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; background: #ffffff; padding: 8px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s;">
+                  <input type="radio" name="roleCodes" value="${role.code}" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary-color);"
+                    <c:choose>
+                      <c:when test="${empty roleCodes}">
+                        <c:if test="${role.code == 'WAREHOUSE STAFF'}">checked</c:if>
+                      </c:when>
+                      <c:otherwise>
+                        <c:forEach var="code" items="${roleCodes}"><c:if test="${code == role.code}">checked</c:if></c:forEach>
+                      </c:otherwise>
+                    </c:choose>
+                  />
+                  <span>${role.code}</span>
+                </label>
+              </c:if>
             </c:forEach>
           </div>
         </div>

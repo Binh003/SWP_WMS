@@ -82,7 +82,7 @@
       </div>
 
       <div style="margin-top: 12px; display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid var(--card-border); padding-top: 24px;">
-        <a href="${pageContext.request.contextPath}/admin/roles" class="premium-btn-secondary" style="height: 44px; line-height: 44px; padding: 0 24px; text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">Hủy bỏ</a>
+        <a href="${pageContext.request.contextPath}/admin/roles" class="premium-btn-outline" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: 44px; line-height: 44px; box-sizing: border-box;">Hủy bỏ</a>
         <button type="submit" class="premium-btn-primary" style="height: 44px; line-height: 44px; padding: 0 32px;">Tạo vai trò</button>
       </div>
     </form>

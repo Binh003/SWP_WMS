@@ -280,9 +280,18 @@ public class UserAdminServlet extends HttpServlet {
         }
         List<Role> roles = new ArrayList<>();
         for (String code : codes) {
+            if ("ADMIN".equalsIgnoreCase(code)) {
+                continue; // Skip ADMIN role assignment
+            }
             Role role = roleDAO.findByCode(code);
             if (role != null) {
                 roles.add(role);
+            }
+        }
+        if (roles.isEmpty()) {
+            Role defaultRole = roleDAO.findByCode("WAREHOUSE STAFF");
+            if (defaultRole != null) {
+                roles.add(defaultRole);
             }
         }
         return roles;

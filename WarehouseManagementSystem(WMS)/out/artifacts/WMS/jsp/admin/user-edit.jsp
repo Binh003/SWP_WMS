@@ -60,12 +60,14 @@
           <label class="form-label">Vai trò thành viên</label>
           <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
             <c:forEach var="role" items="${roles}">
-              <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; background: #ffffff; padding: 8px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s;">
-                <input type="checkbox" name="roleCodes" value="${role.code}" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary-color);"
-                  <c:forEach var="ur" items="${user.roles}"><c:if test="${ur.code == role.code}">checked</c:if></c:forEach>
-                />
-                <span>${role.code}</span>
-              </label>
+              <c:if test="${role.code != 'ADMIN'}">
+                <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; background: #ffffff; padding: 8px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s;">
+                  <input type="radio" name="roleCodes" value="${role.code}" style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--primary-color);"
+                    <c:forEach var="ur" items="${user.roles}"><c:if test="${ur.code == role.code}">checked</c:if></c:forEach>
+                  />
+                  <span>${role.code}</span>
+                </label>
+              </c:if>
             </c:forEach>
           </div>
         </div>
@@ -103,7 +105,7 @@
             </c:otherwise>
           </c:choose>
         </p>
-        <p style="margin: 8px 0; font-size: 14px; color: var(--text-secondary);">Số vai trò gán hiện tại: <strong>${user.roles.size()}</strong></p>
+        <p style="margin: 8px 0; font-size: 14px; color: var(--text-secondary);">Vai trò hiện tại: <strong>${not empty user.roles ? user.roles[0].code : 'Chưa có'}</strong></p>
       </div>
     </div>
   </div>
