@@ -57,6 +57,33 @@
         </div>
 
         <div class="form-group">
+          <label class="form-label">Mật khẩu mới (Để trống nếu không muốn thay đổi)</label>
+          <div style="position: relative;">
+            <input id="password" name="password" type="password" class="subpage-input" style="padding-right: 46px;" placeholder="Tối thiểu 8 ký tự (hoa, thường, số)" minlength="8" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Mật khẩu phải từ 8 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ thường và 1 chữ số."/>
+            <button type="button" class="password-toggle" onclick="togglePassword('password', 'eyeSvg')" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; color: #9ca3af; cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; transition: color 0.15s ease;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='#9ca3af'">
+              <svg id="eyeSvg" class="eye" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Xác nhận mật khẩu mới</label>
+          <div style="position: relative;">
+            <input id="confirmPassword" name="confirmPassword" type="password" class="subpage-input" style="padding-right: 46px;" placeholder="Nhập lại mật khẩu mới" minlength="8" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Mật khẩu phải từ 8 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ thường và 1 chữ số."/>
+            <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword', 'confirmEyeSvg')" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; color: #9ca3af; cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; transition: color 0.15s ease;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='#9ca3af'">
+              <svg id="confirmEyeSvg" class="eye" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <span id="passwordError" style="color: #ef4444; font-size: 13px; margin-top: 6px; display: none;">Mật khẩu xác nhận không khớp</span>
+        </div>
+
+        <div class="form-group">
           <label class="form-label">Vai trò thành viên</label>
           <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
             <c:forEach var="role" items="${roles}">
@@ -110,5 +137,43 @@
     </div>
   </div>
 </div>
+
+<script>
+function togglePassword(inputId, eyeId) {
+  var input = document.getElementById(inputId);
+  var eyeSvg = document.getElementById(eyeId);
+  if (!input || !eyeSvg) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    eyeSvg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>';
+  } else {
+    input.type = 'password';
+    eyeSvg.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>';
+  }
+}
+
+document.querySelector('form').addEventListener('submit', function(e) {
+  var pass = document.getElementById('password').value;
+  var confirmPass = document.getElementById('confirmPassword').value;
+  var errorSpan = document.getElementById('passwordError');
+  
+  if (pass.length > 0) {
+    var strengthRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+    if (!strengthRegex.test(pass)) {
+      e.preventDefault();
+      errorSpan.innerText = 'Mật khẩu phải từ 8 ký tự, bao gồm chữ hoa, chữ thường và chữ số';
+      errorSpan.style.display = 'block';
+    } else if (pass !== confirmPass) {
+      e.preventDefault();
+      errorSpan.innerText = 'Mật khẩu xác nhận không khớp';
+      errorSpan.style.display = 'block';
+    } else {
+      errorSpan.style.display = 'none';
+    }
+  } else {
+    errorSpan.style.display = 'none';
+  }
+});
+</script>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>

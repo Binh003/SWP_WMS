@@ -24,7 +24,7 @@
     </c:if>
   </div>
 
-  <div class="premium-card" style="padding: 32px;">
+  <div class="premium-card" style="padding: 24px;">
     <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--card-border);">
       <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: rgba(4, 138, 191, 0.1); color: var(--primary-color);">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -65,17 +65,15 @@
       </div>
     </div>
 
-    <div style="overflow-x: auto; margin: 0 -32px; padding: 0 32px;">
+    <div style="overflow-x: auto; margin: 0 -24px; padding: 0 24px;">
       <table class="premium-table">
         <thead>
           <tr>
-            <th style="width: 80px;">ID</th>
-            <th style="width: 180px;">Mã vai trò</th>
-            <th style="width: 220px;">Tên hiển thị</th>
-            <th>Mô tả</th>
-            <th>Quyền hạn được gán</th>
-            <th style="width: 160px;">Trạng thái</th>
-            <th style="text-align: center; width: 120px;">Hành động</th>
+            <th style="width: 60px;">ID</th>
+            <th style="width: 140px;">Mã vai trò</th>
+            <th style="width: 180px;">Mô tả</th>
+            <th style="width: 140px;">Trạng thái</th>
+            <th style="text-align: center; width: 100px;">Hành động</th>
           </tr>
         </thead>
         <tbody>
@@ -101,27 +99,15 @@
                   </span>
                 </a>
               </td>
-              <td>
-                <a href="${pageContext.request.contextPath}/admin/roles?action=detail&id=${r.id}" style="color: var(--primary-color); text-decoration: none; font-weight: 700; font-size: 14px;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
-                  ${r.name}
-                </a>
-              </td>
-              <td style="color: var(--text-secondary); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.description}">${r.description}</td>
-              <td>
-                <div style="display: flex; gap: 4px; flex-wrap: wrap; max-width: 480px; padding: 4px 0;">
-                  <c:choose>
-                    <c:when test="${not empty r.permissionCodes}">
-                      <c:forEach var="pc" items="${r.permissionCodes}">
-                        <span class="premium-tag premium-tag--viewer" style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: rgba(100, 116, 139, 0.08); color: #475569; border: 1px solid rgba(100, 116, 139, 0.15);">
-                          ${pc}
-                        </span>
-                      </c:forEach>
-                    </c:when>
-                    <c:otherwise>
-                      <span style="color: var(--text-tertiary); font-style: italic; font-size: 13px;">Chưa phân quyền</span>
-                    </c:otherwise>
-                  </c:choose>
+              <td class="desc-cell">
+                <div style="color: var(--text-secondary); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  ${r.description}
                 </div>
+                <c:if test="${not empty r.description}">
+                  <div class="desc-popup">
+                    ${r.description}
+                  </div>
+                </c:if>
               </td>
               <td>
                 <span class="premium-tag ${r.enabled ? 'premium-tag--success' : 'premium-tag--danger'}" style="font-size: 12px; font-weight: 700; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px; letter-spacing: 0.02em; border-radius: 8px;">
@@ -148,7 +134,7 @@
                       </svg>
                       Xem chi tiết
                     </a>
-                    <c:if test="${canWriteRole}">
+                    <c:if test="${canWriteRole && r.code != 'ADMIN'}">
                       <a href="${pageContext.request.contextPath}/admin/roles?action=edit&id=${r.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -156,6 +142,8 @@
                         </svg>
                         Chỉnh sửa
                       </a>
+                    </c:if>
+                    <c:if test="${canWriteRole}">
                       <c:if test="${r.code != 'ADMIN'}">
                         <form id="toggle-role-form-${r.id}" method="post" action="${pageContext.request.contextPath}/admin/roles" style="margin: 0;">
                           <input type="hidden" name="action" value="toggle-status"/>
@@ -258,6 +246,17 @@
 
 
 <style>
+  /* Override layout classes to bypass browser CSS cache and expand container */
+  .subpage-container {
+    max-width: 100% !important;
+  }
+  .home-main {
+    padding: 16px 20px !important;
+  }
+  .premium-card {
+    padding: 24px !important;
+  }
+
   /* Base Table styling */
   .premium-table {
     width: 100%;
@@ -268,21 +267,56 @@
     background: #f8fafc;
     color: var(--text-secondary);
     font-weight: 700;
-    font-size: 13px;
+    font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    padding: 16px 20px;
+    padding: 18px 20px;
     border-bottom: 1.5px solid var(--card-border);
     text-align: left;
     white-space: nowrap;
   }
   .premium-table td {
-    padding: 16px 20px;
+    padding: 18px 20px;
     border-bottom: 1px solid var(--card-border);
-    font-size: 14px;
+    font-size: 15px;
     color: var(--text-primary);
     vertical-align: middle;
-    white-space: nowrap;
+  }
+  .desc-cell {
+    position: relative;
+  }
+  .desc-popup {
+    display: none;
+    position: absolute;
+    left: 80%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #1e293b;
+    color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    z-index: 1000;
+    width: max-content;
+    max-width: 280px;
+    white-space: normal;
+    word-break: break-word;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    pointer-events: none;
+    line-height: 1.4;
+  }
+  .desc-popup::before {
+    content: "";
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent #1e293b transparent transparent;
+  }
+  .desc-cell:hover .desc-popup {
+    display: block;
   }
   .role-row {
     transition: opacity 0.2s ease, transform 0.2s ease;
