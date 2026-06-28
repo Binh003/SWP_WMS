@@ -123,8 +123,8 @@
           <li><strong>ADMIN:</strong> Quản trị viên hệ thống.</li>
           <li><strong>WAREHOUSE MANAGER:</strong> Quản lý kho, điều hành xuất nhập, quản lý tồn kho và phê duyệt.</li>
           <li><strong>WAREHOUSE STAFF:</strong> Nhân viên kho, thực hiện kiểm đếm và nhận/xuất hàng.</li>
-          <li><strong>PURCHASING STAFF:</strong> Nhân viên mua hàng, quản lý nhà cung cấp và lập phiếu nhập kho.</li>
-          <li><strong>SALES STAFF:</strong> Nhân viên bán hàng, lập phiếu xuất bán hàng.</li>
+          <li><strong>DIRECTOR:</strong> Giám đốc, phê duyệt yêu cầu nhập/xuất kho và xem báo cáo.</li>
+          <li><strong>SALES STAFF:</strong> Nhân viên kinh doanh, lập yêu cầu nhập kho và xuất kho.</li>
         </ul>
       </div>
     </div>

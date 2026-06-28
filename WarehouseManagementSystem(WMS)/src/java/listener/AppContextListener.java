@@ -28,6 +28,13 @@ public class AppContextListener implements ServletContextListener {
     private void seedRbac() throws SQLException {
         try (java.sql.Connection conn = config.DBConfig.getConnection();
              java.sql.Statement stmt = conn.createStatement()) {
+            
+            try {
+                stmt.execute("DELETE FROM roles WHERE code = 'PURCHASING STAFF'");
+            } catch (SQLException e) {
+                // Ignore if table does not exist yet
+            }
+
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS password_resets (
                   id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -62,6 +69,21 @@ public class AppContextListener implements ServletContextListener {
                 stmt.execute("SELECT invoice_image FROM receipts LIMIT 1");
             } catch (SQLException e) {
                 stmt.execute("ALTER TABLE receipts ADD COLUMN invoice_image VARCHAR(255) NULL");
+            }
+            
+            // Clean up batch_code and barcode columns from all relevant tables if they exist
+            String[] tables = {"products", "receipt_details", "receipts", "inventories", "shipment_details", "shipments", "receipt_history", "shipment_history"};
+            for (String table : tables) {
+                try {
+                    stmt.execute("ALTER TABLE `" + table + "` DROP COLUMN `batch_code`");
+                } catch (SQLException e) {
+                    // Ignore if column doesn't exist
+                }
+                try {
+                    stmt.execute("ALTER TABLE `" + table + "` DROP COLUMN `barcode`");
+                } catch (SQLException e) {
+                    // Ignore if column doesn't exist
+                }
             }
         }
 
@@ -146,21 +168,24 @@ public class AppContextListener implements ServletContextListener {
         permissionDAO.linkRolePermission(managerRoleId, shipmentWrite);
         permissionDAO.linkRolePermission(managerRoleId, reportRead);
 
-        // 4. PURCHASING STAFF
-        long purchasingRoleId = permissionDAO.ensureRole("PURCHASING STAFF", "Purchasing Staff");
-        permissionDAO.linkRolePermission(purchasingRoleId, brandRead);
-        permissionDAO.linkRolePermission(purchasingRoleId, supplierRead);
-        permissionDAO.linkRolePermission(purchasingRoleId, supplierWrite);
-        permissionDAO.linkRolePermission(purchasingRoleId, prodLineRead);
-        permissionDAO.linkRolePermission(purchasingRoleId, productRead);
-        permissionDAO.linkRolePermission(purchasingRoleId, receiptRead);
-        permissionDAO.linkRolePermission(purchasingRoleId, receiptWrite);
+        // 4. DIRECTOR
+        long directorRoleId = permissionDAO.ensureRole("DIRECTOR", "Director");
+        permissionDAO.linkRolePermission(directorRoleId, brandRead);
+        permissionDAO.linkRolePermission(directorRoleId, supplierRead);
+        permissionDAO.linkRolePermission(directorRoleId, supplierWrite);
+        permissionDAO.linkRolePermission(directorRoleId, prodLineRead);
+        permissionDAO.linkRolePermission(directorRoleId, productRead);
+        permissionDAO.linkRolePermission(directorRoleId, receiptRead);
+        permissionDAO.linkRolePermission(directorRoleId, receiptWrite);
+        permissionDAO.linkRolePermission(directorRoleId, reportRead);
 
         // 5. SALES STAFF
         long salesRoleId = permissionDAO.ensureRole("SALES STAFF", "Sales Staff");
         permissionDAO.linkRolePermission(salesRoleId, brandRead);
         permissionDAO.linkRolePermission(salesRoleId, prodLineRead);
         permissionDAO.linkRolePermission(salesRoleId, productRead);
+        permissionDAO.linkRolePermission(salesRoleId, receiptRead);
+        permissionDAO.linkRolePermission(salesRoleId, receiptWrite);
         permissionDAO.linkRolePermission(salesRoleId, shipmentRead);
         permissionDAO.linkRolePermission(salesRoleId, shipmentWrite);
 

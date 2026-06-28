@@ -5,6 +5,29 @@
 <c:set var="activePage" value="receipts" scope="request"/>
 <jsp:include page="../includes/dashboard-layout-start.jsp"/>
 
+<style>
+@media print {
+  .home-topbar, .home-sidebar, #openHistoryBtn, .subpage-header, .no-print, [style*="margin-bottom: 16px;"] {
+    display: none !important;
+  }
+  
+  body, .home-shell, .home-layout, .home-main, .subpage-container {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+  
+  .print-section {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+  }
+}
+</style>
+
 <div class="subpage-container">
   <!-- Back link styled like image -->
   <div style="margin-bottom: 16px;">
@@ -32,75 +55,75 @@
 
   <!-- Stepper -->
   <c:if test="${receipt.status != 'CANCELLED'}">
-    <div class="premium-card" style="padding: 24px 32px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden;">
+    <div class="premium-card no-print" style="padding: 24px 32px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden;">
       <!-- Connector Line Container -->
       <div style="position: absolute; left: 77px; right: 77px; top: 50%; height: 4px; transform: translateY(-50%); z-index: 1;">
         <!-- Background line -->
         <div style="width: 100%; height: 100%; background: #e2e8f0;"></div>
         <!-- Active line -->
         <div style="position: absolute; top: 0; left: 0; height: 100%; background: var(--primary-color); z-index: 2; transition: width 0.5s ease; width: <c:choose>
-          <c:when test="${receipt.status == 'DRAFT'}">0%</c:when>
-          <c:when test="${receipt.status == 'PENDING_APPROVAL'}">25%</c:when>
-          <c:when test="${receipt.status == 'APPROVED'}">50%</c:when>
-          <c:when test="${receipt.status == 'RECEIVING'}">75%</c:when>
+          <c:when test="${receipt.status == 'DRAFT' || receipt.status == 'PENDING_APPROVAL'}">0%</c:when>
+          <c:when test="${receipt.status == 'APPROVED'}">25%</c:when>
+          <c:when test="${receipt.status == 'RECEIVING'}">50%</c:when>
+          <c:when test="${receipt.status == 'RECEIVED'}">75%</c:when>
           <c:when test="${receipt.status == 'COMPLETED'}">100%</c:when>
         </c:choose>;"></div>
       </div>
       
       <!-- Steps -->
-      <!-- Step 1: DRAFT -->
-      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 90px; text-align: center; flex-shrink: 0;">
+      <!-- Step 1: PENDING_APPROVAL -->
+      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 95px; text-align: center; flex-shrink: 0;">
         <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
           <c:choose>
-            <c:when test="${receipt.status == 'DRAFT'}">background: var(--primary-color); color: #ffffff;</c:when>
-            <c:otherwise>background: #10b981; color: #ffffff;</c:otherwise>
-          </c:choose>">
-          <c:choose>
-            <c:when test="${receipt.status == 'DRAFT'}">1</c:when>
-            <c:otherwise>✓</c:otherwise>
-          </c:choose>
-        </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${receipt.status == 'DRAFT' ? 'var(--primary-color)' : 'var(--text-secondary)'};">Nháp</span>
-      </div>
-      
-      <!-- Step 2: PENDING_APPROVAL -->
-      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 90px; text-align: center; flex-shrink: 0;">
-        <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
-          <c:choose>
-            <c:when test="${receipt.status == 'PENDING_APPROVAL'}">background: #d97706; color: #ffffff;</c:when>
-            <c:when test="${receipt.status == 'APPROVED' || receipt.status == 'RECEIVING' || receipt.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
+            <c:when test="${receipt.status == 'PENDING_APPROVAL' || receipt.status == 'DRAFT'}">background: #d97706; color: #ffffff;</c:when>
+            <c:when test="${receipt.status == 'APPROVED' || receipt.status == 'RECEIVING' || receipt.status == 'RECEIVED' || receipt.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
             <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
           </c:choose>">
           <c:choose>
-            <c:when test="${receipt.status == 'DRAFT'}">2</c:when>
-            <c:when test="${receipt.status == 'PENDING_APPROVAL'}">2</c:when>
+            <c:when test="${receipt.status == 'PENDING_APPROVAL' || receipt.status == 'DRAFT'}">1</c:when>
             <c:otherwise>✓</c:otherwise>
           </c:choose>
         </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${receipt.status == 'PENDING_APPROVAL' ? '#d97706' : 'var(--text-secondary)'};">Chờ duyệt</span>
+        <span style="font-size: 12px; font-weight: 600; color: ${receipt.status == 'PENDING_APPROVAL' ? '#d97706' : 'var(--text-secondary)'};">Chờ duyệt</span>
       </div>
       
-      <!-- Step 3: APPROVED -->
-      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 90px; text-align: center; flex-shrink: 0;">
+      <!-- Step 2: APPROVED -->
+      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 95px; text-align: center; flex-shrink: 0;">
         <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
           <c:choose>
             <c:when test="${receipt.status == 'APPROVED'}">background: #3b82f6; color: #ffffff;</c:when>
-            <c:when test="${receipt.status == 'RECEIVING' || receipt.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
+            <c:when test="${receipt.status == 'RECEIVING' || receipt.status == 'RECEIVED' || receipt.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
             <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
           </c:choose>">
           <c:choose>
-            <c:when test="${receipt.status == 'DRAFT' || receipt.status == 'PENDING_APPROVAL' || receipt.status == 'APPROVED'}">3</c:when>
+            <c:when test="${receipt.status == 'DRAFT' || receipt.status == 'PENDING_APPROVAL' || receipt.status == 'APPROVED'}">2</c:when>
             <c:otherwise>✓</c:otherwise>
           </c:choose>
         </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${receipt.status == 'APPROVED' ? '#3b82f6' : 'var(--text-secondary)'};">Đã duyệt</span>
+        <span style="font-size: 12px; font-weight: 600; color: ${receipt.status == 'APPROVED' ? '#3b82f6' : 'var(--text-secondary)'};">Đã duyệt</span>
       </div>
       
-      <!-- Step 4: RECEIVING -->
-      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 90px; text-align: center; flex-shrink: 0;">
+      <!-- Step 3: RECEIVING -->
+      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 95px; text-align: center; flex-shrink: 0;">
         <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
           <c:choose>
             <c:when test="${receipt.status == 'RECEIVING'}">background: #8b5cf6; color: #ffffff;</c:when>
+            <c:when test="${receipt.status == 'RECEIVED' || receipt.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
+            <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
+          </c:choose>">
+          <c:choose>
+            <c:when test="${receipt.status == 'RECEIVED' || receipt.status == 'COMPLETED'}">✓</c:when>
+            <c:otherwise>3</c:otherwise>
+          </c:choose>
+        </div>
+        <span style="font-size: 12px; font-weight: 600; color: ${receipt.status == 'RECEIVING' ? '#8b5cf6' : 'var(--text-secondary)'};">Nhận hàng</span>
+      </div>
+      
+      <!-- Step 4: RECEIVED -->
+      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 95px; text-align: center; flex-shrink: 0;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
+          <c:choose>
+            <c:when test="${receipt.status == 'RECEIVED'}">background: #4f46e5; color: #ffffff;</c:when>
             <c:when test="${receipt.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
             <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
           </c:choose>">
@@ -109,11 +132,11 @@
             <c:otherwise>4</c:otherwise>
           </c:choose>
         </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${receipt.status == 'RECEIVING' ? '#8b5cf6' : 'var(--text-secondary)'};">Nhận hàng</span>
+        <span style="font-size: 12px; font-weight: 600; color: ${receipt.status == 'RECEIVED' ? '#4f46e5' : 'var(--text-secondary)'};">Đã nhận hàng</span>
       </div>
       
       <!-- Step 5: COMPLETED -->
-      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 90px; text-align: center; flex-shrink: 0;">
+      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 95px; text-align: center; flex-shrink: 0;">
         <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
           <c:choose>
             <c:when test="${receipt.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
@@ -121,13 +144,13 @@
           </c:choose>">
           5
         </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${receipt.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)'};">Hoàn thành</span>
+        <span style="font-size: 12px; font-weight: 600; color: ${receipt.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)'};">Hoàn thành</span>
       </div>
     </div>
   </c:if>
   
   <c:if test="${receipt.status == 'CANCELLED'}">
-    <div class="premium-card" style="padding: 20px; margin-bottom: 24px; background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; display: flex; align-items: center; gap: 12px; color: #ef4444;">
+    <div class="premium-card no-print" style="padding: 20px; margin-bottom: 24px; background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; display: flex; align-items: center; gap: 12px; color: #ef4444;">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
         <circle cx="12" cy="12" r="10"></circle>
         <line x1="15" y1="9" x2="9" y2="15"></line>
@@ -140,18 +163,180 @@
     </div>
   </c:if>
 
-  <!-- Actions & Evidence Images Panel -->
-  <!-- Actions & Evidence Images Panel -->
-  <div class="premium-card" style="padding: 24px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 20px;">
-    
-    <!-- Hidden status owner form -->
-    <c:if test="${receipt.status != 'COMPLETED' && receipt.status != 'CANCELLED'}">
-      <form action="${pageContext.request.contextPath}/admin/receipts" method="post" id="statusForm" enctype="multipart/form-data" style="display:none;">
-        <input type="hidden" name="action" value="updateStatus"/>
-        <input type="hidden" name="id" value="${receipt.id}"/>
-        <input type="hidden" name="status" id="nextStatus" value=""/>
-      </form>
-    </c:if>
+  <!-- Hidden status owner form (always available) -->
+  <c:if test="${receipt.status != 'COMPLETED' && receipt.status != 'CANCELLED'}">
+    <form action="${pageContext.request.contextPath}/admin/receipts" method="post" id="statusForm" enctype="multipart/form-data" style="display:none;">
+      <input type="hidden" name="action" value="updateStatus"/>
+      <input type="hidden" name="id" value="${receipt.id}"/>
+      <input type="hidden" name="status" id="nextStatus" value=""/>
+    </form>
+  </c:if>
+
+  <c:if test="${receipt.status == 'RECEIVED' || receipt.status == 'COMPLETED'}">
+    <!-- Beautiful Print-Ready Goods Receipt Note Document -->
+    <div class="premium-card print-section" style="padding: 40px; margin-bottom: 24px; background: #ffffff; border: 2px solid #cbd5e1; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative; overflow: hidden;">
+      
+      <!-- Header: Title and Company Info -->
+      <div style="border-bottom: 2px solid #cbd5e1; padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+          <h2 style="font-size: 26px; font-weight: 800; color: #1e293b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">PHIẾU NHẬP KHO</h2>
+          <p style="font-size: 13px; color: #64748b; margin: 4px 0 0 0; font-weight: 600;">Số phiếu: <span style="font-family: monospace; font-size: 14px; color: #0f172a; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${receipt.receiptCode}</span></p>
+        </div>
+        <div style="text-align: right;">
+          <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Ngày nhận hàng: 
+            <span style="font-weight: 600; color: #334155;">
+              <c:choose>
+                <c:when test="${not empty receipt.getReceivedAt()}">
+                  <fmt:formatDate value="${receipt.getReceivedAt()}" pattern="dd/MM/yyyy HH:mm"/>
+                </c:when>
+                <c:otherwise>
+                  <fmt:formatDate value="${receipt.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+                </c:otherwise>
+              </c:choose>
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Metadata Fields (Grid) -->
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+        <div>
+          <div style="margin-bottom: 12px;">
+            <span style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block;">Nhà cung cấp</span>
+            <span style="font-size: 14px; font-weight: 700; color: #0f172a;">${receipt.supplier.name}</span>
+          </div>
+          <div>
+            <span style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block;">Người tạo đơn nhập (Sales)</span>
+            <span style="font-size: 14px; font-weight: 600; color: #334155;">${receipt.creator.fullName}</span>
+          </div>
+        </div>
+        <div>
+          <div style="margin-bottom: 12px;">
+            <span style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block;">Người xác nhận (Director)</span>
+            <span style="font-size: 14px; font-weight: 600; color: #334155;">
+              <c:choose>
+                <c:when test="${not empty receipt.getConfirmer()}">
+                  ${receipt.getConfirmer().fullName}
+                </c:when>
+                <c:otherwise>
+                  <span style="color: #94a3b8; font-style: italic;">Chưa xác nhận</span>
+                </c:otherwise>
+              </c:choose>
+            </span>
+          </div>
+          <div>
+            <span style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block;">Người nhận hàng (Thủ kho)</span>
+            <span style="font-size: 14px; font-weight: 600; color: #334155;">
+              <c:choose>
+                <c:when test="${not empty receipt.getReceiver()}">
+                  ${receipt.getReceiver().fullName}
+                </c:when>
+                <c:otherwise>
+                  <span style="color: #94a3b8; font-style: italic;">Chưa nhận hàng</span>
+                </c:otherwise>
+              </c:choose>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product List Table -->
+      <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0; text-transform: uppercase;">Chi tiết danh sách hàng thực nhận</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px;">
+        <thead>
+          <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1; text-align: left;">
+            <th style="padding: 10px 12px; font-weight: 700; color: #475569;">#</th>
+            <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Mã sản phẩm</th>
+            <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Tên sản phẩm</th>
+            <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right;">Đơn vị</th>
+            <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right; width: 150px;">Số lượng thực nhận</th>
+          </tr>
+        </thead>
+        <tbody>
+          <c:forEach var="detail" items="${receipt.details}" varStatus="status">
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+              <td style="padding: 10px 12px; color: #64748b;">${status.index + 1}</td>
+              <td style="padding: 10px 12px; font-family: monospace; font-weight: 600; color: #0f172a;">${detail.product.sku}</td>
+              <td style="padding: 10px 12px; font-weight: 600; color: #334155;">${detail.product.name}</td>
+              <td style="padding: 10px 12px; text-align: right; color: #64748b;">${detail.product.unit}</td>
+              <td style="padding: 10px 12px; text-align: right; font-weight: 800; color: #10b981; font-size: 14px;">+${detail.quantity}</td>
+            </tr>
+          </c:forEach>
+        </tbody>
+      </table>
+
+      <!-- Evidence Images (Inside Document) -->
+      <c:if test="${not empty receipt.receivingImages}">
+        <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0; text-transform: uppercase;">Ảnh hàng hóa nhận kho làm bằng chứng</h3>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 30px;" class="no-print">
+          <c:forEach var="img" items="${receipt.receivingImagesList}">
+            <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px; background: #ffffff; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden;" onclick="openLightbox('${pageContext.request.contextPath}${img}')">
+              <img src="${pageContext.request.contextPath}${img}" alt="Ảnh bằng chứng" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;">
+            </div>
+          </c:forEach>
+        </div>
+      </c:if>
+
+      <!-- Signature section for print -->
+      <div style="margin-top: 50px; display: flex; justify-content: space-between; text-align: center; font-size: 14px;">
+        <div style="width: 200px;">
+          <span style="font-weight: 700; display: block; margin-bottom: 60px; text-transform: uppercase; color: #475569;">Người tạo đơn</span>
+          <span style="color: #64748b; font-size: 12px;">(Ký, ghi rõ họ tên)</span>
+          <div style="margin-top: 15px; font-weight: 600; color: #0f172a;">${receipt.creator.fullName}</div>
+        </div>
+        <div style="width: 200px;">
+          <span style="font-weight: 700; display: block; margin-bottom: 60px; text-transform: uppercase; color: #475569;">Người xác nhận (Phê duyệt)</span>
+          <span style="color: #64748b; font-size: 12px;">(Ký, ghi rõ họ tên)</span>
+          <div style="margin-top: 15px; font-weight: 600; color: #0f172a;">
+            <c:choose>
+              <c:when test="${not empty receipt.getConfirmer()}">
+                ${receipt.getConfirmer().fullName}
+              </c:when>
+              <c:otherwise>
+                <span style="color: #94a3b8; font-style: italic;">.....................................</span>
+              </c:otherwise>
+            </c:choose>
+          </div>
+        </div>
+        <div style="width: 200px;">
+          <span style="font-weight: 700; display: block; margin-bottom: 60px; text-transform: uppercase; color: #475569;">Người nhận hàng (Thủ kho)</span>
+          <span style="color: #64748b; font-size: 12px;">(Ký, ghi rõ họ tên)</span>
+          <div style="margin-top: 15px; font-weight: 600; color: #0f172a;">
+            <c:choose>
+              <c:when test="${not empty receipt.getReceiver()}">
+                ${receipt.getReceiver().fullName}
+              </c:when>
+              <c:otherwise>
+                <span style="color: #94a3b8; font-style: italic;">.....................................</span>
+              </c:otherwise>
+            </c:choose>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Panel on the bottom right of document card (non-printing) -->
+      <div style="margin-top: 30px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1.5px solid #cbd5e1; padding-top: 20px;" class="no-print">
+        <c:if test="${receipt.status == 'RECEIVED' && (currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF'))}">
+          <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='COMPLETED'" class="premium-btn-primary" style="height: 38px !important; padding: 0 16px; font-size: 13px; font-weight: 600; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: none; border-radius: 8px; color: white;">
+            Tạo phiếu nhập kho thành công
+          </button>
+          <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="height: 38px !important; padding: 0 16px; font-size: 13px; font-weight: 600; color: #ef4444; border-color: #fecaca; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 8px; background: transparent;">
+            Hủy phiếu
+          </button>
+        </c:if>
+        <button type="button" onclick="window.print()" class="premium-btn-outline" style="height: 38px !important; padding: 0 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid var(--card-border); border-radius: 8px; background: transparent; color: var(--text-primary);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          In Phiếu Nhập Kho
+        </button>
+      </div>
+
+    </div>
+  </c:if>
+
+  <c:if test="${receipt.status != 'RECEIVED' && receipt.status != 'COMPLETED'}">
+    <!-- Actions & Evidence Images Panel -->
+    <!-- Actions & Evidence Images Panel -->
+    <div class="premium-card no-print" style="padding: 24px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 20px;">
 
     <!-- Header Section (Title + Align Right Buttons) -->
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--card-border); padding-bottom: 12px; margin-bottom: 4px; flex-wrap: wrap; gap: 12px;">
@@ -186,7 +371,7 @@
           
           <c:when test="${receipt.status == 'PENDING_APPROVAL'}">
             <c:choose>
-              <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE MANAGER')}">
+              <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('DIRECTOR')}">
                 <div style="display: flex; gap: 8px;">
                   <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='APPROVED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important;">
                     Phê duyệt phiếu
@@ -198,32 +383,70 @@
               </c:when>
               <c:otherwise>
                 <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid #fde68a; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #d97706; font-weight: 600;">
-                  Đang chờ Quản lý hoặc Admin phê duyệt...
+                  Đang chờ Giám đốc hoặc Admin phê duyệt...
                 </div>
               </c:otherwise>
             </c:choose>
           </c:when>
           
           <c:when test="${receipt.status == 'APPROVED'}">
-            <div style="display: flex; gap: 8px;">
-              <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='RECEIVING'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.2) !important;">
-                Bắt đầu nhận hàng
-              </button>
-              <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border-color: #fecaca; height: 36px !important; padding: 0 16px; font-size: 13px;">
-                Hủy phiếu
-              </button>
-            </div>
+            <c:choose>
+              <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
+                <div style="display: flex; gap: 8px;">
+                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='RECEIVING'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.2) !important;">
+                    Bắt đầu nhận hàng
+                  </button>
+                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border-color: #fecaca; height: 36px !important; padding: 0 16px; font-size: 13px;">
+                    Hủy phiếu
+                  </button>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid #bfdbfe; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #1d4ed8; font-weight: 600;">
+                  Chờ Nhân viên kho (Warehouse Staff) thực hiện nhận hàng...
+                </div>
+              </c:otherwise>
+            </c:choose>
           </c:when>
           
           <c:when test="${receipt.status == 'RECEIVING'}">
-            <div style="display: flex; gap: 8px;">
-              <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='COMPLETED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important;">
-                Hoàn thành cất hàng
-              </button>
-              <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border-color: #fecaca; height: 36px !important; padding: 0 16px; font-size: 13px;">
-                Hủy phiếu
-              </button>
-            </div>
+            <c:choose>
+              <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
+                <div style="display: flex; gap: 8px;">
+                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='RECEIVED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #4f46e5, #4338ca) !important; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.2) !important;">
+                    Tạo đơn nhận hàng thành công (Xác nhận)
+                  </button>
+                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border-color: #fecaca; height: 36px !important; padding: 0 16px; font-size: 13px;">
+                    Hủy phiếu
+                  </button>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid #ddd6fe; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #6d28d9; font-weight: 600;">
+                  Nhân viên kho (Warehouse Staff) đang thực hiện kiểm tra và nhận hàng...
+                </div>
+              </c:otherwise>
+            </c:choose>
+          </c:when>
+          
+          <c:when test="${receipt.status == 'RECEIVED'}">
+            <c:choose>
+              <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
+                <div style="display: flex; gap: 8px;">
+                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='COMPLETED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important;">
+                    Tạo phiếu nhập kho thành công
+                  </button>
+                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border-color: #fecaca; height: 36px !important; padding: 0 16px; font-size: 13px;">
+                    Hủy phiếu
+                  </button>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div style="background: rgba(79, 70, 229, 0.05); border: 1px solid #c7d2fe; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #4338ca; font-weight: 600;">
+                  Chờ Nhân viên kho thực hiện cất hàng và hoàn thành nhập kho...
+                </div>
+              </c:otherwise>
+            </c:choose>
           </c:when>
         </c:choose>
       </c:if>
@@ -280,8 +503,8 @@
           </c:when>
           <c:otherwise>
             <c:choose>
-              <c:when test="${receipt.status == 'APPROVED'}">
-                <!-- Mandatorily upload receiving images in APPROVED state -->
+              <c:when test="${receipt.status == 'RECEIVING'}">
+                <!-- Mandatorily upload receiving images in RECEIVING state -->
                 <div id="receivingUploadSection" style="background: rgba(139, 92, 246, 0.03); border: 1.5px dashed #8b5cf6; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px;">
                   <label style="font-size: 12px; font-weight: 700; color: #8b5cf6; display: block; margin: 0;">
                     Ảnh hàng hóa nhận kho làm bằng chứng (Bắt buộc tối thiểu 1 ảnh, tối đa 4 ảnh)
@@ -300,7 +523,7 @@
           </c:otherwise>
         </c:choose>
 
-        <c:if test="${receipt.status == 'RECEIVING'}">
+        <c:if test="${receipt.status == 'RECEIVED'}">
           <form action="${pageContext.request.contextPath}/admin/receipts" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 8px;" id="updateReceivingImagesForm">
             <input type="hidden" name="action" value="updateReceivingImages"/>
             <input type="hidden" name="id" value="${receipt.id}"/>
@@ -318,7 +541,7 @@
   </div>
 
   <!-- Combined Information & Products Card -->
-  <div class="premium-card" style="padding: 24px; margin-bottom: 24px;">
+  <div class="premium-card no-print" style="padding: 24px; margin-bottom: 24px;">
     
     <!-- Metadata Grid (General Information) -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; background: #f8fafc; border: 1.5px solid var(--card-border); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
@@ -378,6 +601,9 @@
               <c:when test="${receipt.status == 'RECEIVING'}">
                 <span class="premium-tag" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; font-weight: 600;">Đang nhận hàng</span>
               </c:when>
+              <c:when test="${receipt.status == 'RECEIVED'}">
+                <span class="premium-tag" style="background: rgba(79, 70, 229, 0.1); color: #4f46e5; font-weight: 600;">Đã nhận hàng</span>
+              </c:when>
               <c:when test="${receipt.status == 'COMPLETED'}">
                 <span class="premium-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 600;">Đã hoàn thành</span>
               </c:when>
@@ -421,7 +647,21 @@
               <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">${detail.product.sku}</td>
               <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-weight: 600; color: var(--text-primary);">${detail.product.name}</td>
               <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; color: var(--text-secondary);">${detail.product.unit}</td>
-              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; font-weight: 700; color: var(--primary-color);">+${detail.quantity}</td>
+              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; font-weight: 700; color: var(--primary-color);">
+                <c:choose>
+                  <c:when test="${receipt.status == 'RECEIVING' && (currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF'))}">
+                    <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px;">
+                      <span style="font-size: 12px; color: var(--text-secondary); font-weight: normal;">Yêu cầu: ${detail.quantity} &rarr; Thực nhận:</span>
+                      <input type="number" name="actualQuantity_${detail.id}" value="${detail.quantity}" min="0" required 
+                             form="statusForm"
+                             style="width: 80px; text-align: right; padding: 4px 8px; border: 1.5px solid var(--primary-color); border-radius: 6px; font-size: 13px; font-weight: 700; color: var(--text-primary); outline: none;">
+                    </div>
+                  </c:when>
+                  <c:otherwise>
+                    +${detail.quantity}
+                  </c:otherwise>
+                </c:choose>
+              </td>
             </tr>
             <c:set var="totalItems" value="${totalItems + detail.quantity}"/>
           </c:forEach>
@@ -435,7 +675,7 @@
       </table>
     </div>
   </div>
-</div>
+  </c:if>
 
 <!-- History Modal -->
 <div id="historyModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); transition: all 0.3s ease;">
@@ -538,7 +778,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (statusForm) {
         statusForm.addEventListener("submit", function(e) {
-            if (nextStatus.value === "RECEIVING") {
+            if (nextStatus.value === "RECEIVED") {
                 if (!fileInput || fileInput.files.length === 0) {
                     e.preventDefault();
                     alert("Vui lòng chụp hoặc tải lên ít nhất 1 ảnh hàng hóa đã nhận để làm bằng chứng.");
