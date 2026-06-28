@@ -223,7 +223,7 @@ CREATE TABLE `shipments` (
   `shipment_code` VARCHAR(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `destination` VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_by` BIGINT NOT NULL,
-  `status` VARCHAR(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT', -- DRAFT, PENDING, APPROVED, SHIPPING, COMPLETED, CANCELLED
+  `status` VARCHAR(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT', -- DRAFT, PENDING, APPROVED, PICKING, COMPLETED, CANCELLED
   `notes` TEXT COLLATE utf8mb4_unicode_ci,
   `delivery_note_image` VARCHAR(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `shipping_images` TEXT COLLATE utf8mb4_unicode_ci,
