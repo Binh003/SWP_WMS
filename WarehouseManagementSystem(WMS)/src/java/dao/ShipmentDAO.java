@@ -176,7 +176,7 @@ public class ShipmentDAO {
                 ps.setString(1, shipment.getShipmentCode());
                 ps.setString(2, shipment.getDestination());
                 ps.setLong(3, shipment.getCreatedBy());
-                ps.setString(4, shipment.getStatus() == null ? "DRAFT" : shipment.getStatus());
+                ps.setString(4, shipment.getStatus() == null ? "PENDING" : shipment.getStatus());
                 ps.setString(5, shipment.getNotes());
                 ps.setString(6, shipment.getDeliveryNoteImage());
                 ps.setString(7, shipment.getShippingImages());
@@ -196,7 +196,7 @@ public class ShipmentDAO {
             try (PreparedStatement ps = conn.prepareStatement(sqlInsertHistory)) {
                 ps.setLong(1, shipment.getId());
                 ps.setNull(2, java.sql.Types.VARCHAR);
-                ps.setString(3, shipment.getStatus() == null ? "DRAFT" : shipment.getStatus());
+                ps.setString(3, shipment.getStatus() == null ? "PENDING" : shipment.getStatus());
                 ps.setLong(4, shipment.getCreatedBy());
                 ps.setString(5, "Tạo mới phiếu xuất kho");
                 ps.executeUpdate();
@@ -272,21 +272,24 @@ public class ShipmentDAO {
             }
             
             // 2. Update status and images if provided
-            String sqlUpdateStatus;
-            boolean hasImages = (deliveryNoteImage != null || shippingImages != null);
-            if (hasImages) {
-                sqlUpdateStatus = "UPDATE shipments SET status = ?, delivery_note_image = ?, shipping_images = ? WHERE id = ?";
-            } else {
-                sqlUpdateStatus = "UPDATE shipments SET status = ? WHERE id = ?";
+            StringBuilder sqlUpdate = new StringBuilder("UPDATE shipments SET status = ?");
+            List<Object> updateParams = new ArrayList<>();
+            updateParams.add(newStatus);
+            
+            if (deliveryNoteImage != null) {
+                sqlUpdate.append(", delivery_note_image = ?");
+                updateParams.add(deliveryNoteImage);
             }
-            try (PreparedStatement ps = conn.prepareStatement(sqlUpdateStatus)) {
-                ps.setString(1, newStatus);
-                if (hasImages) {
-                    ps.setString(2, deliveryNoteImage);
-                    ps.setString(3, shippingImages);
-                    ps.setLong(4, id);
-                } else {
-                    ps.setLong(2, id);
+            if (shippingImages != null) {
+                sqlUpdate.append(", shipping_images = ?");
+                updateParams.add(shippingImages);
+            }
+            sqlUpdate.append(" WHERE id = ?");
+            updateParams.add(id);
+            
+            try (PreparedStatement ps = conn.prepareStatement(sqlUpdate.toString())) {
+                for (int i = 0; i < updateParams.size(); i++) {
+                    ps.setObject(i + 1, updateParams.get(i));
                 }
                 ps.executeUpdate();
             }
@@ -523,8 +526,8 @@ public class ShipmentDAO {
                 }
             }
 
-            if (!"DRAFT".equals(status)) {
-                throw new SQLException("Chỉ có thể xóa phiếu ở trạng thái Nháp (DRAFT).");
+            if (!"DRAFT".equals(status) && !"PENDING".equals(status)) {
+                throw new SQLException("Chỉ có thể xóa phiếu ở trạng thái Nháp (DRAFT) hoặc Chờ duyệt (PENDING).");
             }
 
             // 1. Delete details

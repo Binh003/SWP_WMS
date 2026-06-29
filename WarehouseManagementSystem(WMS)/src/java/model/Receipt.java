@@ -73,4 +73,37 @@ public class Receipt {
 
     public List<ReceiptHistory> getHistory() { return history; }
     public void setHistory(List<ReceiptHistory> history) { this.history = history; }
+
+    public User getConfirmer() {
+        if (history != null) {
+            for (ReceiptHistory h : history) {
+                if ("APPROVED".equals(h.getToStatus())) {
+                    return h.getUpdater();
+                }
+            }
+        }
+        return null;
+    }
+
+    public User getReceiver() {
+        if (history != null) {
+            for (ReceiptHistory h : history) {
+                if ("RECEIVED".equals(h.getToStatus())) {
+                    return h.getUpdater();
+                }
+            }
+        }
+        return null;
+    }
+
+    public Timestamp getReceivedAt() {
+        if (history != null) {
+            for (ReceiptHistory h : history) {
+                if ("RECEIVED".equals(h.getToStatus())) {
+                    return h.getChangedAt();
+                }
+            }
+        }
+        return null;
+    }
 }

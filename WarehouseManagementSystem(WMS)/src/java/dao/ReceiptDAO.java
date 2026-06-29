@@ -92,13 +92,18 @@ public class ReceiptDAO {
     }
 
     private List<ReceiptDetail> getDetailsByReceiptId(long receiptId) throws SQLException {
+        try (Connection conn = DBConfig.getConnection()) {
+            return getDetailsByReceiptId(conn, receiptId);
+        }
+    }
+
+    private List<ReceiptDetail> getDetailsByReceiptId(Connection conn, long receiptId) throws SQLException {
         List<ReceiptDetail> details = new ArrayList<>();
         String sql = "SELECT rd.*, p.sku, p.name as product_name, p.unit " +
                      "FROM receipt_details rd " +
                      "INNER JOIN products p ON rd.product_id = p.id " +
                      "WHERE rd.receipt_id = ?";
-        try (Connection conn = DBConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, receiptId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -168,7 +173,7 @@ public class ReceiptDAO {
                 ps.setString(1, receipt.getReceiptCode());
                 ps.setLong(2, receipt.getSupplierId());
                 ps.setLong(3, receipt.getCreatedBy());
-                ps.setString(4, receipt.getStatus() == null ? "DRAFT" : receipt.getStatus());
+                ps.setString(4, receipt.getStatus() == null ? "PENDING_APPROVAL" : receipt.getStatus());
                 ps.setString(5, receipt.getNotes());
                 ps.setString(6, receipt.getInvoiceImage());
                 ps.setString(7, receipt.getReceivingImages());
@@ -188,7 +193,7 @@ public class ReceiptDAO {
             try (PreparedStatement ps = conn.prepareStatement(sqlInsertHistory)) {
                 ps.setLong(1, receipt.getId());
                 ps.setNull(2, java.sql.Types.VARCHAR);
-                ps.setString(3, receipt.getStatus() == null ? "DRAFT" : receipt.getStatus());
+                ps.setString(3, receipt.getStatus() == null ? "PENDING_APPROVAL" : receipt.getStatus());
                 ps.setLong(4, receipt.getCreatedBy());
                 ps.setString(5, "Tạo mới phiếu nhập kho");
                 ps.executeUpdate();
@@ -241,6 +246,10 @@ public class ReceiptDAO {
     }
 
     public void updateStatus(long id, String newStatus, String receivingImages, long userId) throws SQLException {
+        updateStatus(id, newStatus, receivingImages, userId, null);
+    }
+
+    public void updateStatus(long id, String newStatus, String receivingImages, long userId, List<ReceiptDetail> updatedDetails) throws SQLException {
         Connection conn = null;
         try {
             conn = DBConfig.getConnection();
@@ -260,6 +269,19 @@ public class ReceiptDAO {
             
             if (currentStatus == null) {
                 throw new SQLException("Receipt not found with id: " + id);
+            }
+            
+            // 1b. Update quantities in receipt_details if provided
+            if (updatedDetails != null && !updatedDetails.isEmpty()) {
+                String sqlUpdateDetail = "UPDATE receipt_details SET quantity = ? WHERE id = ?";
+                try (PreparedStatement psDetail = conn.prepareStatement(sqlUpdateDetail)) {
+                    for (ReceiptDetail d : updatedDetails) {
+                        psDetail.setInt(1, d.getQuantity());
+                        psDetail.setLong(2, d.getId());
+                        psDetail.addBatch();
+                    }
+                    psDetail.executeBatch();
+                }
             }
             
             // 2. Update status
@@ -296,7 +318,7 @@ public class ReceiptDAO {
             
             // 3. Update inventory if transitioning to COMPLETED from another status
             if ("COMPLETED".equals(newStatus) && !"COMPLETED".equals(currentStatus)) {
-                List<ReceiptDetail> details = getDetailsByReceiptId(id);
+                List<ReceiptDetail> details = getDetailsByReceiptId(conn, id);
                 String sqlUpdateInv = "UPDATE inventories SET quantity_in_stock = quantity_in_stock + ? WHERE product_id = ?";
                 try (PreparedStatement psInv = conn.prepareStatement(sqlUpdateInv)) {
                     for (ReceiptDetail d : details) {
@@ -342,7 +364,7 @@ public class ReceiptDAO {
         
         if (statusVal != null && !statusVal.trim().isEmpty() && !"ALL".equals(statusVal)) {
             if ("PROCESSING".equals(statusVal)) {
-                sql.append("AND (r.status = 'APPROVED' OR r.status = 'RECEIVING') ");
+                sql.append("AND (r.status = 'APPROVED' OR r.status = 'RECEIVING' OR r.status = 'RECEIVED') ");
             } else {
                 sql.append("AND r.status = ? ");
                 params.add(statusVal);

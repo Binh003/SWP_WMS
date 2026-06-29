@@ -59,7 +59,7 @@ public class ReceiptServlet extends HttpServlet {
         for (Receipt r : allReceipts) {
             if ("PENDING_APPROVAL".equals(r.getStatus())) {
                 pendingCount++;
-            } else if ("APPROVED".equals(r.getStatus()) || "RECEIVING".equals(r.getStatus())) {
+            } else if ("APPROVED".equals(r.getStatus()) || "RECEIVING".equals(r.getStatus()) || "RECEIVED".equals(r.getStatus())) {
                 processingCount++;
             } else if ("COMPLETED".equals(r.getStatus())) {
                 completedCount++;
@@ -208,7 +208,7 @@ public class ReceiptServlet extends HttpServlet {
         
         String status = WebUtil.param(request, "status");
         if (status == null || status.trim().isEmpty()) {
-            status = "DRAFT";
+            status = "PENDING_APPROVAL";
         }
         r.setStatus(status);
 
@@ -263,14 +263,33 @@ public class ReceiptServlet extends HttpServlet {
         User currentUser = WebUtil.currentUser(request);
         long userId = currentUser != null ? currentUser.getId() : 1L;
         
-        if ("RECEIVING".equals(status)) {
+        if ("RECEIVED".equals(status)) {
             String receivingImages = handleMultipleFilesUpload(request, "receivingImagesFiles");
             if (receivingImages == null || receivingImages.trim().isEmpty()) {
-                WebUtil.setFlashError(request, "Lỗi: Bắt buộc phải chụp/tải lên ảnh hàng hóa đã nhận làm bằng chứng khi đến bước nhận hàng!");
+                WebUtil.setFlashError(request, "Lỗi: Bắt buộc phải chụp/tải lên ảnh hàng hóa đã nhận làm bằng chứng khi xác nhận nhận hàng!");
                 WebUtil.redirect(request, response, "/admin/receipts?action=view&id=" + id);
                 return;
             }
-            receiptDAO.updateStatus(id, status, receivingImages, userId);
+            List<ReceiptDetail> updatedDetails = new ArrayList<>();
+            Receipt receipt = receiptDAO.getById(id);
+            if (receipt != null) {
+                for (ReceiptDetail detail : receipt.getDetails()) {
+                    String paramVal = request.getParameter("actualQuantity_" + detail.getId());
+                    if (paramVal != null) {
+                        try {
+                            int actualQty = Integer.parseInt(paramVal.trim());
+                            ReceiptDetail updated = new ReceiptDetail();
+                            updated.setId(detail.getId());
+                            updated.setProductId(detail.getProductId());
+                            updated.setQuantity(actualQty);
+                            updatedDetails.add(updated);
+                        } catch (NumberFormatException e) {
+                            // Keep original quantity if format is invalid
+                        }
+                    }
+                }
+            }
+            receiptDAO.updateStatus(id, status, receivingImages, userId, updatedDetails);
         } else {
             receiptDAO.updateStatus(id, status, userId);
         }
@@ -279,7 +298,8 @@ public class ReceiptServlet extends HttpServlet {
         if ("PENDING_APPROVAL".equals(status)) msg = "Đã gửi yêu cầu phê duyệt phiếu nhập";
         else if ("APPROVED".equals(status)) msg = "Đã phê duyệt phiếu nhập";
         else if ("RECEIVING".equals(status)) msg = "Bắt đầu nhận hàng vào kho";
-        else if ("COMPLETED".equals(status)) msg = "Đã hoàn thành cất hàng và cập nhật tồn kho";
+        else if ("RECEIVED".equals(status)) msg = "Đã tạo đơn nhận hàng thành công và ghi nhận thực nhận";
+        else if ("COMPLETED".equals(status)) msg = "Đã hoàn thành nhập kho (cất hàng) và cập nhật tồn kho";
         else if ("CANCELLED".equals(status)) msg = "Đã hủy phiếu nhập";
         
         WebUtil.setFlashSuccess(request, msg);

@@ -60,6 +60,11 @@ public class RoleAdminServlet extends HttpServlet {
                 long selectedId = parseLong(idParam, 0);
                 Role selected = selectedId > 0 ? roleDAO.findByIdWithPermissions(selectedId) : null;
                 if (selected != null) {
+                    if ("ADMIN".equalsIgnoreCase(selected.getCode())) {
+                        WebUtil.setFlashError(request, "Không thể chỉnh sửa vai trò ADMIN mặc định");
+                        WebUtil.redirect(request, response, "/admin/roles");
+                        return;
+                    }
                     request.setAttribute("selectedRole", selected);
                     request.setAttribute("selectedRoleId", selectedId);
                     forwardJsp = "/jsp/admin/role-edit.jsp";
@@ -182,6 +187,11 @@ public class RoleAdminServlet extends HttpServlet {
             Role role = roleDAO.findByIdWithPermissions(id);
             if (role == null) {
                 WebUtil.setFlashError(request, "Vai trò không tồn tại");
+                WebUtil.redirect(request, response, "/admin/roles");
+                return;
+            }
+            if ("ADMIN".equalsIgnoreCase(role.getCode())) {
+                WebUtil.setFlashError(request, "Không thể chỉnh sửa vai trò ADMIN mặc định");
                 WebUtil.redirect(request, response, "/admin/roles");
                 return;
             }

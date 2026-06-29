@@ -110,10 +110,10 @@
                 onfocus="this.style.borderColor='var(--primary-color)';" 
                 onblur="this.style.borderColor='var(--card-border)';">
           <option value="ALL" ${selectedStatus == 'ALL' || empty selectedStatus ? 'selected' : ''}>Tất cả trạng thái</option>
-          <option value="DRAFT" ${selectedStatus == 'DRAFT' ? 'selected' : ''}>Nháp</option>
           <option value="PENDING_APPROVAL" ${selectedStatus == 'PENDING_APPROVAL' ? 'selected' : ''}>Chờ phê duyệt</option>
           <option value="APPROVED" ${selectedStatus == 'APPROVED' ? 'selected' : ''}>Đã duyệt</option>
           <option value="RECEIVING" ${selectedStatus == 'RECEIVING' ? 'selected' : ''}>Đang nhận hàng</option>
+          <option value="RECEIVED" ${selectedStatus == 'RECEIVED' ? 'selected' : ''}>Đã nhận hàng</option>
           <option value="PROCESSING" ${selectedStatus == 'PROCESSING' ? 'selected' : ''}>Đang thực hiện</option>
           <option value="COMPLETED" ${selectedStatus == 'COMPLETED' ? 'selected' : ''}>Đã hoàn thành</option>
           <option value="CANCELLED" ${selectedStatus == 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
@@ -215,6 +215,9 @@
                   </c:when>
                   <c:when test="${r.status == 'RECEIVING'}">
                     <span class="premium-tag" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">Đang nhận hàng</span>
+                  </c:when>
+                  <c:when test="${r.status == 'RECEIVED'}">
+                    <span class="premium-tag" style="background: rgba(79, 70, 229, 0.1); color: #4f46e5;">Đã nhận hàng</span>
                   </c:when>
                   <c:when test="${r.status == 'COMPLETED'}">
                     <span class="premium-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">Đã hoàn thành</span>

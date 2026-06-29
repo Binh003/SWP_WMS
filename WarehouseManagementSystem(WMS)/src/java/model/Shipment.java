@@ -69,4 +69,48 @@ public class Shipment {
 
     public List<ShipmentHistory> getHistory() { return history; }
     public void setHistory(List<ShipmentHistory> history) { this.history = history; }
+
+    public User getConfirmer() {
+        if (history != null) {
+            for (ShipmentHistory h : history) {
+                if ("APPROVED".equals(h.getToStatus())) {
+                    return h.getUpdater();
+                }
+            }
+        }
+        return null;
+    }
+
+    public User getWarehouseStaff() {
+        if (history != null) {
+            for (ShipmentHistory h : history) {
+                if ("PICKING".equals(h.getToStatus())) {
+                    return h.getUpdater();
+                }
+            }
+        }
+        return null;
+    }
+
+    public User getShipper() {
+        if (history != null) {
+            for (ShipmentHistory h : history) {
+                if ("COMPLETED".equals(h.getToStatus())) {
+                    return h.getUpdater();
+                }
+            }
+        }
+        return null;
+    }
+
+    public Timestamp getShippedAt() {
+        if (history != null) {
+            for (ShipmentHistory h : history) {
+                if ("COMPLETED".equals(h.getToStatus())) {
+                    return h.getChangedAt();
+                }
+            }
+        }
+        return null;
+    }
 }

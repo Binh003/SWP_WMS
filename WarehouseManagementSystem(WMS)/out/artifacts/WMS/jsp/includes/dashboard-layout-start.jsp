@@ -86,15 +86,12 @@
       document.getElementById('homeShell').classList.add('home-shell--collapsed');
     }
   </script>
-  <header class="home-topbar">
+  <header class="home-topbar" style="grid-template-columns: 280px 1fr;">
     <a class="home-brand" href="${pageContext.request.contextPath}/home">
       <img src="${pageContext.request.contextPath}/assets/logo.png" alt="V-Inventory" style="height: 50px; width: auto; object-fit: contain; max-width: 100%;"/>
     </a>
-    <label class="home-search" aria-label="Tìm kiếm">
-      <span class="home-search__icon">⌕</span>
-      <input type="search" placeholder="Tìm kiếm sản phẩm, mã phiếu..."/>
-    </label>
-    <div class="home-toolbar">
+    
+    <div class="home-toolbar" style="margin-left: auto;">
       <div class="user-menu" tabindex="0">
         <div class="user-menu__trigger">
           <span class="user-menu__text">

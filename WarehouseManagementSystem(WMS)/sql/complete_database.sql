@@ -223,7 +223,7 @@ CREATE TABLE `shipments` (
   `shipment_code` VARCHAR(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `destination` VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_by` BIGINT NOT NULL,
-  `status` VARCHAR(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT', -- DRAFT, PENDING, APPROVED, SHIPPING, COMPLETED, CANCELLED
+  `status` VARCHAR(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT', -- DRAFT, PENDING, APPROVED, PICKING, COMPLETED, CANCELLED
   `notes` TEXT COLLATE utf8mb4_unicode_ci,
   `delivery_note_image` VARCHAR(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `shipping_images` TEXT COLLATE utf8mb4_unicode_ci,
@@ -291,8 +291,8 @@ INSERT INTO `roles` (`id`, `code`, `name`, `description`) VALUES
 (1, 'ADMIN', 'Administrator', 'Quản trị viên toàn quyền hệ thống'),
 (2, 'WAREHOUSE STAFF', 'Warehouse Staff', 'Nhân viên thủ kho (quản lý nhập, xuất và kiểm kê)'),
 (3, 'WAREHOUSE MANAGER', 'Warehouse Manager', 'Quản lý kho hàng (phê duyệt phiếu và xem báo cáo)'),
-(4, 'PURCHASING STAFF', 'Purchasing Staff', 'Nhân viên mua hàng (tạo phiếu nhập kho)'),
-(5, 'SALES STAFF', 'Sales Staff', 'Nhân viên bán hàng (tạo yêu cầu xuất kho)');
+(4, 'DIRECTOR', 'Director', 'Giám đốc (phê duyệt yêu cầu nhập xuất kho và xem báo cáo)'),
+(5, 'SALES STAFF', 'Sales Staff', 'Nhân viên kinh doanh (tạo yêu cầu nhập, xuất kho)');
 
 -- Liên kết Vai trò - Quyền hạn (role_permissions)
 -- Admin: Toàn quyền
@@ -312,6 +312,20 @@ SELECT 3, `id` FROM `permissions` WHERE `code` IN (
   'BRAND_READ', 'BRAND_WRITE', 'SUPPLIER_READ', 'SUPPLIER_WRITE', 'PRODUCT_LINE_READ', 'PRODUCT_LINE_WRITE', 
   'PRODUCT_READ', 'PRODUCT_WRITE', 'INVENTORY_READ', 'INVENTORY_WRITE', 
   'RECEIPT_READ', 'RECEIPT_WRITE', 'SHIPMENT_READ', 'SHIPMENT_WRITE', 'REPORT_READ'
+);
+
+-- Director: Đọc danh mục, phê duyệt phiếu nhập/xuất, xem báo cáo
+INSERT INTO `role_permissions` (`role_id`, `permission_id`)
+SELECT 4, `id` FROM `permissions` WHERE `code` IN (
+  'BRAND_READ', 'SUPPLIER_READ', 'SUPPLIER_WRITE', 'PRODUCT_LINE_READ', 
+  'PRODUCT_READ', 'RECEIPT_READ', 'RECEIPT_WRITE', 'REPORT_READ'
+);
+
+-- Sales Staff: Đọc danh mục, tạo phiếu nhập/xuất
+INSERT INTO `role_permissions` (`role_id`, `permission_id`)
+SELECT 5, `id` FROM `permissions` WHERE `code` IN (
+  'BRAND_READ', 'PRODUCT_LINE_READ', 'PRODUCT_READ', 
+  'RECEIPT_READ', 'RECEIPT_WRITE', 'SHIPMENT_READ', 'SHIPMENT_WRITE'
 );
 
 -- Seed Tài khoản Quản trị mặc định (admin / admin123)

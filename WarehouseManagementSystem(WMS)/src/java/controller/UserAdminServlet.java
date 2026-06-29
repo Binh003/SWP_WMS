@@ -209,7 +209,7 @@ public class UserAdminServlet extends HttpServlet {
     }
 
     private void updateUser(HttpServletRequest request, HttpServletResponse response)
-        throws SQLException, IOException {
+        throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         User user = userDAO.findById(id);
         if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
@@ -217,7 +217,30 @@ public class UserAdminServlet extends HttpServlet {
             WebUtil.redirect(request, response, "/admin/users");
             return;
         }
+
+        String password = WebUtil.param(request, "password");
+        String confirmPassword = WebUtil.param(request, "confirmPassword");
+
+        if (!password.isEmpty()) {
+            if (!password.equals(confirmPassword)) {
+                request.setAttribute("flashError", "Mật khẩu xác nhận không khớp.");
+                showEditForm(request, response);
+                return;
+            }
+
+            if (password.length() < 8 || !password.matches(".*[a-z].*") || !password.matches(".*[A-Z].*") || !password.matches(".*\\d.*")) {
+                request.setAttribute("flashError", "Mật khẩu phải từ 8 ký tự, bao gồm chữ hoa, chữ thường và chữ số.");
+                showEditForm(request, response);
+                return;
+            }
+        }
+
         userDAO.updateProfile(id, WebUtil.param(request, "fullName"), WebUtil.param(request, "email"));
+
+        if (!password.isEmpty()) {
+            userDAO.updatePassword(id, PasswordUtil.hash(password));
+        }
+
         String status = WebUtil.param(request, "status");
         if (status != null && !status.isEmpty()) {
             userDAO.setStatus(id, status);

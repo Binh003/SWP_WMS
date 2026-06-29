@@ -59,7 +59,7 @@ public class ShipmentServlet extends HttpServlet {
         for (Shipment s : allShipments) {
             if ("PENDING".equals(s.getStatus())) {
                 pendingCount++;
-            } else if ("APPROVED".equals(s.getStatus()) || "SHIPPING".equals(s.getStatus())) {
+            } else if ("APPROVED".equals(s.getStatus()) || "PICKING".equals(s.getStatus())) {
                 shippingCount++;
             } else if ("COMPLETED".equals(s.getStatus())) {
                 completedCount++;
@@ -189,7 +189,7 @@ public class ShipmentServlet extends HttpServlet {
         
         String status = WebUtil.param(request, "status");
         if (status == null || status.trim().isEmpty()) {
-            status = "DRAFT";
+            status = "PENDING";
         }
         s.setStatus(status);
 
@@ -229,7 +229,7 @@ public class ShipmentServlet extends HttpServlet {
 
         try {
             shipmentDAO.insertWithDetails(s);
-            String msg = "DRAFT".equals(status) ? "Đã tạo bản nháp phiếu xuất kho thành công" : "Đã tạo phiếu xuất kho thành công";
+            String msg = "Đã gửi yêu cầu phê duyệt phiếu xuất kho thành công";
             WebUtil.setFlashSuccess(request, msg);
             WebUtil.redirect(request, response, "/admin/shipments");
         } catch (SQLException ex) {
@@ -247,21 +247,15 @@ public class ShipmentServlet extends HttpServlet {
         long userId = currentUser != null ? currentUser.getId() : 1L;
         
         if ("COMPLETED".equals(status)) {
-            // Upload images when completing shipment
-            String deliveryNoteImage = handleFileUpload(request, "deliveryNoteImageFile");
+            // Upload shipping images and delivery note image when completing shipment (from PICKING to COMPLETED)
             String shippingImages = handleMultipleFilesUpload(request, "shippingImagesFiles");
-            
-            if (deliveryNoteImage == null || deliveryNoteImage.trim().isEmpty()) {
-                WebUtil.setFlashError(request, "Lỗi: Bắt buộc phải chụp/tải lên ảnh phiếu giao hàng ký nhận!");
-                WebUtil.redirect(request, response, "/admin/shipments?action=view&id=" + id);
-                return;
-            }
+            String deliveryNoteImage = handleFileUpload(request, "deliveryNoteImageFile");
             
             try {
                 shipmentDAO.updateStatus(id, status, deliveryNoteImage, shippingImages, userId);
-                WebUtil.setFlashSuccess(request, "Đã hoàn thành xuất kho và trừ tồn kho thành công!");
+                WebUtil.setFlashSuccess(request, "Đã xác nhận xuất kho thành công và trừ tồn kho (PGI)!");
             } catch (SQLException ex) {
-                WebUtil.setFlashError(request, "Lỗi khi hoàn thành xuất kho: " + ex.getMessage());
+                WebUtil.setFlashError(request, "Lỗi khi hoàn thành xuất kho (PGI): " + ex.getMessage());
             }
         } else {
             try {
@@ -269,7 +263,7 @@ public class ShipmentServlet extends HttpServlet {
                 String msg = "Đã cập nhật trạng thái phiếu xuất";
                 if ("PENDING".equals(status)) msg = "Đã gửi yêu cầu phê duyệt phiếu xuất";
                 else if ("APPROVED".equals(status)) msg = "Đã phê duyệt phiếu xuất";
-                else if ("SHIPPING".equals(status)) msg = "Bắt đầu giao hàng";
+                else if ("PICKING".equals(status)) msg = "Bắt đầu lấy hàng & đóng gói";
                 else if ("CANCELLED".equals(status)) msg = "Đã hủy phiếu xuất và hoàn trả tồn kho (nếu có)";
                 WebUtil.setFlashSuccess(request, msg);
             } catch (SQLException ex) {

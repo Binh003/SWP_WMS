@@ -45,7 +45,7 @@
   </div>
 
   <!-- Table card: Danh sách thành viên -->
-  <div class="premium-card" style="padding: 32px;">
+  <div class="premium-card" style="padding: 24px;">
     <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--card-border);">
       <div style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); color: var(--success-color);">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -100,16 +100,16 @@
       </div>
     </div>
     
-    <div style="overflow-x: auto; margin: 0 -32px; padding: 0 32px;">
+    <div style="overflow-x: auto; margin: 0 -24px; padding: 0 24px;">
       <table class="premium-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Tên tài khoản</th>
-            <th>Họ và tên</th>
-            <th>Email</th>
-            <th>Vai trò</th>
-            <th style="width: 180px;">Trạng thái</th>
+            <th style="width: 60px;">ID</th>
+            <th style="width: 180px;">Tên tài khoản</th>
+            <th style="width: 180px;">Họ và tên</th>
+            <th style="min-width: 200px;">Email</th>
+            <th style="min-width: 180px;">Vai trò</th>
+            <th style="width: 140px;">Trạng thái</th>
             <th style="text-align: center; width: 100px;">Hành động</th>
           </tr>
         </thead>
@@ -133,7 +133,7 @@
                 </div>
               </td>
               <td>#${u.id}</td>
-              <td>
+              <td style="white-space: nowrap;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                   <span class="user-menu__avatar user-menu__avatar--letter" style="width: 32px; height: 32px; font-size: 13px; border-radius: 8px; box-shadow: none;">
                     ${u.username.substring(0,1).toUpperCase()}
@@ -143,10 +143,10 @@
                   </a>
                 </div>
               </td>
-              <td>${u.fullName}</td>
-              <td>${u.email}</td>
+              <td style="white-space: normal;">${u.fullName}</td>
+              <td style="white-space: nowrap; max-width: 350px; overflow: hidden; text-overflow: ellipsis;" title="${u.email}">${u.email}</td>
               <td>
-                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <div style="display: flex; gap: 6px; flex-wrap: wrap; max-width: 280px;">
                   <c:forEach var="r" items="${u.roles}">
                     <c:choose>
                       <c:when test="${r.code == 'ADMIN'}"><c:set var="roleClass" value="premium-tag--admin"/></c:when>
@@ -333,6 +333,17 @@
 
 
 <style>
+  /* Override layout classes to bypass browser CSS cache and expand container */
+  .subpage-container {
+    max-width: 100% !important;
+  }
+  .home-main {
+    padding: 16px 20px !important;
+  }
+  .premium-card {
+    padding: 24px !important;
+  }
+
   /* Base Table styling */
   .premium-table {
     width: 100%;
@@ -343,21 +354,20 @@
     background: #f8fafc;
     color: var(--text-secondary);
     font-weight: 700;
-    font-size: 13px;
+    font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    padding: 16px 20px;
+    padding: 18px 20px;
     border-bottom: 1.5px solid var(--card-border);
     text-align: left;
     white-space: nowrap;
   }
   .premium-table td {
-    padding: 16px 20px;
+    padding: 18px 20px;
     border-bottom: 1px solid var(--card-border);
-    font-size: 14px;
+    font-size: 15px;
     color: var(--text-primary);
     vertical-align: middle;
-    white-space: nowrap;
   }
   .user-row {
     transition: opacity 0.2s ease, transform 0.2s ease;

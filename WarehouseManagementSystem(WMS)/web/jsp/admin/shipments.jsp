@@ -49,13 +49,13 @@
     </div>
 
     <!-- Card 2: In Progress -->
-    <div class="premium-card stats-card" onclick="filterByCard('SHIPPING')" style="padding: 24px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #3b82f6; background: linear-gradient(135deg, #ffffff, #eff6ff); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
+    <div class="premium-card stats-card" onclick="filterByCard('PICKING')" style="padding: 24px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #3b82f6; background: linear-gradient(135deg, #ffffff, #eff6ff); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
       <div>
-        <span style="font-size: 13px; font-weight: 600; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.05em;">Đang giao hàng</span>
+        <span style="font-size: 13px; font-weight: 600; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.05em;">Đang xử lý</span>
         <h3 style="font-size: 32px; font-weight: 800; color: #2563eb; margin: 8px 0 4px 0; font-family: system-ui, -apple-system, sans-serif;">${shippingCount}</h3>
         <p style="font-size: 13px; color: #1e40af; margin: 0; display: flex; align-items: center; gap: 4px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          Đang vận chuyển đến điểm nhận
+          Đang thực hiện lấy hàng & đóng gói
         </p>
       </div>
       <div style="width: 56px; height: 56px; border-radius: 12px; background: rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: center; color: #2563eb;">
@@ -110,10 +110,9 @@
                 onfocus="this.style.borderColor='var(--primary-color)';" 
                 onblur="this.style.borderColor='var(--card-border)';">
           <option value="ALL" ${selectedStatus == 'ALL' || empty selectedStatus ? 'selected' : ''}>Tất cả trạng thái</option>
-          <option value="DRAFT" ${selectedStatus == 'DRAFT' ? 'selected' : ''}>Nháp</option>
           <option value="PENDING" ${selectedStatus == 'PENDING' ? 'selected' : ''}>Chờ phê duyệt</option>
           <option value="APPROVED" ${selectedStatus == 'APPROVED' ? 'selected' : ''}>Đã duyệt</option>
-          <option value="SHIPPING" ${selectedStatus == 'SHIPPING' ? 'selected' : ''}>Đang giao hàng</option>
+          <option value="PICKING" ${selectedStatus == 'PICKING' ? 'selected' : ''}>Lấy & Đóng gói (Picking)</option>
           <option value="COMPLETED" ${selectedStatus == 'COMPLETED' ? 'selected' : ''}>Đã hoàn thành</option>
           <option value="CANCELLED" ${selectedStatus == 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
         </select>
@@ -199,8 +198,8 @@
                   <c:when test="${s.status == 'APPROVED'}">
                     <span class="premium-tag" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">Đã duyệt</span>
                   </c:when>
-                  <c:when test="${s.status == 'SHIPPING'}">
-                    <span class="premium-tag" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">Đang giao hàng</span>
+                  <c:when test="${s.status == 'PICKING'}">
+                    <span class="premium-tag" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">Lấy & Đóng gói</span>
                   </c:when>
                   <c:when test="${s.status == 'COMPLETED'}">
                     <span class="premium-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">Đã hoàn thành</span>
@@ -229,14 +228,14 @@
                       Xem chi tiết
                     </a>
                     
-                    <c:if test="${s.status == 'DRAFT'}">
+                    <c:if test="${s.status == 'DRAFT' || s.status == 'PENDING'}">
                       <c:if test="${currentUser.hasPermission('SHIPMENT_WRITE')}">
-                        <a href="${pageContext.request.contextPath}/admin/shipments?action=delete&id=${s.id}" class="action-dropdown-item action-dropdown-item--danger" onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu xuất nháp này không? Hành động này không thể hoàn tác.');" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: #ef4444; text-decoration: none; transition: background 0.15s;">
+                        <a href="${pageContext.request.contextPath}/admin/shipments?action=delete&id=${s.id}" class="action-dropdown-item action-dropdown-item--danger" onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu xuất này không? Hành động này không thể hoàn tác.');" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: #ef4444; text-decoration: none; transition: background 0.15s;">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="3 6 5 6 21 6"></polyline>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                           </svg>
-                          Xóa phiếu nháp
+                          Xóa yêu cầu xuất
                         </a>
                       </c:if>
                     </c:if>
