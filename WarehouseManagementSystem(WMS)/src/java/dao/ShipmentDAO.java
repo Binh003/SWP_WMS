@@ -387,8 +387,12 @@ public class ShipmentDAO {
         }
         
         if (statusVal != null && !statusVal.trim().isEmpty() && !"ALL".equals(statusVal)) {
-            sql.append("AND s.status = ? ");
-            params.add(statusVal);
+            if ("APPROVED".equals(statusVal)) {
+                sql.append("AND (s.status = 'APPROVED' OR s.status = 'PENDING') ");
+            } else {
+                sql.append("AND s.status = ? ");
+                params.add(statusVal);
+            }
         }
 
         if (creatorId != null) {
@@ -459,8 +463,12 @@ public class ShipmentDAO {
         }
         
         if (statusVal != null && !statusVal.trim().isEmpty() && !"ALL".equals(statusVal)) {
-            sql.append("AND s.status = ? ");
-            params.add(statusVal);
+            if ("APPROVED".equals(statusVal)) {
+                sql.append("AND (s.status = 'APPROVED' OR s.status = 'PENDING') ");
+            } else {
+                sql.append("AND s.status = ? ");
+                params.add(statusVal);
+            }
         }
 
         if (creatorId != null) {
@@ -526,8 +534,8 @@ public class ShipmentDAO {
                 }
             }
 
-            if (!"DRAFT".equals(status) && !"PENDING".equals(status)) {
-                throw new SQLException("Chỉ có thể xóa phiếu ở trạng thái Nháp (DRAFT) hoặc Chờ duyệt (PENDING).");
+            if (!"DRAFT".equals(status) && !"PENDING".equals(status) && !"APPROVED".equals(status)) {
+                throw new SQLException("Chỉ có thể xóa phiếu ở trạng thái Nháp (DRAFT), Chờ duyệt (PENDING) hoặc Chờ lấy hàng (APPROVED).");
             }
 
             // 1. Delete details

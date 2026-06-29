@@ -53,13 +53,13 @@ public class ShipmentServlet extends HttpServlet {
         
         // 1. Calculate stats counts
         List<Shipment> allShipments = shipmentDAO.getAll();
-        int pendingCount = 0;
-        int shippingCount = 0;
-        int completedCount = 0;
+        int pendingCount = 0; // Represents "Chờ lấy hàng" (APPROVED + PENDING)
+        int shippingCount = 0; // Represents "Đang xử lý" (PICKING)
+        int completedCount = 0; // Represents "Hoàn thành" (COMPLETED)
         for (Shipment s : allShipments) {
-            if ("PENDING".equals(s.getStatus())) {
+            if ("PENDING".equals(s.getStatus()) || "APPROVED".equals(s.getStatus())) {
                 pendingCount++;
-            } else if ("APPROVED".equals(s.getStatus()) || "PICKING".equals(s.getStatus())) {
+            } else if ("PICKING".equals(s.getStatus())) {
                 shippingCount++;
             } else if ("COMPLETED".equals(s.getStatus())) {
                 completedCount++;
@@ -189,7 +189,7 @@ public class ShipmentServlet extends HttpServlet {
         
         String status = WebUtil.param(request, "status");
         if (status == null || status.trim().isEmpty()) {
-            status = "PENDING";
+            status = "APPROVED";
         }
         s.setStatus(status);
 
@@ -229,7 +229,7 @@ public class ShipmentServlet extends HttpServlet {
 
         try {
             shipmentDAO.insertWithDetails(s);
-            String msg = "Đã gửi yêu cầu phê duyệt phiếu xuất kho thành công";
+            String msg = "Đã tạo phiếu xuất kho thành công";
             WebUtil.setFlashSuccess(request, msg);
             WebUtil.redirect(request, response, "/admin/shipments");
         } catch (SQLException ex) {

@@ -27,14 +27,14 @@
   <!-- Stats/Summary Cards -->
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 28px;">
     
-    <!-- Card 1: Pending Approval -->
-    <div class="premium-card stats-card" onclick="filterByCard('PENDING')" style="padding: 24px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #f59e0b; background: linear-gradient(135deg, #ffffff, #fefaf0); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
+    <!-- Card 1: Pending Pick -->
+    <div class="premium-card stats-card" onclick="filterByCard('APPROVED')" style="padding: 24px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #f59e0b; background: linear-gradient(135deg, #ffffff, #fefaf0); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
       <div>
-        <span style="font-size: 13px; font-weight: 600; color: #78350f; text-transform: uppercase; letter-spacing: 0.05em;">Chờ phê duyệt</span>
+        <span style="font-size: 13px; font-weight: 600; color: #78350f; text-transform: uppercase; letter-spacing: 0.05em;">Chờ lấy hàng</span>
         <h3 style="font-size: 32px; font-weight: 800; color: #d97706; margin: 8px 0 4px 0; font-family: system-ui, -apple-system, sans-serif;">${pendingCount}</h3>
         <p style="font-size: 13px; color: #92400e; margin: 0; display: flex; align-items: center; gap: 4px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-          Yêu cầu xuất chờ Manager duyệt
+          Phiếu xuất kho chờ lấy hàng
         </p>
       </div>
       <div style="width: 56px; height: 56px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); display: flex; align-items: center; justify-content: center; color: #d97706;">
@@ -110,8 +110,7 @@
                 onfocus="this.style.borderColor='var(--primary-color)';" 
                 onblur="this.style.borderColor='var(--card-border)';">
           <option value="ALL" ${selectedStatus == 'ALL' || empty selectedStatus ? 'selected' : ''}>Tất cả trạng thái</option>
-          <option value="PENDING" ${selectedStatus == 'PENDING' ? 'selected' : ''}>Chờ phê duyệt</option>
-          <option value="APPROVED" ${selectedStatus == 'APPROVED' ? 'selected' : ''}>Đã duyệt</option>
+          <option value="APPROVED" ${selectedStatus == 'APPROVED' ? 'selected' : ''}>Chờ lấy hàng</option>
           <option value="PICKING" ${selectedStatus == 'PICKING' ? 'selected' : ''}>Lấy & Đóng gói (Picking)</option>
           <option value="COMPLETED" ${selectedStatus == 'COMPLETED' ? 'selected' : ''}>Đã hoàn thành</option>
           <option value="CANCELLED" ${selectedStatus == 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
@@ -193,10 +192,10 @@
                     <span class="premium-tag" style="background: rgba(100, 116, 139, 0.1); color: #64748b;">Nháp</span>
                   </c:when>
                   <c:when test="${s.status == 'PENDING'}">
-                    <span class="premium-tag" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">Chờ phê duyệt</span>
+                    <span class="premium-tag" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">Chờ lấy hàng</span>
                   </c:when>
                   <c:when test="${s.status == 'APPROVED'}">
-                    <span class="premium-tag" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">Đã duyệt</span>
+                    <span class="premium-tag" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">Chờ lấy hàng</span>
                   </c:when>
                   <c:when test="${s.status == 'PICKING'}">
                     <span class="premium-tag" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">Lấy & Đóng gói</span>

@@ -83,13 +83,13 @@
         <textarea id="notes" name="notes" rows="3" placeholder="Nhập ghi chú cho phiếu xuất kho này..." style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary); resize: vertical;"></textarea>
       </div>
 
-      <input type="hidden" id="statusField" name="status" value="PENDING"/>
+      <input type="hidden" id="statusField" name="status" value="APPROVED"/>
       <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; border-top: 1px solid var(--card-border); padding-top: 24px;">
         <a href="${pageContext.request.contextPath}/admin/shipments" class="premium-btn-outline" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: 44px; padding: 0 24px; box-sizing: border-box;">
           Hủy bỏ
         </a>
-        <button type="submit" onclick="document.getElementById('statusField').value='PENDING'" class="premium-btn-primary" style="height: 44px; padding: 0 24px; cursor: pointer;">
-          Gửi Yêu Cầu Duyệt
+        <button type="submit" onclick="document.getElementById('statusField').value='APPROVED'" class="premium-btn-primary" style="height: 44px; padding: 0 24px; cursor: pointer;">
+          Tạo Phiếu Xuất
         </button>
       </div>
     </form>
