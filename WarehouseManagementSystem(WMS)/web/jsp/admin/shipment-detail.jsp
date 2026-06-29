@@ -62,46 +62,29 @@
         <div style="width: 100%; height: 100%; background: #e2e8f0;"></div>
         <!-- Active line -->
         <div style="position: absolute; top: 0; left: 0; height: 100%; background: var(--primary-color); z-index: 2; transition: width 0.5s ease; width: <c:choose>
-          <c:when test="${shipment.status == 'DRAFT' || shipment.status == 'PENDING'}">0%</c:when>
-          <c:when test="${shipment.status == 'APPROVED'}">33.3%</c:when>
-          <c:when test="${shipment.status == 'PICKING'}">66.6%</c:when>
+          <c:when test="${shipment.status == 'DRAFT' || shipment.status == 'PENDING' || shipment.status == 'APPROVED'}">0%</c:when>
+          <c:when test="${shipment.status == 'PICKING'}">50%</c:when>
           <c:when test="${shipment.status == 'COMPLETED'}">100%</c:when>
         </c:choose>;"></div>
       </div>
       
       <!-- Steps -->
-      <!-- Step 1: PENDING -->
+      <!-- Step 1: APPROVED -->
       <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 150px; text-align: center; flex-shrink: 0;">
         <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
           <c:choose>
-            <c:when test="${shipment.status == 'PENDING' || shipment.status == 'DRAFT'}">background: #d97706; color: #ffffff;</c:when>
+            <c:when test="${shipment.status == 'PENDING' || shipment.status == 'DRAFT' || shipment.status == 'APPROVED'}">background: #d97706; color: #ffffff;</c:when>
             <c:otherwise>background: #10b981; color: #ffffff;</c:otherwise>
           </c:choose>">
           <c:choose>
-            <c:when test="${shipment.status == 'PENDING' || shipment.status == 'DRAFT'}">1</c:when>
+            <c:when test="${shipment.status == 'PENDING' || shipment.status == 'DRAFT' || shipment.status == 'APPROVED'}">1</c:when>
             <c:otherwise>✓</c:otherwise>
           </c:choose>
         </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'PENDING' || shipment.status == 'DRAFT' ? '#d97706' : 'var(--text-secondary)'};">Tạo yêu cầu</span>
+        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'PENDING' || shipment.status == 'DRAFT' || shipment.status == 'APPROVED' ? '#d97706' : 'var(--text-secondary)'};">Tạo phiếu xuất</span>
       </div>
       
-      <!-- Step 2: APPROVED -->
-      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 150px; text-align: center; flex-shrink: 0;">
-        <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
-          <c:choose>
-            <c:when test="${shipment.status == 'APPROVED'}">background: #3b82f6; color: #ffffff;</c:when>
-            <c:when test="${shipment.status == 'PICKING' || shipment.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
-            <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
-          </c:choose>">
-          <c:choose>
-            <c:when test="${shipment.status == 'DRAFT' || shipment.status == 'PENDING' || shipment.status == 'APPROVED'}">2</c:when>
-            <c:otherwise>✓</c:otherwise>
-          </c:choose>
-        </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'APPROVED' ? '#3b82f6' : 'var(--text-secondary)'};">Tạo phiếu xuất</span>
-      </div>
-      
-      <!-- Step 3: PICKING -->
+      <!-- Step 2: PICKING -->
       <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 150px; text-align: center; flex-shrink: 0;">
         <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
           <c:choose>
@@ -110,21 +93,21 @@
             <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
           </c:choose>">
           <c:choose>
-            <c:when test="${shipment.status == 'DRAFT' || shipment.status == 'PENDING' || shipment.status == 'APPROVED' || shipment.status == 'PICKING'}">3</c:when>
-            <c:otherwise>✓</c:otherwise>
+            <c:when test="${shipment.status == 'COMPLETED'}">✓</c:when>
+            <c:otherwise>2</c:otherwise>
           </c:choose>
         </div>
         <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'PICKING' ? '#a855f7' : 'var(--text-secondary)'};">Lấy & Đóng gói</span>
       </div>
       
-      <!-- Step 4: COMPLETED -->
+      <!-- Step 3: COMPLETED -->
       <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 150px; text-align: center; flex-shrink: 0;">
         <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
           <c:choose>
             <c:when test="${shipment.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
             <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
           </c:choose>">
-          4
+          3
         </div>
         <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)'};">Xác nhận xuất kho</span>
       </div>
@@ -193,19 +176,6 @@
           </div>
         </div>
         <div>
-          <div style="margin-bottom: 12px;">
-            <span style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block;">Người phê duyệt (Director)</span>
-            <span style="font-size: 14px; font-weight: 600; color: #334155;">
-              <c:choose>
-                <c:when test="${not empty shipment.getConfirmer()}">
-                  ${shipment.getConfirmer().fullName}
-                </c:when>
-                <c:otherwise>
-                  <span style="color: #94a3b8; font-style: italic;">Chưa phê duyệt</span>
-                </c:otherwise>
-              </c:choose>
-            </span>
-          </div>
           <div>
             <span style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block;">Nhân viên xuất kho (Thủ kho)</span>
             <span style="font-size: 14px; font-weight: 600; color: #334155;">
@@ -280,25 +250,11 @@
       </div>
 
       <!-- Signature section for print -->
-      <div style="margin-top: 50px; display: flex; justify-content: space-between; text-align: center; font-size: 14px;">
+      <div style="margin-top: 50px; display: flex; justify-content: space-around; text-align: center; font-size: 14px;">
         <div style="width: 200px;">
           <span style="font-weight: 700; display: block; margin-bottom: 60px; text-transform: uppercase; color: #475569;">Người lập phiếu</span>
           <span style="color: #64748b; font-size: 12px;">(Ký, ghi rõ họ tên)</span>
           <div style="margin-top: 15px; font-weight: 600; color: #0f172a;">${shipment.creator.fullName}</div>
-        </div>
-        <div style="width: 200px;">
-          <span style="font-weight: 700; display: block; margin-bottom: 60px; text-transform: uppercase; color: #475569;">Người phê duyệt (Director)</span>
-          <span style="color: #64748b; font-size: 12px;">(Ký, ghi rõ họ tên)</span>
-          <div style="margin-top: 15px; font-weight: 600; color: #0f172a;">
-            <c:choose>
-              <c:when test="${not empty shipment.getConfirmer()}">
-                ${shipment.getConfirmer().fullName}
-              </c:when>
-              <c:otherwise>
-                <span style="color: #94a3b8; font-style: italic;">.....................................</span>
-              </c:otherwise>
-            </c:choose>
-          </div>
         </div>
         <div style="width: 200px;">
           <span style="font-weight: 700; display: block; margin-bottom: 60px; text-transform: uppercase; color: #475569;">Nhân viên xuất kho (Thủ kho)</span>
@@ -369,28 +325,7 @@
               </button>
             </div>
           </c:when>
-          
-          <c:when test="${shipment.status == 'PENDING'}">
-            <c:choose>
-              <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('DIRECTOR')}">
-                <div style="display: flex; gap: 8px;">
-                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='APPROVED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important;">
-                    Phê duyệt phiếu
-                  </button>
-                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border-color: #fecaca; height: 36px !important; padding: 0 16px; font-size: 13px;">
-                    Từ chối & Hủy
-                  </button>
-                </div>
-              </c:when>
-              <c:otherwise>
-                <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid #fde68a; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #d97706; font-weight: 600;">
-                  Đang chờ Giám đốc hoặc Admin phê duyệt...
-                </div>
-              </c:otherwise>
-            </c:choose>
-          </c:when>
-          
-          <c:when test="${shipment.status == 'APPROVED'}">
+          <c:when test="${shipment.status == 'PENDING' || shipment.status == 'APPROVED'}">
             <c:choose>
               <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
                 <div style="display: flex; gap: 8px;">
@@ -540,10 +475,10 @@
                 <span class="premium-tag" style="background: rgba(100, 116, 139, 0.1); color: #64748b; font-weight: 600;">Nháp</span>
               </c:when>
               <c:when test="${shipment.status == 'PENDING'}">
-                <span class="premium-tag" style="background: rgba(245, 158, 11, 0.1); color: #d97706; font-weight: 600;">Chờ phê duyệt</span>
+                <span class="premium-tag" style="background: rgba(245, 158, 11, 0.1); color: #d97706; font-weight: 600;">Chờ lấy hàng</span>
               </c:when>
               <c:when test="${shipment.status == 'APPROVED'}">
-                <span class="premium-tag" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; font-weight: 600;">Đã duyệt</span>
+                <span class="premium-tag" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; font-weight: 600;">Chờ lấy hàng</span>
               </c:when>
               <c:when test="${shipment.status == 'PICKING'}">
                 <span class="premium-tag" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; font-weight: 600;">Lấy & Đóng gói</span>
