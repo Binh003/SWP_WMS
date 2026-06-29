@@ -107,8 +107,8 @@
       <div style="flex: 1; min-width: 160px;">
         <select id="filter-status" onchange="submitFilter()" 
                 style="width: 100%; padding: 10px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s; box-sizing: border-box;"
-                onfocus="this.style.borderColor='var(--primary-color)';" 
-                onblur="this.style.borderColor='var(--card-border)';">
+                 onfocus="this.style.borderColor='var(--primary-color)';" 
+                 onblur="this.style.borderColor='var(--card-border)';">
           <option value="ALL" ${selectedStatus == 'ALL' || empty selectedStatus ? 'selected' : ''}>Tất cả trạng thái</option>
           <option value="APPROVED" ${selectedStatus == 'APPROVED' ? 'selected' : ''}>Chờ lấy hàng</option>
           <option value="PICKING" ${selectedStatus == 'PICKING' ? 'selected' : ''}>Lấy & Đóng gói (Picking)</option>
