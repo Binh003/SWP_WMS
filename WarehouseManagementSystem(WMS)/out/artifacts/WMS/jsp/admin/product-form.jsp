@@ -44,13 +44,13 @@
       </div>
 
       <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-        <label for="sku" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Mã SKU <span style="color: #ef4444;">*</span></label>
-        <input type="text" id="sku" name="sku" value="${isEdit ? product.sku : ''}" required placeholder="Nhập mã SKU (VD: IP15-PM-256)" style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary); font-family: monospace;" />
+        <label for="name" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Tên sản phẩm <span style="color: #ef4444;">*</span></label>
+        <input type="text" id="name" name="name" value="${isEdit ? product.name : ''}" required placeholder="Nhập tên sản phẩm" style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary);" />
       </div>
 
       <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-        <label for="name" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Tên sản phẩm <span style="color: #ef4444;">*</span></label>
-        <input type="text" id="name" name="name" value="${isEdit ? product.name : ''}" required placeholder="Nhập tên sản phẩm" style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary);" />
+        <label for="sku" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Mã SKU <span style="color: #ef4444;">*</span></label>
+        <input type="text" id="sku" name="sku" value="${isEdit ? product.sku : ''}" required placeholder="Mã SKU (Tự động tạo ngắn gọn từ Dòng sản phẩm & Tên sản phẩm)" style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary); font-family: monospace;" />
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
@@ -69,7 +69,7 @@
             <span style="position: absolute; right: 16px; color: var(--text-secondary); font-weight: 600; font-size: 14px; pointer-events: none;">đ</span>
           </div>
           <input type="hidden" id="price" name="price" value="${isEdit && not empty product.price ? formattedPrice : ''}" />
-          <span id="priceError" style="color: #ef4444; font-size: 13px; margin-top: 2px; display: none;">Giá bán không hợp lệ (chỉ nhập số nguyên hệ 10 và không âm)</span>
+          <span id="priceError" style="color: #ef4444; font-size: 13px; margin-top: 2px; display: none;">Giá bán không hợp lệ (từ 0đ đến tối đa 99.999.999.999đ)</span>
         </div>
       </div>
 
@@ -259,7 +259,169 @@
     clearBtn.style.display = 'none';
   }
 
+  let isSkuManual = false;
+
+  function removeVietnameseTones(str) {
+    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a"); 
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e"); 
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g,"i"); 
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o"); 
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u"); 
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g,"y"); 
+    str = str.replace(/đ/g,"d");
+    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+    str = str.replace(/Đ/g, "D");
+    str = str.replace(/\u0300|\u0301|\u0309|\u0303|\u0323/g, "");
+    str = str.replace(/\u02C6|\u0306|\u031B/g, "");
+    return str;
+  }
+
+  function cleanStringForSku(str) {
+    if (!str) return "";
+    return removeVietnameseTones(str)
+      .toUpperCase()
+      .replace(/[^A-Z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+  }
+
+  function generateSkuAutomatically() {
+    const plSelect = document.getElementById('productLineId');
+    const nameInput = document.getElementById('name');
+    const skuInput = document.getElementById('sku');
+    if (!skuInput) return;
+
+    let brandAbbr = "";
+    let lineAbbr = "";
+    let specPart = "";
+
+    const seenWords = new Set();
+
+    if (plSelect && plSelect.selectedIndex > 0) {
+      const selectedText = plSelect.options[plSelect.selectedIndex].text;
+      const parts = selectedText.split('-');
+      if (parts.length >= 2) {
+        const brand = parts[0].trim();
+        const line = parts[1].trim();
+
+        const cleanBrand = removeVietnameseTones(brand).toUpperCase().replace(/[^A-Z0-9]/g, "");
+        brandAbbr = cleanBrand.slice(0, 3);
+
+        removeVietnameseTones(brand)
+          .toUpperCase()
+          .split(/[\s-]+/)
+          .forEach(w => { if (w) seenWords.add(w); });
+
+        const lineWords = removeVietnameseTones(line)
+          .toUpperCase()
+          .replace(/[^A-Z0-9\s]/g, "")
+          .split(/\s+/)
+          .filter(w => w !== "");
+        
+        lineWords.forEach(w => seenWords.add(w));
+
+        lineAbbr = lineWords.map(w => {
+          if (/\d/.test(w)) return w; 
+          return w.charAt(0);
+        }).join("");
+      } else {
+        const cleanText = removeVietnameseTones(selectedText).toUpperCase().replace(/[^A-Z0-9]/g, "");
+        brandAbbr = cleanText.slice(0, 3);
+        
+        removeVietnameseTones(selectedText)
+          .toUpperCase()
+          .split(/[\s-]+/)
+          .forEach(w => { if (w) seenWords.add(w); });
+      }
+    }
+
+    if (nameInput && nameInput.value.trim() !== '') {
+      const nameVal = nameInput.value.trim();
+      const nameWords = removeVietnameseTones(nameVal)
+        .toUpperCase()
+        .replace(/[^A-Z0-9\s]/g, " ")
+        .split(/\s+/)
+        .filter(w => w !== "");
+
+      const remainingWords = nameWords.filter(w => !seenWords.has(w));
+
+      if (remainingWords.length > 0) {
+        specPart = remainingWords.map(w => {
+          if (/\d/.test(w)) return w; 
+          
+          const colorMap = {
+            "BLACK": "BLK",
+            "WHITE": "WHT",
+            "YELLOW": "YEL",
+            "GREEN": "GRN",
+            "BLUE": "BLU",
+            "RED": "RED",
+            "GOLD": "GLD",
+            "SILVER": "SLV",
+            "GREY": "GRY",
+            "GRAY": "GRY",
+            "ORANGE": "ORG",
+            "PINK": "PNK",
+            "PURPLE": "PRP"
+          };
+          if (colorMap[w]) return colorMap[w];
+          
+          return w.slice(0, 3); 
+        }).join("-");
+      }
+    }
+
+    let finalSku = brandAbbr;
+    if (lineAbbr) finalSku += "-" + lineAbbr;
+    if (specPart) finalSku += "-" + specPart;
+
+    skuInput.value = finalSku;
+    
+    skuInput.style.borderColor = 'var(--primary-color)';
+    setTimeout(() => {
+      skuInput.style.borderColor = '';
+    }, 500);
+  }
+
   document.addEventListener("DOMContentLoaded", function() {
+    // Listen for manual SKU edits
+    const skuInput = document.getElementById('sku');
+    if (skuInput) {
+      if (skuInput.value.trim() !== '') {
+        isSkuManual = true;
+      }
+      skuInput.addEventListener('input', function() {
+        isSkuManual = (this.value.trim() !== '');
+      });
+    }
+
+    // Auto generate SKU for new products when criteria changes
+    if (!${isEdit}) {
+      const plSelect = document.getElementById('productLineId');
+      if (plSelect) {
+        plSelect.addEventListener('change', function() {
+          if (!isSkuManual) {
+            generateSkuAutomatically();
+          }
+        });
+      }
+
+      const nameInput = document.getElementById('name');
+      if (nameInput) {
+        nameInput.addEventListener('input', function() {
+          if (!isSkuManual) {
+            generateSkuAutomatically();
+          }
+        });
+      }
+    }
+
     // Determine active tab on load based on whether an image URL exists and is not a local upload path
     const imageUrlInput = document.getElementById('imageUrl');
     if (imageUrlInput && imageUrlInput.value && !imageUrlInput.value.startsWith('/uploads/')) {
@@ -327,7 +489,10 @@
         let cursorPosition = this.selectionStart;
         const originalLength = this.value.length;
         
-        const cleanValue = this.value.replace(/\D/g, '');
+        let cleanValue = this.value.replace(/\D/g, '');
+        if (cleanValue.length > 11) {
+          cleanValue = cleanValue.slice(0, 11);
+        }
         priceHidden.value = cleanValue;
         
         const formatted = formatVND(cleanValue);
@@ -350,7 +515,7 @@
             return;
           }
           const priceNum = parseInt(val, 10);
-          if (priceNum < 0) {
+          if (priceNum < 0 || priceNum > 99999999999) {
             e.preventDefault();
             priceError.style.display = 'block';
             priceDisplay.focus();
