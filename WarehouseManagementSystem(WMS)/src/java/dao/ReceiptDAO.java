@@ -112,6 +112,8 @@ public class ReceiptDAO {
                     rd.setReceiptId(rs.getLong("receipt_id"));
                     rd.setProductId(rs.getLong("product_id"));
                     rd.setQuantity(rs.getInt("quantity"));
+                    rd.setBatchCode(rs.getString("batch_code"));
+                    rd.setBarcode(rs.getString("barcode"));
                     
                     Product p = new Product();
                     p.setId(rs.getLong("product_id"));
@@ -188,6 +190,32 @@ public class ReceiptDAO {
                 }
             }
 
+            // Generate batch code and barcode for details
+            for (ReceiptDetail detail : receipt.getDetails()) {
+                if (detail.getBatchCode() == null || detail.getBatchCode().trim().isEmpty()) {
+                    detail.setBatchCode("BAT-" + receipt.getReceiptCode());
+                } else {
+                    detail.setBatchCode(detail.getBatchCode().trim());
+                }
+                
+                String sku = "";
+                String sqlGetSku = "SELECT sku FROM products WHERE id = ?";
+                try (PreparedStatement psSku = conn.prepareStatement(sqlGetSku)) {
+                    psSku.setLong(1, detail.getProductId());
+                    try (ResultSet rsSku = psSku.executeQuery()) {
+                        if (rsSku.next()) {
+                            sku = rsSku.getString("sku");
+                        }
+                    }
+                }
+                
+                String barcode = sku + "-" + receipt.getReceiptCode();
+                if (!detail.getBatchCode().startsWith("BAT-")) {
+                    barcode += "-" + detail.getBatchCode();
+                }
+                detail.setBarcode(barcode);
+            }
+
             // 1b. Insert initial history entry
             String sqlInsertHistory = "INSERT INTO receipt_history (receipt_id, from_status, to_status, changed_by, notes) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(sqlInsertHistory)) {
@@ -200,27 +228,56 @@ public class ReceiptDAO {
             }
 
             // 2. Insert Receipt Details and update Inventory if status is COMPLETED
-            String sqlDetail = "INSERT INTO receipt_details (receipt_id, product_id, quantity) VALUES (?, ?, ?)";
-            String sqlUpdateInv = "UPDATE inventories SET quantity_in_stock = quantity_in_stock + ? WHERE product_id = ?";
+            String sqlDetail = "INSERT INTO receipt_details (receipt_id, product_id, quantity, batch_code, barcode) VALUES (?, ?, ?, ?, ?)";
+            String sqlCheckInv = "SELECT id, quantity_in_stock FROM inventories WHERE product_id = ? AND batch_code = ? AND barcode = ?";
+            String sqlInsertInv = "INSERT INTO inventories (product_id, batch_code, barcode, quantity_in_stock, min_stock_level, last_updated) VALUES (?, ?, ?, ?, 10, CURRENT_TIMESTAMP)";
+            String sqlUpdateInv = "UPDATE inventories SET quantity_in_stock = quantity_in_stock + ?, last_updated = CURRENT_TIMESTAMP WHERE id = ?";
             
-            try (PreparedStatement psDetail = conn.prepareStatement(sqlDetail);
-                 PreparedStatement psInv = conn.prepareStatement(sqlUpdateInv)) {
-                 
+            try (PreparedStatement psDetail = conn.prepareStatement(sqlDetail)) {
                 for (ReceiptDetail detail : receipt.getDetails()) {
                     psDetail.setLong(1, receipt.getId());
                     psDetail.setLong(2, detail.getProductId());
                     psDetail.setInt(3, detail.getQuantity());
+                    psDetail.setString(4, detail.getBatchCode());
+                    psDetail.setString(5, detail.getBarcode());
                     psDetail.addBatch();
-                    
-                    if ("COMPLETED".equals(receipt.getStatus())) {
-                        psInv.setInt(1, detail.getQuantity());
-                        psInv.setLong(2, detail.getProductId());
-                        psInv.addBatch();
-                    }
                 }
                 psDetail.executeBatch();
+                
                 if ("COMPLETED".equals(receipt.getStatus())) {
-                    psInv.executeBatch();
+                    for (ReceiptDetail detail : receipt.getDetails()) {
+                        int qty = detail.getQuantity();
+                        for (int k = 1; k <= qty; k++) {
+                            String itemBarcode = detail.getBarcode() + "-" + k;
+                            long inventoryId = -1;
+                            try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckInv)) {
+                                psCheck.setLong(1, detail.getProductId());
+                                psCheck.setString(2, detail.getBatchCode());
+                                psCheck.setString(3, itemBarcode);
+                                try (ResultSet rsCheck = psCheck.executeQuery()) {
+                                    if (rsCheck.next()) {
+                                        inventoryId = rsCheck.getLong("id");
+                                    }
+                                }
+                            }
+                            
+                            if (inventoryId != -1) {
+                                try (PreparedStatement psUpdate = conn.prepareStatement(sqlUpdateInv)) {
+                                    psUpdate.setInt(1, 1);
+                                    psUpdate.setLong(2, inventoryId);
+                                    psUpdate.executeUpdate();
+                                }
+                            } else {
+                                try (PreparedStatement psInsert = conn.prepareStatement(sqlInsertInv)) {
+                                    psInsert.setLong(1, detail.getProductId());
+                                    psInsert.setString(2, detail.getBatchCode());
+                                    psInsert.setString(3, itemBarcode);
+                                    psInsert.setInt(4, 1);
+                                    psInsert.executeUpdate();
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -319,14 +376,42 @@ public class ReceiptDAO {
             // 3. Update inventory if transitioning to COMPLETED from another status
             if ("COMPLETED".equals(newStatus) && !"COMPLETED".equals(currentStatus)) {
                 List<ReceiptDetail> details = getDetailsByReceiptId(conn, id);
-                String sqlUpdateInv = "UPDATE inventories SET quantity_in_stock = quantity_in_stock + ? WHERE product_id = ?";
-                try (PreparedStatement psInv = conn.prepareStatement(sqlUpdateInv)) {
-                    for (ReceiptDetail d : details) {
-                        psInv.setInt(1, d.getQuantity());
-                        psInv.setLong(2, d.getProductId());
-                        psInv.addBatch();
+                String sqlCheckInv = "SELECT id, quantity_in_stock FROM inventories WHERE product_id = ? AND batch_code = ? AND barcode = ?";
+                String sqlInsertInv = "INSERT INTO inventories (product_id, batch_code, barcode, quantity_in_stock, min_stock_level, last_updated) VALUES (?, ?, ?, ?, 10, CURRENT_TIMESTAMP)";
+                String sqlUpdateInv = "UPDATE inventories SET quantity_in_stock = quantity_in_stock + ?, last_updated = CURRENT_TIMESTAMP WHERE id = ?";
+                
+                for (ReceiptDetail d : details) {
+                    int qty = d.getQuantity();
+                    for (int k = 1; k <= qty; k++) {
+                        String itemBarcode = d.getBarcode() + "-" + k;
+                        long inventoryId = -1;
+                        try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckInv)) {
+                            psCheck.setLong(1, d.getProductId());
+                            psCheck.setString(2, d.getBatchCode());
+                            psCheck.setString(3, itemBarcode);
+                            try (ResultSet rsCheck = psCheck.executeQuery()) {
+                                if (rsCheck.next()) {
+                                    inventoryId = rsCheck.getLong("id");
+                                }
+                            }
+                        }
+                        
+                        if (inventoryId != -1) {
+                            try (PreparedStatement psUpdate = conn.prepareStatement(sqlUpdateInv)) {
+                                psUpdate.setInt(1, 1);
+                                psUpdate.setLong(2, inventoryId);
+                                psUpdate.executeUpdate();
+                            }
+                        } else {
+                            try (PreparedStatement psInsert = conn.prepareStatement(sqlInsertInv)) {
+                                psInsert.setLong(1, d.getProductId());
+                                psInsert.setString(2, d.getBatchCode());
+                                psInsert.setString(3, itemBarcode);
+                                psInsert.setInt(4, 1);
+                                psInsert.executeUpdate();
+                            }
+                        }
                     }
-                    psInv.executeBatch();
                 }
             }
             

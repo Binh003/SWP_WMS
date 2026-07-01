@@ -248,6 +248,8 @@
             <th style="padding: 10px 12px; font-weight: 700; color: #475569;">#</th>
             <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Mã sản phẩm</th>
             <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Tên sản phẩm</th>
+            <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Số lô (Batch Code)</th>
+            <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Mã vạch (Barcode)</th>
             <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right;">Đơn vị</th>
             <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right; width: 150px;">Số lượng thực nhận</th>
           </tr>
@@ -258,6 +260,24 @@
               <td style="padding: 10px 12px; color: #64748b;">${status.index + 1}</td>
               <td style="padding: 10px 12px; font-family: monospace; font-weight: 600; color: #0f172a;">${detail.product.sku}</td>
               <td style="padding: 10px 12px; font-weight: 600; color: #334155;">${detail.product.name}</td>
+              <td style="padding: 10px 12px; font-family: monospace; color: #475569;">
+                <c:choose>
+                  <c:when test="${not empty detail.batchCode}">${detail.batchCode}</c:when>
+                  <c:otherwise><span style="color: #94a3b8; font-style: italic;">Chưa sinh</span></c:otherwise>
+                </c:choose>
+              </td>
+              <td style="padding: 10px 12px; font-family: monospace; color: #475569;">
+                <c:choose>
+                  <c:when test="${not empty detail.barcode}">
+                    <div style="max-height: 80px; overflow-y: auto; padding: 4px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; display: flex; flex-direction: column; gap: 4px; width: fit-content; min-width: 200px;">
+                      <c:forEach var="k" begin="1" end="${detail.quantity}">
+                        <span style="font-family: monospace; font-size: 11px; font-weight: 600; color: #475569;">${detail.barcode}-${k}</span>
+                      </c:forEach>
+                    </div>
+                  </c:when>
+                  <c:otherwise><span style="color: #94a3b8; font-style: italic;">Chưa sinh</span></c:otherwise>
+                </c:choose>
+              </td>
               <td style="padding: 10px 12px; text-align: right; color: #64748b;">${detail.product.unit}</td>
               <td style="padding: 10px 12px; text-align: right; font-weight: 800; color: #10b981; font-size: 14px;">+${detail.quantity}</td>
             </tr>
@@ -636,6 +656,8 @@
           <tr>
             <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">SKU</th>
             <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Tên sản phẩm</th>
+            <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số lô (Batch Code)</th>
+            <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Mã vạch (Barcode)</th>
             <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Đơn vị</th>
             <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số lượng nhập</th>
           </tr>
@@ -646,6 +668,24 @@
             <tr style="transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
               <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">${detail.product.sku}</td>
               <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-weight: 600; color: var(--text-primary);">${detail.product.name}</td>
+              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">
+                <c:choose>
+                  <c:when test="${not empty detail.batchCode}">${detail.batchCode}</c:when>
+                  <c:otherwise><span style="color: #94a3b8; font-style: italic;">Chưa sinh</span></c:otherwise>
+                </c:choose>
+              </td>
+              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">
+                <c:choose>
+                  <c:when test="${not empty detail.barcode}">
+                    <div style="max-height: 80px; overflow-y: auto; padding: 4px; border: 1px solid var(--card-border); border-radius: 6px; background: #f8fafc; display: flex; flex-direction: column; gap: 4px; width: fit-content; min-width: 200px;">
+                      <c:forEach var="k" begin="1" end="${detail.quantity}">
+                        <span style="font-family: monospace; font-size: 11px; font-weight: 600; color: var(--text-primary);">${detail.barcode}-${k}</span>
+                      </c:forEach>
+                    </div>
+                  </c:when>
+                  <c:otherwise><span style="color: #94a3b8; font-style: italic;">Chưa sinh</span></c:otherwise>
+                </c:choose>
+              </td>
               <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; color: var(--text-secondary);">${detail.product.unit}</td>
               <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; font-weight: 700; color: var(--primary-color);">
                 <c:choose>
@@ -658,7 +698,7 @@
                     </div>
                   </c:when>
                   <c:otherwise>
-                    +${detail.quantity}
+                     +${detail.quantity}
                   </c:otherwise>
                 </c:choose>
               </td>
@@ -668,7 +708,7 @@
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="3" style="text-align: right; padding: 16px 12px; font-weight: 700; color: var(--text-secondary);">Tổng số lượng nhập:</td>
+            <td colspan="5" style="text-align: right; padding: 16px 12px; font-weight: 700; color: var(--text-secondary);">Tổng số lượng nhập:</td>
             <td style="text-align: right; padding: 16px 12px; font-weight: 800; font-size: 16px; color: var(--primary-color);">+${totalItems}</td>
           </tr>
         </tfoot>

@@ -32,7 +32,7 @@
         </a>
       </c:if>
       <c:if test="${currentUser.hasPermission('INVENTORY_WRITE')}">
-        <a href="${pageContext.request.contextPath}/admin/inventories?action=edit&productId=${inventory.productId}" class="premium-btn-outline" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; height: 40px; padding: 0 16px;">
+        <a href="${pageContext.request.contextPath}/admin/inventories?action=edit&id=${inventory.id}" class="premium-btn-outline" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; height: 40px; padding: 0 16px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
             <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -73,6 +73,33 @@
               <div>
                 <div style="font-size: 12px; color: var(--text-secondary);">Đơn vị tính</div>
                 <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">${inventory.product.unit}</span>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+              <div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Mã lô (Batch Code)</div>
+                <c:choose>
+                  <c:when test="${not empty inventory.batchCode}">
+                    <a href="${pageContext.request.contextPath}/admin/inventories?action=batchDetail&batchCode=${inventory.batchCode}" style="text-decoration: none;">
+                      <span class="premium-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.2)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'">${inventory.batchCode}</span>
+                    </a>
+                  </c:when>
+                  <c:otherwise>
+                    <span style="color: #cbd5e1; font-style: italic;">Chưa cấu hình</span>
+                  </c:otherwise>
+                </c:choose>
+              </div>
+              <div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Mã vạch (Barcode)</div>
+                <c:choose>
+                  <c:when test="${not empty inventory.barcode}">
+                    <span style="font-family: monospace; font-size: 13px; font-weight: 700; color: var(--text-primary);">${inventory.barcode}</span>
+                  </c:when>
+                  <c:otherwise>
+                    <span style="color: #cbd5e1; font-style: italic;">Chưa cấu hình</span>
+                  </c:otherwise>
+                </c:choose>
               </div>
             </div>
           </div>

@@ -70,21 +70,7 @@ public class AppContextListener implements ServletContextListener {
             } catch (SQLException e) {
                 stmt.execute("ALTER TABLE receipts ADD COLUMN invoice_image VARCHAR(255) NULL");
             }
-            
-            // Clean up batch_code and barcode columns from all relevant tables if they exist
-            String[] tables = {"products", "receipt_details", "receipts", "inventories", "shipment_details", "shipments", "receipt_history", "shipment_history"};
-            for (String table : tables) {
-                try {
-                    stmt.execute("ALTER TABLE `" + table + "` DROP COLUMN `batch_code`");
-                } catch (SQLException e) {
-                    // Ignore if column doesn't exist
-                }
-                try {
-                    stmt.execute("ALTER TABLE `" + table + "` DROP COLUMN `barcode`");
-                } catch (SQLException e) {
-                    // Ignore if column doesn't exist
-                }
-            }
+            // No longer drop batch_code and barcode columns on startup as they are now part of core inventory tracking
         }
 
         PermissionDAO permissionDAO = new PermissionDAO();

@@ -215,15 +215,18 @@ public class ReceiptServlet extends HttpServlet {
         // Get details (for simplicity, we assume single item submission from simple form, or arrays for multi-item)
         String[] productIds = request.getParameterValues("productId[]");
         String[] quantities = request.getParameterValues("quantity[]");
+        String[] batchCodes = request.getParameterValues("batchCode[]");
         
         if (productIds == null || productIds.length == 0) {
             // fallback to single if not array
             String singleProductId = WebUtil.param(request, "productId");
             String singleQty = WebUtil.param(request, "quantity");
+            String singleBatch = WebUtil.param(request, "batchCode");
             if (singleProductId != null && !singleProductId.isEmpty() && singleQty != null && !singleQty.isEmpty()) {
                 ReceiptDetail rd = new ReceiptDetail();
                 rd.setProductId(Long.parseLong(singleProductId));
                 rd.setQuantity(Integer.parseInt(singleQty));
+                rd.setBatchCode(singleBatch != null ? singleBatch.trim() : "");
                 if (rd.getQuantity() > 0) {
                     r.getDetails().add(rd);
                 }
@@ -236,6 +239,11 @@ public class ReceiptServlet extends HttpServlet {
                         ReceiptDetail rd = new ReceiptDetail();
                         rd.setProductId(Long.parseLong(productIds[i]));
                         rd.setQuantity(qty);
+                        if (batchCodes != null && i < batchCodes.length && batchCodes[i] != null) {
+                            rd.setBatchCode(batchCodes[i].trim());
+                        } else {
+                            rd.setBatchCode("");
+                        }
                         r.getDetails().add(rd);
                     }
                 }

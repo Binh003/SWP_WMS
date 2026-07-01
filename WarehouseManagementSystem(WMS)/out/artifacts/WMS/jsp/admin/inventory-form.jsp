@@ -106,7 +106,21 @@
 
     <form id="inventoryForm" action="${pageContext.request.contextPath}/admin/inventories" method="post" style="display: flex; flex-direction: column; gap: 24px;">
       <input type="hidden" name="action" value="update"/>
-      <input type="hidden" name="productId" value="${inventory.productId}"/>
+      <input type="hidden" name="id" value="${inventory.id}"/>
+
+      <!-- Số lô (Batch Code) -->
+      <div class="form-group" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 0;">
+        <label for="batchCode" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Mã lô hàng (Batch Code)</label>
+        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; line-height: 1.4;">Nhập số lô của sản phẩm để quản lý hàng tồn theo lô.</div>
+        <input type="text" id="batchCode" name="batchCode" value="${inventory.batchCode}" style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 16px; outline: none; transition: all 0.2s; color: var(--text-primary);" />
+      </div>
+
+      <!-- Barcode -->
+      <div class="form-group" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 0;">
+        <label for="barcode" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Mã vạch (Barcode)</label>
+        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; line-height: 1.4;">Nhập mã vạch sản phẩm trong lô hàng để quét và quản lý nhiều sản phẩm trong cùng một lô.</div>
+        <input type="text" id="barcode" name="barcode" value="${inventory.barcode}" style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 16px; outline: none; transition: all 0.2s; color: var(--text-primary);" />
+      </div>
 
       <div class="form-group" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 0;">
         <label for="minStockLevel" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Mức tồn kho tối thiểu (Cảnh báo) <span style="color: #ef4444;">*</span></label>

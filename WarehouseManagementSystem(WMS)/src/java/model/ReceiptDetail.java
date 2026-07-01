@@ -5,6 +5,8 @@ public class ReceiptDetail {
     private Long receiptId;
     private Long productId;
     private Integer quantity;
+    private String batchCode;
+    private String barcode;
 
     // Extended properties
     private Product product;
@@ -22,6 +24,12 @@ public class ReceiptDetail {
 
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
+
+    public String getBatchCode() { return batchCode; }
+    public void setBatchCode(String batchCode) { this.batchCode = batchCode; }
+
+    public String getBarcode() { return barcode; }
+    public void setBarcode(String barcode) { this.barcode = barcode; }
 
     public Product getProduct() { return product; }
     public void setProduct(Product product) { this.product = product; }

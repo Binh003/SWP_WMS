@@ -162,11 +162,13 @@ CREATE TABLE `products` (
 CREATE TABLE `inventories` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `product_id` BIGINT NOT NULL,
+  `batch_code` VARCHAR(100) NOT NULL DEFAULT '',
+  `barcode` VARCHAR(100) NOT NULL DEFAULT '',
   `quantity_in_stock` INT NOT NULL DEFAULT '0',
   `min_stock_level` INT DEFAULT '10' COMMENT 'Mức tồn kho tối thiểu để cảnh báo',
   `last_updated` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_inventories_product` (`product_id`),
+  UNIQUE KEY `uk_inventories_batch_barcode` (`product_id`, `batch_code`, `barcode`),
   CONSTRAINT `fk_inventories_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -198,6 +200,8 @@ CREATE TABLE `receipt_details` (
   `receipt_id` BIGINT NOT NULL,
   `product_id` BIGINT NOT NULL,
   `quantity` INT NOT NULL,
+  `batch_code` VARCHAR(100) NOT NULL DEFAULT '',
+  `barcode` VARCHAR(100) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_wms_rd_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_wms_rd_receipt` FOREIGN KEY (`receipt_id`) REFERENCES `receipts` (`id`) ON DELETE CASCADE
