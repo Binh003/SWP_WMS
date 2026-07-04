@@ -154,6 +154,14 @@
         <servlet-name>ShipmentServlet</servlet-name>
         <url-pattern>/admin/shipments</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>BarcodeServlet</servlet-name>
+        <servlet-class>controller.BarcodeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BarcodeServlet</servlet-name>
+        <url-pattern>/admin/barcode</url-pattern>
+    </servlet-mapping>
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>

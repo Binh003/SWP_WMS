@@ -33,8 +33,8 @@ public class InventoryServlet extends HttpServlet {
             WebUtil.consumeFlash(request);
             switch (action) {
                 case "edit" -> showEditForm(request, response);
-                case "detail" -> showInventoryDetail(request, response);
                 case "batchDetail" -> showBatchDetail(request, response);
+                case "detail" -> showItemDetail(request, response);
                 default -> listInventories(request, response);
             }
         } catch (SQLException ex) {
@@ -120,7 +120,7 @@ public class InventoryServlet extends HttpServlet {
         request.getRequestDispatcher("/jsp/admin/inventory-form.jsp").forward(request, response);
     }
 
-    private void showInventoryDetail(HttpServletRequest request, HttpServletResponse response)
+    private void showBatchDetail(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         String idStr = request.getParameter("id");
         Inventory inventory = null;
@@ -139,26 +139,34 @@ public class InventoryServlet extends HttpServlet {
         }
         
         List<InventoryHistory> historyList = inventoryDAO.getUpdateHistoryByProductId(inventory.getProductId());
+        List<Inventory> itemizedList = inventoryDAO.getItemizedListByProductAndBatch(inventory.getProductId(), inventory.getBatchCode());
+        int totalQuantity = inventoryDAO.getQuantityByProductAndBatch(inventory.getProductId(), inventory.getBatchCode());
         
         request.setAttribute("inventory", inventory);
+        request.setAttribute("itemizedList", itemizedList);
+        request.setAttribute("totalQuantity", totalQuantity);
         request.setAttribute("historyList", historyList);
         request.getRequestDispatcher("/jsp/admin/inventory-detail.jsp").forward(request, response);
     }
 
-    private void showBatchDetail(HttpServletRequest request, HttpServletResponse response)
+    private void showItemDetail(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
-        String batchCode = request.getParameter("batchCode");
-        if (batchCode == null || batchCode.trim().isEmpty()) {
-            WebUtil.setFlashError(request, "Không tìm thấy thông tin lô hàng");
+        String idStr = request.getParameter("id");
+        Inventory inventory = null;
+        if (idStr != null && !idStr.isEmpty()) {
+            inventory = inventoryDAO.getById(Long.parseLong(idStr));
+        }
+        if (inventory == null) {
+            WebUtil.setFlashError(request, "Không tìm thấy thông tin chi tiết của sản phẩm đơn lẻ này");
             WebUtil.redirect(request, response, "/admin/inventories");
             return;
         }
         
-        List<Inventory> batchInventories = inventoryDAO.getByBatchCode(batchCode);
-        request.setAttribute("batchCode", batchCode);
-        request.setAttribute("batchInventories", batchInventories);
-        request.getRequestDispatcher("/jsp/admin/batch-detail.jsp").forward(request, response);
+        request.setAttribute("inventory", inventory);
+        request.getRequestDispatcher("/jsp/admin/inventory-item-detail.jsp").forward(request, response);
     }
+
+
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

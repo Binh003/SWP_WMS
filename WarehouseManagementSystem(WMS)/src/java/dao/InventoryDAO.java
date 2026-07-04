@@ -15,7 +15,7 @@ public class InventoryDAO {
 
     public List<Inventory> getAll() throws SQLException {
         List<Inventory> list = new ArrayList<>();
-        String sql = "SELECT i.*, p.sku, p.name as product_name, p.unit, p.price, " +
+        String sql = "SELECT i.*, p.sku, p.name as product_name, p.unit, p.price, p.image_url, " +
                      "pl.id as product_line_id, pl.name as product_line_name, " +
                      "b.id as brand_id, b.name as brand_name " +
                      "FROM inventories i " +
@@ -34,7 +34,7 @@ public class InventoryDAO {
     }
 
     public Inventory getByProductId(long productId) throws SQLException {
-        String sql = "SELECT i.*, p.sku, p.name as product_name, p.unit, p.price, " +
+        String sql = "SELECT i.*, p.sku, p.name as product_name, p.unit, p.price, p.image_url, " +
                      "pl.id as product_line_id, pl.name as product_line_name, " +
                      "b.id as brand_id, b.name as brand_name " +
                      "FROM inventories i " +
@@ -56,7 +56,7 @@ public class InventoryDAO {
     }
 
     public Inventory getById(long id) throws SQLException {
-        String sql = "SELECT i.*, p.sku, p.name as product_name, p.unit, p.price, " +
+        String sql = "SELECT i.*, p.sku, p.name as product_name, p.unit, p.price, p.image_url, " +
                      "pl.id as product_line_id, pl.name as product_line_name, " +
                      "b.id as brand_id, b.name as brand_name " +
                      "FROM inventories i " +
@@ -76,28 +76,7 @@ public class InventoryDAO {
         return null;
     }
 
-    public List<Inventory> getByBatchCode(String batchCode) throws SQLException {
-        List<Inventory> list = new ArrayList<>();
-        String sql = "SELECT i.*, p.sku, p.name as product_name, p.unit, p.price, " +
-                     "pl.id as product_line_id, pl.name as product_line_name, " +
-                     "b.id as brand_id, b.name as brand_name " +
-                     "FROM inventories i " +
-                     "INNER JOIN products p ON i.product_id = p.id " +
-                     "INNER JOIN product_lines pl ON p.product_line_id = pl.id " +
-                     "INNER JOIN brands b ON pl.brand_id = b.id " +
-                     "WHERE i.batch_code = ? " +
-                     "ORDER BY p.name ASC";
-        try (Connection conn = DBConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, batchCode == null ? "" : batchCode);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapInventory(rs));
-                }
-            }
-        }
-        return list;
-    }
+
 
     public void insert(Inventory inventory) throws SQLException {
         String sql = "INSERT INTO inventories (product_id, batch_code, barcode, quantity_in_stock, min_stock_level) VALUES (?, ?, ?, ?, ?)";
@@ -142,6 +121,66 @@ public class InventoryDAO {
         p.setName(rs.getString("product_name"));
         p.setUnit(rs.getString("unit"));
         p.setPrice(rs.getDouble("price"));
+        p.setImageUrl(rs.getString("image_url"));
+        
+        ProductLine pl = new ProductLine();
+        pl.setId(rs.getLong("product_line_id"));
+        pl.setName(rs.getString("product_line_name"));
+        
+        Brand b = new Brand();
+        b.setId(rs.getLong("brand_id"));
+        b.setName(rs.getString("brand_name"));
+        pl.setBrand(b);
+        
+        p.setProductLine(pl);
+        
+        i.setProduct(p);
+
+        return i;
+    }
+
+    private Inventory mapGroupedInventory(ResultSet rs) throws SQLException {
+        Inventory i = new Inventory();
+        i.setId(rs.getLong("id"));
+        i.setProductId(rs.getLong("product_id"));
+        i.setBatchCode(rs.getString("batch_code"));
+        
+        String minBarcode = rs.getString("min_barcode");
+        String maxBarcode = rs.getString("max_barcode");
+        int count = rs.getInt("barcode_count");
+        if (count > 1 && minBarcode != null && maxBarcode != null && !minBarcode.equals(maxBarcode)) {
+            int lastDashMin = minBarcode.lastIndexOf("-");
+            int lastDashMax = maxBarcode.lastIndexOf("-");
+            if (lastDashMin != -1 && lastDashMax != -1) {
+                String prefix = minBarcode.substring(0, lastDashMin);
+                String suffixMin = minBarcode.substring(lastDashMin + 1);
+                String suffixMax = maxBarcode.substring(lastDashMax + 1);
+                try {
+                    Integer.parseInt(suffixMin);
+                    Integer.parseInt(suffixMax);
+                    i.setBarcode(prefix + "-[" + suffixMin + "~" + suffixMax + "]");
+                } catch (NumberFormatException e) {
+                    i.setBarcode(minBarcode + " ~ " + maxBarcode);
+                }
+            } else {
+                i.setBarcode(minBarcode + " ~ " + maxBarcode);
+            }
+        } else {
+            i.setBarcode(minBarcode);
+        }
+        
+        i.setQuantityInStock(rs.getInt("quantity_in_stock"));
+        i.setMinStockLevel(rs.getInt("min_stock_level"));
+        i.setLastUpdated(rs.getTimestamp("last_updated"));
+
+        // Map Product
+        Product p = new Product();
+        p.setId(rs.getLong("product_id"));
+        p.setSku(rs.getString("sku"));
+        p.setName(rs.getString("product_name"));
+        p.setUnit(rs.getString("unit"));
+        p.setPrice(rs.getDouble("price"));
+        p.setImageUrl(rs.getString("image_url"));
         
         ProductLine pl = new ProductLine();
         pl.setId(rs.getLong("product_line_id"));
@@ -166,13 +205,19 @@ public class InventoryDAO {
     public List<Inventory> findPaginated(int page, int limit, String sku, Long brandId, Long productLineId, String batchCode, String barcode) throws SQLException {
         List<Inventory> list = new ArrayList<>();
         int offset = (page - 1) * limit;
-        String sql = "SELECT i.*, p.sku, p.name as product_name, p.unit, p.price, " +
+        String sql = "SELECT MIN(i.id) as id, i.product_id, i.batch_code, " +
+                     "MIN(i.barcode) as min_barcode, MAX(i.barcode) as max_barcode, COUNT(i.barcode) as barcode_count, " +
+                     "SUM(i.quantity_in_stock) as quantity_in_stock, MAX(i.min_stock_level) as min_stock_level, " +
+                     "MAX(i.last_updated) as last_updated, " +
+                     "p.sku, p.name as product_name, p.unit, p.price, p.image_url, " +
                      "pl.id as product_line_id, pl.name as product_line_name, " +
                      "b.id as brand_id, b.name as brand_name " +
                      "FROM inventories i " +
                      "INNER JOIN products p ON i.product_id = p.id " +
                      "INNER JOIN product_lines pl ON p.product_line_id = pl.id " +
-                     "INNER JOIN brands b ON pl.brand_id = b.id WHERE 1=1 ";
+                     "INNER JOIN brands b ON pl.brand_id = b.id " +
+                     "WHERE 1=1 " +
+                     "AND NOT (i.batch_code = '' AND i.quantity_in_stock = 0 AND EXISTS (SELECT 1 FROM inventories i2 WHERE i2.product_id = i.product_id AND i2.batch_code <> '')) ";
         
         if (sku != null && !sku.trim().isEmpty()) {
             sql += "AND p.sku LIKE ? ";
@@ -190,7 +235,7 @@ public class InventoryDAO {
             sql += "AND i.barcode LIKE ? ";
         }
         
-        sql += "ORDER BY p.name ASC LIMIT ? OFFSET ?";
+        sql += "GROUP BY i.product_id, i.batch_code ORDER BY p.name ASC LIMIT ? OFFSET ?";
         
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -215,7 +260,7 @@ public class InventoryDAO {
             
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(mapInventory(rs));
+                    list.add(mapGroupedInventory(rs));
                 }
             }
         }
@@ -227,11 +272,13 @@ public class InventoryDAO {
     }
 
     public int count(String sku, Long brandId, Long productLineId, String batchCode, String barcode) throws SQLException {
-        String sql = "SELECT COUNT(*) " +
+        String sql = "SELECT COUNT(DISTINCT i.product_id, i.batch_code) " +
                      "FROM inventories i " +
                      "INNER JOIN products p ON i.product_id = p.id " +
                      "INNER JOIN product_lines pl ON p.product_line_id = pl.id " +
-                     "INNER JOIN brands b ON pl.brand_id = b.id WHERE 1=1 ";
+                     "INNER JOIN brands b ON pl.brand_id = b.id " +
+                     "WHERE 1=1 " +
+                     "AND NOT (i.batch_code = '' AND i.quantity_in_stock = 0 AND EXISTS (SELECT 1 FROM inventories i2 WHERE i2.product_id = i.product_id AND i2.batch_code <> '')) ";
         
         if (sku != null && !sku.trim().isEmpty()) {
             sql += "AND p.sku LIKE ? ";
@@ -275,6 +322,45 @@ public class InventoryDAO {
             }
         }
         return 0;
+    }
+
+    public int getQuantityByProductAndBatch(long productId, String batchCode) throws SQLException {
+        String sql = "SELECT SUM(quantity_in_stock) FROM inventories WHERE product_id = ? AND batch_code = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, productId);
+            ps.setString(2, batchCode == null ? "" : batchCode);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+     }
+
+    public List<Inventory> getItemizedListByProductAndBatch(long productId, String batchCode) throws SQLException {
+        List<Inventory> list = new ArrayList<>();
+        String sql = "SELECT i.*, p.sku, p.name as product_name, p.unit, p.price, p.image_url, " +
+                     "pl.id as product_line_id, pl.name as product_line_name, " +
+                     "b.id as brand_id, b.name as brand_name " +
+                     "FROM inventories i " +
+                     "INNER JOIN products p ON i.product_id = p.id " +
+                     "INNER JOIN product_lines pl ON p.product_line_id = pl.id " +
+                     "INNER JOIN brands b ON pl.brand_id = b.id " +
+                     "WHERE i.product_id = ? AND i.batch_code = ? " +
+                     "ORDER BY i.barcode ASC";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, productId);
+            ps.setString(2, batchCode == null ? "" : batchCode);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapInventory(rs));
+                }
+            }
+        }
+        return list;
     }
 
     public List<InventoryHistory> getUpdateHistoryByProductId(long productId) throws SQLException {

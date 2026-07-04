@@ -198,21 +198,7 @@ public class ReceiptDAO {
                     detail.setBatchCode(detail.getBatchCode().trim());
                 }
                 
-                String sku = "";
-                String sqlGetSku = "SELECT sku FROM products WHERE id = ?";
-                try (PreparedStatement psSku = conn.prepareStatement(sqlGetSku)) {
-                    psSku.setLong(1, detail.getProductId());
-                    try (ResultSet rsSku = psSku.executeQuery()) {
-                        if (rsSku.next()) {
-                            sku = rsSku.getString("sku");
-                        }
-                    }
-                }
-                
-                String barcode = sku + "-" + receipt.getReceiptCode();
-                if (!detail.getBatchCode().startsWith("BAT-")) {
-                    barcode += "-" + detail.getBatchCode();
-                }
+                String barcode = "BC-" + receipt.getId() + "-" + detail.getProductId();
                 detail.setBarcode(barcode);
             }
 

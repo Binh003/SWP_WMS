@@ -150,26 +150,6 @@ public class ShipmentDAO {
             conn = DBConfig.getConnection();
             conn.setAutoCommit(false);
             
-            // 0. If status is COMPLETED, verify Inventory using FOR UPDATE
-            if ("COMPLETED".equals(shipment.getStatus())) {
-                String sqlCheckInv = "SELECT quantity_in_stock FROM inventories WHERE product_id = ? FOR UPDATE";
-                try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckInv)) {
-                    for (ShipmentDetail detail : shipment.getDetails()) {
-                        psCheck.setLong(1, detail.getProductId());
-                        try (ResultSet rs = psCheck.executeQuery()) {
-                            if (rs.next()) {
-                                int stock = rs.getInt("quantity_in_stock");
-                                if (stock < detail.getQuantity()) {
-                                    throw new SQLException("Tồn kho không đủ cho sản phẩm ID " + detail.getProductId() + " (Tồn: " + stock + ", Yêu cầu: " + detail.getQuantity() + ")");
-                                }
-                            } else {
-                                throw new SQLException("Không tìm thấy thông tin tồn kho cho sản phẩm ID " + detail.getProductId());
-                            }
-                        }
-                    }
-                }
-            }
-
             // 1. Insert Shipment
             String sqlShipment = "INSERT INTO shipments (shipment_code, destination, created_by, status, notes, delivery_note_image, shipping_images) VALUES (?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement ps = conn.prepareStatement(sqlShipment, Statement.RETURN_GENERATED_KEYS)) {
@@ -204,11 +184,7 @@ public class ShipmentDAO {
 
             // 2. Insert Shipment Details and update Inventory if status is COMPLETED
             String sqlDetail = "INSERT INTO shipment_details (shipment_id, product_id, quantity) VALUES (?, ?, ?)";
-            String sqlUpdateInv = "UPDATE inventories SET quantity_in_stock = quantity_in_stock - ? WHERE product_id = ?";
-            
-            try (PreparedStatement psDetail = conn.prepareStatement(sqlDetail);
-                 PreparedStatement psInv = conn.prepareStatement(sqlUpdateInv)) {
-                 
+            try (PreparedStatement psDetail = conn.prepareStatement(sqlDetail)) {
                 for (ShipmentDetail detail : shipment.getDetails()) {
                     psDetail.setLong(1, shipment.getId());
                     psDetail.setLong(2, detail.getProductId());
@@ -216,15 +192,10 @@ public class ShipmentDAO {
                     psDetail.addBatch();
                     
                     if ("COMPLETED".equals(shipment.getStatus())) {
-                        psInv.setInt(1, detail.getQuantity());
-                        psInv.setLong(2, detail.getProductId());
-                        psInv.addBatch();
+                        deductInventory(conn, detail.getProductId(), detail.getQuantity());
                     }
                 }
                 psDetail.executeBatch();
-                if ("COMPLETED".equals(shipment.getStatus())) {
-                    psInv.executeBatch();
-                }
             }
 
             conn.commit();
@@ -311,47 +282,15 @@ public class ShipmentDAO {
             // Transitioning to COMPLETED: Subtract inventory
             if ("COMPLETED".equals(newStatus) && !"COMPLETED".equals(currentStatus)) {
                 List<ShipmentDetail> details = getDetailsByShipmentId(id);
-                
-                // Perform check first with FOR UPDATE
-                String sqlCheckInv = "SELECT quantity_in_stock FROM inventories WHERE product_id = ? FOR UPDATE";
-                try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckInv)) {
-                    for (ShipmentDetail d : details) {
-                        psCheck.setLong(1, d.getProductId());
-                        try (ResultSet rs = psCheck.executeQuery()) {
-                            if (rs.next()) {
-                                int stock = rs.getInt("quantity_in_stock");
-                                if (stock < d.getQuantity()) {
-                                    throw new SQLException("Tồn kho không đủ cho sản phẩm ID " + d.getProductId() + " (Tồn: " + stock + ", Yêu cầu: " + d.getQuantity() + ")");
-                                }
-                            } else {
-                                throw new SQLException("Không tìm thấy thông tin tồn kho cho sản phẩm ID " + d.getProductId());
-                            }
-                        }
-                    }
-                }
-                
-                // Execute subtraction
-                String sqlUpdateInv = "UPDATE inventories SET quantity_in_stock = quantity_in_stock - ? WHERE product_id = ?";
-                try (PreparedStatement psInv = conn.prepareStatement(sqlUpdateInv)) {
-                    for (ShipmentDetail d : details) {
-                        psInv.setInt(1, d.getQuantity());
-                        psInv.setLong(2, d.getProductId());
-                        psInv.addBatch();
-                    }
-                    psInv.executeBatch();
+                for (ShipmentDetail d : details) {
+                    deductInventory(conn, d.getProductId(), d.getQuantity());
                 }
             }
             // Transitioning from COMPLETED to CANCELLED: Revert inventory (add back)
             else if ("CANCELLED".equals(newStatus) && "COMPLETED".equals(currentStatus)) {
                 List<ShipmentDetail> details = getDetailsByShipmentId(id);
-                String sqlUpdateInv = "UPDATE inventories SET quantity_in_stock = quantity_in_stock + ? WHERE product_id = ?";
-                try (PreparedStatement psInv = conn.prepareStatement(sqlUpdateInv)) {
-                    for (ShipmentDetail d : details) {
-                        psInv.setInt(1, d.getQuantity());
-                        psInv.setLong(2, d.getProductId());
-                        psInv.addBatch();
-                    }
-                    psInv.executeBatch();
+                for (ShipmentDetail d : details) {
+                    revertInventory(conn, d.getProductId(), d.getQuantity());
                 }
             }
             
@@ -568,6 +507,98 @@ public class ShipmentDAO {
         } finally {
             if (conn != null) {
                 try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
+        }
+    }
+
+    private void deductInventory(Connection conn, long productId, int quantity) throws SQLException {
+        // 1. Check total inventory sum
+        String sqlSum = "SELECT SUM(quantity_in_stock) FROM inventories WHERE product_id = ?";
+        try (PreparedStatement psSum = conn.prepareStatement(sqlSum)) {
+            psSum.setLong(1, productId);
+            try (ResultSet rs = psSum.executeQuery()) {
+                if (rs.next()) {
+                    int totalStock = rs.getInt(1);
+                    if (totalStock < quantity) {
+                        throw new SQLException("Tồn kho không đủ cho sản phẩm ID " + productId + " (Tồn: " + totalStock + ", Yêu cầu: " + quantity + ")");
+                    }
+                } else {
+                    throw new SQLException("Không tìm thấy thông tin tồn kho cho sản phẩm ID " + productId);
+                }
+            }
+        }
+
+        // 2. Select rows to deduct (FIFO)
+        String sqlSelect = "SELECT id, quantity_in_stock FROM inventories WHERE product_id = ? AND quantity_in_stock > 0 ORDER BY last_updated ASC, id ASC FOR UPDATE";
+        String sqlUpdate = "UPDATE inventories SET quantity_in_stock = ? WHERE id = ?";
+        
+        int remaining = quantity;
+        try (PreparedStatement psSel = conn.prepareStatement(sqlSelect);
+             PreparedStatement psUpd = conn.prepareStatement(sqlUpdate)) {
+            psSel.setLong(1, productId);
+            try (ResultSet rs = psSel.executeQuery()) {
+                while (rs.next() && remaining > 0) {
+                    long invId = rs.getLong("id");
+                    int stock = rs.getInt("quantity_in_stock");
+                    int deduct = Math.min(remaining, stock);
+                    
+                    psUpd.setInt(1, stock - deduct);
+                    psUpd.setLong(2, invId);
+                    psUpd.executeUpdate();
+                    
+                    remaining -= deduct;
+                }
+            }
+        }
+        
+        if (remaining > 0) {
+            throw new SQLException("Lỗi trừ tồn kho cho sản phẩm ID " + productId + ": không đủ dòng tồn kho hoạt động.");
+        }
+    }
+
+    private void revertInventory(Connection conn, long productId, int quantity) throws SQLException {
+        // 1. Find rows with quantity_in_stock = 0 or less than capacity (itemized rows usually have max capacity 1)
+        // We will try to add back to itemized rows that have quantity_in_stock = 0 first.
+        String sqlSelect = "SELECT id, quantity_in_stock, barcode FROM inventories WHERE product_id = ? AND quantity_in_stock = 0 AND barcode <> '' ORDER BY last_updated DESC, id DESC FOR UPDATE";
+        String sqlUpdate = "UPDATE inventories SET quantity_in_stock = 1 WHERE id = ?";
+        
+        int remaining = quantity;
+        try (PreparedStatement psSel = conn.prepareStatement(sqlSelect);
+             PreparedStatement psUpd = conn.prepareStatement(sqlUpdate)) {
+            psSel.setLong(1, productId);
+            try (ResultSet rs = psSel.executeQuery()) {
+                while (rs.next() && remaining > 0) {
+                    long invId = rs.getLong("id");
+                    psUpd.setLong(1, invId);
+                    psUpd.executeUpdate();
+                    remaining--;
+                }
+            }
+        }
+        
+        // 2. If there is still remaining to add back, add it to the first/oldest row of that product (usually the seed row with barcode = '')
+        if (remaining > 0) {
+            String sqlSelectSeed = "SELECT id, quantity_in_stock FROM inventories WHERE product_id = ? ORDER BY id ASC LIMIT 1 FOR UPDATE";
+            String sqlUpdateSeed = "UPDATE inventories SET quantity_in_stock = quantity_in_stock + ? WHERE id = ?";
+            try (PreparedStatement psSelSeed = conn.prepareStatement(sqlSelectSeed);
+                 PreparedStatement psUpdSeed = conn.prepareStatement(sqlUpdateSeed)) {
+                psSelSeed.setLong(1, productId);
+                try (ResultSet rs = psSelSeed.executeQuery()) {
+                    if (rs.next()) {
+                        long seedId = rs.getLong("id");
+                        psUpdSeed.setInt(1, remaining);
+                        psUpdSeed.setLong(2, seedId);
+                        psUpdSeed.executeUpdate();
+                    } else {
+                        // If no inventory row at all, create a new one
+                        String sqlInsert = "INSERT INTO inventories (product_id, quantity_in_stock, min_stock_level) VALUES (?, ?, 10)";
+                        try (PreparedStatement psIns = conn.prepareStatement(sqlInsert)) {
+                            psIns.setLong(1, productId);
+                            psIns.setInt(2, remaining);
+                            psIns.executeUpdate();
+                        }
+                    }
+                }
             }
         }
     }

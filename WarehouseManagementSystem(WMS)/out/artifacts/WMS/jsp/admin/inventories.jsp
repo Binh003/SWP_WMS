@@ -90,7 +90,6 @@
             <th>SKU</th>
             <th>Sản phẩm</th>
             <th>Số lô (Batch)</th>
-            <th>Barcode</th>
             <th style="text-align: right;">Số lượng Tồn</th>
             <th style="text-align: right;">Tồn tối thiểu</th>
             <th>Trạng thái</th>
@@ -102,12 +101,12 @@
           <c:forEach var="i" items="${inventories}">
             <tr class="user-row">
               <td>
-                <a href="${pageContext.request.contextPath}/admin/inventories?action=detail&id=${i.id}" style="text-decoration: none;">
+                <a href="${pageContext.request.contextPath}/admin/inventories?action=batchDetail&id=${i.id}" style="text-decoration: none;">
                   <span class="premium-tag premium-tag--manager" style="font-family: monospace; cursor: pointer;">${i.product.sku}</span>
                 </a>
               </td>
               <td>
-                <a href="${pageContext.request.contextPath}/admin/inventories?action=detail&id=${i.id}" style="text-decoration: none;">
+                <a href="${pageContext.request.contextPath}/admin/inventories?action=batchDetail&id=${i.id}" style="text-decoration: none;">
                   <strong style="color: var(--primary-color); font-size: 14px; cursor: pointer;">${i.product.name}</strong>
                 </a><br/>
                 <small style="color: var(--text-secondary);">${i.product.productLine.brand.name} - ${i.product.productLine.name}</small>
@@ -115,22 +114,10 @@
               <td>
                 <c:choose>
                   <c:when test="${not empty i.batchCode}">
-                    <a href="${pageContext.request.contextPath}/admin/inventories?action=batchDetail&batchCode=${i.batchCode}" style="text-decoration: none;">
-                      <span class="premium-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.2)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'">${i.batchCode}</span>
-                    </a>
+                    <span class="premium-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 600; border-radius: 6px;">${i.batchCode}</span>
                   </c:when>
                   <c:otherwise>
                     <span style="color: #cbd5e1; font-style: italic;">Chưa có lô</span>
-                  </c:otherwise>
-                </c:choose>
-              </td>
-              <td>
-                <c:choose>
-                  <c:when test="${not empty i.barcode}">
-                    <span style="font-family: monospace; font-weight: 600; color: var(--text-primary);">${i.barcode}</span>
-                  </c:when>
-                  <c:otherwise>
-                    <span style="color: #cbd5e1; font-style: italic;">Chưa có barcode</span>
                   </c:otherwise>
                 </c:choose>
               </td>
@@ -166,7 +153,7 @@
                     </svg>
                   </button>
                   <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 180px; overflow: hidden; animation: slideDown 0.15s ease-out;">
-                    <a href="${pageContext.request.contextPath}/admin/inventories?action=detail&id=${i.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
+                    <a href="${pageContext.request.contextPath}/admin/inventories?action=batchDetail&id=${i.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--text-primary); text-decoration: none; transition: background 0.15s;">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
                         <line x1="12" y1="8" x2="12" y2="12"></line>

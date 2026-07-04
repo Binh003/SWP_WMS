@@ -18,7 +18,7 @@
 
   <div class="subpage-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
     <div>
-      <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0;">Chi tiết Tồn kho: <span style="color: var(--primary-color);">${inventory.product.name}</span></h2>
+      <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0;">Chi tiết Tồn kho: <span style="color: var(--primary-color);">${inventory.product.name}</span> (Lô: ${inventory.batchCode})</h2>
       <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">Theo dõi chi tiết số lượng xuất nhập và lịch sử cập nhật của mặt hàng này.</p>
     </div>
     <div style="display: flex; gap: 12px;">
@@ -52,11 +52,20 @@
         <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
           <!-- Product Placeholder/Image -->
           <div style="flex-shrink: 0; width: 100px; height: 100px; border-radius: 10px; border: 1.5px solid var(--card-border); overflow: hidden; background: #f8fafc; display: flex; align-items: center; justify-content: center;">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-              <line x1="12" y1="22.08" x2="12" y2="12"></line>
-            </svg>
+            <c:choose>
+              <c:when test="${not empty inventory.product.imageUrl}">
+                <img src="${inventory.product.imageUrl.startsWith('/') ? pageContext.request.contextPath : ''}${inventory.product.imageUrl}" 
+                     alt="${inventory.product.name}" 
+                     style="width: 100%; height: 100%; object-fit: contain;" />
+              </c:when>
+              <c:otherwise>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </c:otherwise>
+            </c:choose>
           </div>
           
           <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px;">
@@ -73,33 +82,6 @@
               <div>
                 <div style="font-size: 12px; color: var(--text-secondary);">Đơn vị tính</div>
                 <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">${inventory.product.unit}</span>
-              </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
-              <div>
-                <div style="font-size: 12px; color: var(--text-secondary);">Mã lô (Batch Code)</div>
-                <c:choose>
-                  <c:when test="${not empty inventory.batchCode}">
-                    <a href="${pageContext.request.contextPath}/admin/inventories?action=batchDetail&batchCode=${inventory.batchCode}" style="text-decoration: none;">
-                      <span class="premium-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.2)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'">${inventory.batchCode}</span>
-                    </a>
-                  </c:when>
-                  <c:otherwise>
-                    <span style="color: #cbd5e1; font-style: italic;">Chưa cấu hình</span>
-                  </c:otherwise>
-                </c:choose>
-              </div>
-              <div>
-                <div style="font-size: 12px; color: var(--text-secondary);">Mã vạch (Barcode)</div>
-                <c:choose>
-                  <c:when test="${not empty inventory.barcode}">
-                    <span style="font-family: monospace; font-size: 13px; font-weight: 700; color: var(--text-primary);">${inventory.barcode}</span>
-                  </c:when>
-                  <c:otherwise>
-                    <span style="color: #cbd5e1; font-style: italic;">Chưa cấu hình</span>
-                  </c:otherwise>
-                </c:choose>
               </div>
             </div>
           </div>
@@ -132,17 +114,17 @@
       <div style="display: flex; flex-direction: column; gap: 20px;">
         <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 12px; border: 1.5px solid var(--card-border);">
           <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 600;">Số lượng tồn trong kho</div>
-          <div style="font-size: 36px; font-weight: 800; color: ${inventory.quantityInStock <= inventory.minStockLevel ? '#ef4444' : 'var(--primary-color)'};">
-            <fmt:formatNumber value="${inventory.quantityInStock}"/> ${inventory.product.unit}
+          <div style="font-size: 36px; font-weight: 800; color: ${totalQuantity <= inventory.minStockLevel ? '#ef4444' : 'var(--primary-color)'};">
+            <fmt:formatNumber value="${totalQuantity}"/> ${inventory.product.unit}
           </div>
           <div style="font-size: 12px; margin-top: 8px;">
             <c:choose>
-              <c:when test="${inventory.quantityInStock <= 0}">
+              <c:when test="${totalQuantity <= 0}">
                 <span style="color: #ef4444; font-weight: 700; background: rgba(239, 68, 68, 0.1); padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
                   🚫 Đã hết hàng
                 </span>
               </c:when>
-              <c:when test="${inventory.quantityInStock <= inventory.minStockLevel}">
+              <c:when test="${totalQuantity <= inventory.minStockLevel}">
                 <span style="color: #d97706; font-weight: 700; background: rgba(245, 158, 11, 0.1); padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
                   ⚠️ Cảnh báo: Sắp hết hàng
                 </span>
@@ -172,7 +154,7 @@
   </div>
 
   <!-- History Table Section -->
-  <div class="premium-card" style="padding: 24px;">
+  <div class="premium-card" style="padding: 24px; margin-bottom: 24px;">
     <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"></circle>
@@ -264,6 +246,81 @@
       </table>
     </div>
   </div>
+
+  <!-- Itemized Barcodes Section -->
+  <div class="premium-card" style="padding: 24px; margin-bottom: 24px;">
+    <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      Danh sách sản phẩm đơn lẻ (Mã vạch chi tiết) trong lô này
+    </h3>
+    <div style="overflow-x: auto;">
+      <table class="history-table" style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+        <thead>
+          <tr style="background: #f8fafc; border-bottom: 1.5px solid var(--card-border);">
+            <th style="color: var(--text-secondary); font-weight: 700; font-size: 12px; text-transform: uppercase; padding: 14px 16px; text-align: left;">STT</th>
+            <th style="color: var(--text-secondary); font-weight: 700; font-size: 12px; text-transform: uppercase; padding: 14px 16px; text-align: left;">Mã vạch (Barcode)</th>
+            <th style="color: var(--text-secondary); font-weight: 700; font-size: 12px; text-transform: uppercase; padding: 14px 16px; text-align: left;">Số lượng tồn</th>
+            <th style="color: var(--text-secondary); font-weight: 700; font-size: 12px; text-transform: uppercase; padding: 14px 16px; text-align: left;">Trạng thái</th>
+            <th style="color: var(--text-secondary); font-weight: 700; font-size: 12px; text-transform: uppercase; padding: 14px 16px; text-align: left;">Cập nhật lần cuối</th>
+            <th style="color: var(--text-secondary); font-weight: 700; font-size: 12px; text-transform: uppercase; padding: 14px 16px; text-align: center; width: 120px;">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <c:forEach var="item" items="${itemizedList}" varStatus="loop">
+            <tr class="history-row" style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 14px 16px; font-weight: 600; color: var(--text-secondary);">${loop.index + 1}</td>
+              <td style="padding: 14px 16px; vertical-align: middle;">
+                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                  <img src="${pageContext.request.contextPath}/admin/barcode?code=${item.barcode}" alt="Barcode" style="height: 32px; max-width: 180px; object-fit: contain; background: #ffffff; border: 1px solid var(--card-border); padding: 2px; border-radius: 4px;" />
+                  <span style="font-family: monospace; font-size: 11px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px;">${item.barcode}</span>
+                </div>
+              </td>
+              <td style="padding: 14px 16px;">${item.quantityInStock} ${item.product.unit}</td>
+              <td style="padding: 14px 16px;">
+                <c:choose>
+                  <c:when test="${item.quantityInStock > 0}">
+                    <span class="premium-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 10px; border-radius: 6px; font-weight: 700;">Trong kho</span>
+                  </c:when>
+                  <c:otherwise>
+                    <span class="premium-tag" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 4px 10px; border-radius: 6px; font-weight: 700;">Đã xuất kho</span>
+                  </c:otherwise>
+                </c:choose>
+              </td>
+              <td style="padding: 14px 16px; color: var(--text-secondary); font-size: 13px;">
+                <fmt:formatDate value="${item.lastUpdated}" pattern="dd/MM/yyyy HH:mm"/>
+              </td>
+              <td style="padding: 14px 16px; text-align: center;">
+                <div class="action-dropdown-container" style="position: relative; display: inline-block; text-align: left;">
+                  <button type="button" class="action-dropdown-trigger" onclick="toggleDropdown(this)" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 8px; border: 1.5px solid var(--card-border); background: #ffffff; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="1.5"></circle>
+                      <circle cx="12" cy="5" r="1.5"></circle>
+                      <circle cx="12" cy="19" r="1.5"></circle>
+                    </svg>
+                  </button>
+                  <div class="action-dropdown-menu" style="display: none; position: absolute; right: 0; top: 40px; background: #ffffff; border: 1.5px solid var(--card-border); border-radius: 10px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); z-index: 100; min-width: 150px; overflow: hidden; animation: slideDown 0.15s ease-out;">
+                    <a href="${pageContext.request.contextPath}/admin/inventories?action=detail&id=${item.id}" class="action-dropdown-item" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; text-decoration: none; transition: background 0.15s;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                      </svg>
+                      Xem chi tiết
+                    </a>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </c:forEach>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -275,6 +332,29 @@
   .history-table td { padding: 14px 16px; border-bottom: 1px solid var(--card-border); font-size: 14px; color: var(--text-primary); vertical-align: middle; }
   .history-row { transition: background-color 0.2s ease; }
   .history-table tr.history-row:hover td { background: rgba(4, 138, 191, 0.02); }
+
+  .action-dropdown-item { color: var(--text-primary); }
+  .action-dropdown-item:hover { background-color: #f1f5f9; }
+  .action-dropdown-trigger:hover { border-color: var(--primary-color) !important; color: var(--primary-color) !important; background: rgba(4, 138, 191, 0.02) !important; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 </style>
+
+<script>
+  function toggleDropdown(button) {
+    event.stopPropagation();
+    const currentMenu = button.nextElementSibling;
+    document.querySelectorAll('.action-dropdown-menu').forEach(menu => {
+      if (menu !== currentMenu) menu.style.display = 'none';
+    });
+    currentMenu.style.display = currentMenu.style.display === 'block' ? 'none' : 'block';
+  }
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('.action-dropdown-container')) {
+      document.querySelectorAll('.action-dropdown-menu').forEach(menu => {
+        menu.style.display = 'none';
+      });
+    }
+  });
+</script>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>
