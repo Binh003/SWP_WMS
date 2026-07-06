@@ -56,7 +56,7 @@
                   <c:set var="stock" value="0"/>
                   <c:forEach var="inv" items="${inventories}">
                     <c:if test="${inv.productId == p.id}">
-                      <c:set var="stock" value="${inv.quantityInStock}"/>
+                      <c:set var="stock" value="${stock + inv.quantityInStock}"/>
                     </c:if>
                   </c:forEach>
                   <option value="${p.id}" data-stock="${stock}" ${stock == 0 ? 'disabled' : ''}>[${p.sku}] ${p.name} (Tồn: ${stock})</option>
