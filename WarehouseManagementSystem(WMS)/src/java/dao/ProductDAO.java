@@ -18,7 +18,7 @@ public class ProductDAO {
                      "FROM products p " +
                      "INNER JOIN product_lines pl ON p.product_line_id = pl.id " +
                      "INNER JOIN brands b ON pl.brand_id = b.id " +
-                     "ORDER BY p.name ASC";
+                     "ORDER BY p.id ASC";
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -172,7 +172,7 @@ public class ProductDAO {
             sql += "AND pl.id = ? ";
         }
         
-        sql += "ORDER BY p.name ASC LIMIT ? OFFSET ?";
+        sql += "ORDER BY p.id ASC LIMIT ? OFFSET ?";
         
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

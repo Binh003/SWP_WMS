@@ -95,6 +95,7 @@
       <table class="premium-table">
         <thead>
           <tr>
+            <th style="width: 60px;">ID</th>
             <th style="width: 60px; text-align: center;">Ảnh</th>
             <th>SKU</th>
             <th>Tên Sản phẩm</th>
@@ -107,6 +108,7 @@
         <tbody>
           <c:forEach var="p" items="${products}">
             <tr class="user-row">
+              <td>#${p.id}</td>
               <td style="text-align: center; vertical-align: middle; padding: 12px 16px;">
                 <c:choose>
                   <c:when test="${not empty p.imageUrl}">

@@ -10,7 +10,7 @@ import java.util.List;
 public class BrandDAO {
     public List<Brand> getAll() throws SQLException {
         List<Brand> list = new ArrayList<>();
-        String sql = "SELECT id, code, name, description, created_at, updated_at FROM brands ORDER BY name ASC";
+        String sql = "SELECT id, code, name, description, created_at, updated_at FROM brands ORDER BY id ASC";
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -78,7 +78,7 @@ public class BrandDAO {
             params.add(pattern);
             params.add(pattern);
         }
-        sql.append(" ORDER BY name ASC LIMIT ? OFFSET ?");
+        sql.append(" ORDER BY id ASC LIMIT ? OFFSET ?");
         params.add(limit);
         params.add(offset);
 

@@ -16,7 +16,7 @@ public class ProductLineDAO {
         String sql = "SELECT p.*, b.name as brand_name, b.code as brand_code " +
                      "FROM product_lines p " +
                      "INNER JOIN brands b ON p.brand_id = b.id " +
-                     "ORDER BY p.name ASC";
+                     "ORDER BY p.id ASC";
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -50,7 +50,7 @@ public class ProductLineDAO {
                      "FROM product_lines p " +
                      "INNER JOIN brands b ON p.brand_id = b.id " +
                      "WHERE p.brand_id = ? " +
-                     "ORDER BY p.name ASC";
+                     "ORDER BY p.id ASC";
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, brandId);
@@ -98,6 +98,10 @@ public class ProductLineDAO {
     }
 
     public List<ProductLine> findPaginated(String search, int offset, int limit) throws SQLException {
+        return findPaginated(search, null, offset, limit);
+    }
+
+    public List<ProductLine> findPaginated(String search, Long brandId, int offset, int limit) throws SQLException {
         List<ProductLine> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT p.*, b.name as brand_name, b.code as brand_code " +
@@ -114,7 +118,11 @@ public class ProductLineDAO {
             params.add(pattern);
             params.add(pattern);
         }
-        sql.append(" ORDER BY p.name ASC LIMIT ? OFFSET ?");
+        if (brandId != null) {
+            sql.append(" AND p.brand_id = ?");
+            params.add(brandId);
+        }
+        sql.append(" ORDER BY p.id ASC LIMIT ? OFFSET ?");
         params.add(limit);
         params.add(offset);
 
@@ -133,6 +141,10 @@ public class ProductLineDAO {
     }
 
     public int count(String search) throws SQLException {
+        return count(search, null);
+    }
+
+    public int count(String search, Long brandId) throws SQLException {
         StringBuilder sql = new StringBuilder(
             "SELECT COUNT(*) " +
             "FROM product_lines p " +
@@ -147,6 +159,10 @@ public class ProductLineDAO {
             params.add(pattern);
             params.add(pattern);
             params.add(pattern);
+        }
+        if (brandId != null) {
+            sql.append(" AND p.brand_id = ?");
+            params.add(brandId);
         }
 
         try (Connection conn = DBConfig.getConnection();

@@ -45,12 +45,26 @@
                onfocus="this.style.borderColor='var(--primary-color)';" 
                onblur="this.style.borderColor='var(--card-border)';"/>
       </form>
+
+      <!-- Brand Filter Dropdown -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <select id="brand-filter" onchange="filterByBrand(this.value)" 
+                style="padding: 10px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; transition: all 0.2s;"
+                onfocus="this.style.borderColor='var(--primary-color)';" 
+                onblur="this.style.borderColor='var(--card-border)';">
+          <option value="all">Tất cả hãng</option>
+          <c:forEach var="b" items="${brands}">
+            <option value="${b.id}" ${selectedBrandId == b.id ? 'selected' : ''}>${b.name} (${b.code})</option>
+          </c:forEach>
+        </select>
+      </div>
     </div>
     
     <div style="overflow-x: auto; margin: 0 -32px; padding: 0 32px;">
       <table class="premium-table">
         <thead>
           <tr>
+            <th>ID</th>
             <th>Mã Dòng SP</th>
             <th>Tên Dòng SP</th>
             <th>Thuộc Hãng</th>
@@ -61,6 +75,7 @@
         <tbody>
           <c:forEach var="p" items="${productLines}">
             <tr class="user-row">
+              <td>#${p.id}</td>
               <td><span class="premium-tag premium-tag--manager">${p.code}</span></td>
               <td><strong style="color: var(--text-primary); font-size: 14px;">${p.name}</strong></td>
               <td>
@@ -111,7 +126,7 @@
           </c:forEach>
           <c:if test="${empty productLines}">
             <tr>
-              <td colspan="5" style="text-align: center; padding: 24px; color: var(--text-secondary); font-style: italic;">Không tìm thấy dòng sản phẩm nào phù hợp.</td>
+              <td colspan="6" style="text-align: center; padding: 24px; color: var(--text-secondary); font-style: italic;">Không tìm thấy dòng sản phẩm nào phù hợp.</td>
             </tr>
           </c:if>
         </tbody>
@@ -257,6 +272,16 @@
     event.preventDefault();
     const searchVal = document.getElementById("search-input").value;
     urlParams.set('search', searchVal);
+    urlParams.set('page', 1);
+    window.location.search = urlParams.toString();
+  }
+
+  function filterByBrand(brandId) {
+    if (brandId === 'all') {
+      urlParams.delete('brandId');
+    } else {
+      urlParams.set('brandId', brandId);
+    }
     urlParams.set('page', 1);
     window.location.search = urlParams.toString();
   }

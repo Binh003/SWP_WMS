@@ -43,6 +43,14 @@ public class ProductLineServlet extends HttpServlet {
         if (search == null) {
             search = "";
         }
+
+        String brandIdStr = request.getParameter("brandId");
+        Long brandId = null;
+        if (brandIdStr != null && !brandIdStr.trim().isEmpty() && !"all".equals(brandIdStr)) {
+            try {
+                brandId = Long.parseLong(brandIdStr);
+            } catch (NumberFormatException ignored) {}
+        }
         
         int page = 1;
         String pageStr = request.getParameter("page");
@@ -62,19 +70,21 @@ public class ProductLineServlet extends HttpServlet {
             } catch (NumberFormatException ignored) {}
         }
         
-        int totalItems = productLineDAO.count(search);
+        int totalItems = productLineDAO.count(search, brandId);
         int totalPages = (int) Math.ceil((double) totalItems / limit);
         if (page > totalPages && totalPages > 0) {
             page = totalPages;
         }
         int offset = (page - 1) * limit;
         
-        request.setAttribute("productLines", productLineDAO.findPaginated(search, offset, limit));
+        request.setAttribute("productLines", productLineDAO.findPaginated(search, brandId, offset, limit));
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalItems", totalItems);
         request.setAttribute("limit", limit);
         request.setAttribute("search", search);
+        request.setAttribute("selectedBrandId", brandId);
+        request.setAttribute("brands", brandDAO.getAll());
         
         request.getRequestDispatcher("/jsp/admin/product-lines.jsp").forward(request, response);
     }

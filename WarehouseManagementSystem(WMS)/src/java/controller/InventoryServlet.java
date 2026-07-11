@@ -138,14 +138,12 @@ public class InventoryServlet extends HttpServlet {
             return;
         }
         
-        List<InventoryHistory> historyList = inventoryDAO.getUpdateHistoryByProductId(inventory.getProductId());
         List<Inventory> itemizedList = inventoryDAO.getItemizedListByProductAndBatch(inventory.getProductId(), inventory.getBatchCode());
         int totalQuantity = inventoryDAO.getQuantityByProductAndBatch(inventory.getProductId(), inventory.getBatchCode());
         
         request.setAttribute("inventory", inventory);
         request.setAttribute("itemizedList", itemizedList);
         request.setAttribute("totalQuantity", totalQuantity);
-        request.setAttribute("historyList", historyList);
         request.getRequestDispatcher("/jsp/admin/inventory-detail.jsp").forward(request, response);
     }
 

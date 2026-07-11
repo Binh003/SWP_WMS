@@ -52,6 +52,7 @@
       <table class="premium-table">
         <thead>
           <tr>
+            <th>ID</th>
             <th>Mã NCC</th>
             <th>Tên Nhà cung cấp</th>
             <th>Điện thoại</th>
@@ -63,6 +64,7 @@
         <tbody>
           <c:forEach var="s" items="${suppliers}">
             <tr class="user-row">
+              <td>#${s.id}</td>
               <td><span class="premium-tag premium-tag--manager">${s.code}</span></td>
               <td><strong style="color: var(--text-primary); font-size: 14px;">${s.name}</strong></td>
               <td>${s.phone}</td>
@@ -112,7 +114,7 @@
           </c:forEach>
           <c:if test="${empty suppliers}">
             <tr>
-              <td colspan="6" style="text-align: center; padding: 24px; color: var(--text-secondary); font-style: italic;">Không tìm thấy nhà cung cấp nào phù hợp.</td>
+              <td colspan="7" style="text-align: center; padding: 24px; color: var(--text-secondary); font-style: italic;">Không tìm thấy nhà cung cấp nào phù hợp.</td>
             </tr>
           </c:if>
         </tbody>

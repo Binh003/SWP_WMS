@@ -93,8 +93,16 @@
                 </div>
               </td>
               <td>
-                <a href="javascript:openRoleDetailModal(${r.id})" style="text-decoration: none; font-weight: 700; color: var(--primary-color);" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
-                  <span class="premium-tag" style="background: rgba(4, 138, 191, 0.08); color: var(--primary-color); font-weight: 700; border: 1px solid rgba(4, 138, 191, 0.15); font-size: 13px; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
+                <c:choose>
+                  <c:when test="${r.code == 'ADMIN'}"><c:set var="roleClass" value="premium-tag--admin"/></c:when>
+                  <c:when test="${r.code == 'WAREHOUSE MANAGER'}"><c:set var="roleClass" value="premium-tag--warehouse-manager"/></c:when>
+                  <c:when test="${r.code == 'WAREHOUSE STAFF'}"><c:set var="roleClass" value="premium-tag--warehouse-staff"/></c:when>
+                  <c:when test="${r.code == 'DIRECTOR'}"><c:set var="roleClass" value="premium-tag--director"/></c:when>
+                  <c:when test="${r.code == 'SALES STAFF'}"><c:set var="roleClass" value="premium-tag--sales-staff"/></c:when>
+                  <c:otherwise><c:set var="roleClass" value="premium-tag--viewer"/></c:otherwise>
+                </c:choose>
+                <a href="javascript:openRoleDetailModal(${r.id})" style="text-decoration: none; font-weight: 700;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                  <span class="premium-tag ${roleClass}" style="font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 6px; cursor: pointer; display: inline-block;">
                     ${r.code}
                   </span>
                 </a>
@@ -340,6 +348,7 @@
     background: rgba(239, 68, 68, 0.1) !important;
     color: #ef4444 !important;
   }
+
   .action-dropdown-trigger:hover {
     border-color: var(--primary-color) !important;
     color: var(--primary-color) !important;

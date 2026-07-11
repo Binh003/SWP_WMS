@@ -150,8 +150,10 @@
                   <c:forEach var="r" items="${u.roles}">
                     <c:choose>
                       <c:when test="${r.code == 'ADMIN'}"><c:set var="roleClass" value="premium-tag--admin"/></c:when>
-                      <c:when test="${r.code == 'MANAGER'}"><c:set var="roleClass" value="premium-tag--manager"/></c:when>
-                      <c:when test="${r.code == 'STAFF' || r.code == 'WAREHOUSE'}"><c:set var="roleClass" value="premium-tag--staff"/></c:when>
+                      <c:when test="${r.code == 'WAREHOUSE MANAGER'}"><c:set var="roleClass" value="premium-tag--warehouse-manager"/></c:when>
+                      <c:when test="${r.code == 'WAREHOUSE STAFF'}"><c:set var="roleClass" value="premium-tag--warehouse-staff"/></c:when>
+                      <c:when test="${r.code == 'DIRECTOR'}"><c:set var="roleClass" value="premium-tag--director"/></c:when>
+                      <c:when test="${r.code == 'SALES STAFF'}"><c:set var="roleClass" value="premium-tag--sales-staff"/></c:when>
                       <c:otherwise><c:set var="roleClass" value="premium-tag--viewer"/></c:otherwise>
                     </c:choose>
                     <span class="premium-tag ${roleClass}">${r.code}</span>
@@ -395,22 +397,7 @@
     background: rgba(245, 158, 11, 0.1) !important;
     color: #d97706 !important;
   }
-  .premium-tag--admin {
-    background: rgba(30, 64, 175, 0.1) !important;
-    color: #1e40af !important;
-  }
-  .premium-tag--manager {
-    background: rgba(245, 158, 11, 0.1) !important;
-    color: #d97706 !important;
-  }
-  .premium-tag--staff {
-    background: rgba(16, 185, 129, 0.1) !important;
-    color: #059669 !important;
-  }
-  .premium-tag--viewer {
-    background: rgba(107, 114, 128, 0.1) !important;
-    color: #4b5563 !important;
-  }
+
   .action-dropdown-trigger:hover {
     border-color: var(--primary-color) !important;
     color: var(--primary-color) !important;

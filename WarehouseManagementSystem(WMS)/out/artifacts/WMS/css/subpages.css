@@ -232,6 +232,36 @@
   color: var(--text-secondary);
 }
 
+.premium-tag--admin {
+  background: rgba(30, 64, 175, 0.1) !important;
+  color: #1e40af !important;
+}
+
+.premium-tag--warehouse-manager {
+  background: rgba(109, 40, 217, 0.1) !important;
+  color: #6d28d9 !important;
+}
+
+.premium-tag--warehouse-staff {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: #059669 !important;
+}
+
+.premium-tag--director {
+  background: rgba(219, 39, 119, 0.1) !important;
+  color: #db2777 !important;
+}
+
+.premium-tag--sales-staff {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #d97706 !important;
+}
+
+.premium-tag--viewer {
+  background: rgba(107, 114, 128, 0.1) !important;
+  color: #4b5563 !important;
+}
+
 /* Action button glow overrides */
 .premium-btn-primary {
   height: 44px !important;
