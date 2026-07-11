@@ -136,23 +136,7 @@ public class AppContextListener implements ServletContextListener {
         permissionDAO.linkRolePermission(warehouseRoleId, shipmentRead);
         permissionDAO.linkRolePermission(warehouseRoleId, shipmentWrite);
 
-        // 3. WAREHOUSE MANAGER
-        long managerRoleId = permissionDAO.ensureRole("WAREHOUSE MANAGER", "Warehouse Manager");
-        permissionDAO.linkRolePermission(managerRoleId, brandRead);
-        permissionDAO.linkRolePermission(managerRoleId, brandWrite);
-        permissionDAO.linkRolePermission(managerRoleId, supplierRead);
-        permissionDAO.linkRolePermission(managerRoleId, supplierWrite);
-        permissionDAO.linkRolePermission(managerRoleId, prodLineRead);
-        permissionDAO.linkRolePermission(managerRoleId, prodLineWrite);
-        permissionDAO.linkRolePermission(managerRoleId, productRead);
-        permissionDAO.linkRolePermission(managerRoleId, productWrite);
-        permissionDAO.linkRolePermission(managerRoleId, inventoryRead);
-        permissionDAO.linkRolePermission(managerRoleId, inventoryWrite);
-        permissionDAO.linkRolePermission(managerRoleId, receiptRead);
-        permissionDAO.linkRolePermission(managerRoleId, receiptWrite);
-        permissionDAO.linkRolePermission(managerRoleId, shipmentRead);
-        permissionDAO.linkRolePermission(managerRoleId, shipmentWrite);
-        permissionDAO.linkRolePermission(managerRoleId, reportRead);
+
 
         // 4. DIRECTOR
         long directorRoleId = permissionDAO.ensureRole("DIRECTOR", "Director");

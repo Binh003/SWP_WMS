@@ -108,8 +108,8 @@
             <th style="width: 180px;">Tên tài khoản</th>
             <th style="width: 180px;">Họ và tên</th>
             <th style="min-width: 200px;">Email</th>
-            <th style="min-width: 180px;">Vai trò</th>
-            <th style="width: 140px;">Trạng thái</th>
+            <th style="min-width: 170px;">Vai trò</th>
+            <th style="width: 150px;">Trạng thái</th>
             <th style="text-align: center; width: 100px;">Hành động</th>
           </tr>
         </thead>
@@ -158,7 +158,7 @@
                   </c:forEach>
                 </div>
               </td>
-              <td>
+              <td style="white-space: nowrap;">
                 <c:choose>
                   <c:when test="${u.status == 'ACTIVE'}">
                     <span class="premium-tag premium-tag--success" style="font-size: 12px; font-weight: 700; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px; letter-spacing: 0.02em; border-radius: 8px;">

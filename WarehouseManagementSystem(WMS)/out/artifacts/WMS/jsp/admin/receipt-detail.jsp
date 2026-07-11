@@ -297,17 +297,14 @@
         </div>
       </c:if>
 
-      <!-- Signature section for print -->
       <div style="margin-top: 50px; display: flex; justify-content: space-between; text-align: center; font-size: 14px;">
-        <div style="width: 200px;">
-          <span style="font-weight: 700; display: block; margin-bottom: 60px; text-transform: uppercase; color: #475569;">Người tạo đơn</span>
-          <span style="color: #64748b; font-size: 12px;">(Ký, ghi rõ họ tên)</span>
-          <div style="margin-top: 15px; font-weight: 600; color: #0f172a;">${receipt.creator.fullName}</div>
+        <div style="width: 250px; white-space: nowrap;">
+          <span style="font-weight: 700; display: block; margin-bottom: 75px; text-transform: uppercase; color: #475569;">Người tạo đơn</span>
+          <div style="font-weight: 600; color: #0f172a;">${receipt.creator.fullName}</div>
         </div>
-        <div style="width: 200px;">
-          <span style="font-weight: 700; display: block; margin-bottom: 60px; text-transform: uppercase; color: #475569;">Người xác nhận (Phê duyệt)</span>
-          <span style="color: #64748b; font-size: 12px;">(Ký, ghi rõ họ tên)</span>
-          <div style="margin-top: 15px; font-weight: 600; color: #0f172a;">
+        <div style="width: 250px; white-space: nowrap;">
+          <span style="font-weight: 700; display: block; margin-bottom: 75px; text-transform: uppercase; color: #475569;">Người xác nhận (Phê duyệt)</span>
+          <div style="font-weight: 600; color: #0f172a;">
             <c:choose>
               <c:when test="${not empty receipt.getConfirmer()}">
                 ${receipt.getConfirmer().fullName}
@@ -318,10 +315,9 @@
             </c:choose>
           </div>
         </div>
-        <div style="width: 200px;">
-          <span style="font-weight: 700; display: block; margin-bottom: 60px; text-transform: uppercase; color: #475569;">Người nhận hàng (Thủ kho)</span>
-          <span style="color: #64748b; font-size: 12px;">(Ký, ghi rõ họ tên)</span>
-          <div style="margin-top: 15px; font-weight: 600; color: #0f172a;">
+        <div style="width: 250px; white-space: nowrap;">
+          <span style="font-weight: 700; display: block; margin-bottom: 75px; text-transform: uppercase; color: #475569;">Người nhận hàng (Thủ kho)</span>
+          <div style="font-weight: 600; color: #0f172a;">
             <c:choose>
               <c:when test="${not empty receipt.getReceiver()}">
                 ${receipt.getReceiver().fullName}

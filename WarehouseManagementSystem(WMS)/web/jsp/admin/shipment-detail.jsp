@@ -249,17 +249,14 @@
         </c:if>
       </div>
 
-      <!-- Signature section for print -->
       <div style="margin-top: 50px; display: flex; justify-content: space-around; text-align: center; font-size: 14px;">
-        <div style="width: 200px;">
-          <span style="font-weight: 700; display: block; margin-bottom: 60px; text-transform: uppercase; color: #475569;">Người lập phiếu</span>
-          <span style="color: #64748b; font-size: 12px;">(Ký, ghi rõ họ tên)</span>
-          <div style="margin-top: 15px; font-weight: 600; color: #0f172a;">${shipment.creator.fullName}</div>
+        <div style="width: 250px; white-space: nowrap;">
+          <span style="font-weight: 700; display: block; margin-bottom: 75px; text-transform: uppercase; color: #475569;">Người lập phiếu</span>
+          <div style="font-weight: 600; color: #0f172a;">${shipment.creator.fullName}</div>
         </div>
-        <div style="width: 200px;">
-          <span style="font-weight: 700; display: block; margin-bottom: 60px; text-transform: uppercase; color: #475569;">Nhân viên xuất kho (Thủ kho)</span>
-          <span style="color: #64748b; font-size: 12px;">(Ký, ghi rõ họ tên)</span>
-          <div style="margin-top: 15px; font-weight: 600; color: #0f172a;">
+        <div style="width: 250px; white-space: nowrap;">
+          <span style="font-weight: 700; display: block; margin-bottom: 75px; text-transform: uppercase; color: #475569;">Nhân viên xuất kho (Thủ kho)</span>
+          <div style="font-weight: 600; color: #0f172a;">
             <c:choose>
               <c:when test="${not empty shipment.getWarehouseStaff()}">
                 ${shipment.getWarehouseStaff().fullName}
