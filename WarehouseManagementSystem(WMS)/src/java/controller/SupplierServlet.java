@@ -120,23 +120,50 @@ public class SupplierServlet extends HttpServlet {
                 default -> WebUtil.redirect(request, response, "/admin/suppliers");
             }
         } catch (SQLException ex) {
-            WebUtil.setFlashError(request, ex.getMessage());
+            String msg = ex.getMessage();
+            if (ex.getErrorCode() == 1062 || (msg != null && msg.contains("Duplicate entry"))) {
+                WebUtil.setFlashError(request, "Lỗi: Nhà cung cấp này đã tồn tại (Mã nhà cung cấp đã được sử dụng)!");
+            } else {
+                WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + msg);
+            }
             WebUtil.redirect(request, response, "/admin/suppliers");
         }
     }
 
     private void createSupplier(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException {
-        Supplier supplier = new Supplier();
-        supplier.setCode(WebUtil.param(request, "code"));
-        supplier.setName(WebUtil.param(request, "name"));
-        supplier.setPhone(WebUtil.param(request, "phone"));
-        supplier.setEmail(WebUtil.param(request, "email"));
-        supplier.setAddress(WebUtil.param(request, "address"));
+        String code = WebUtil.param(request, "code");
+        String name = WebUtil.param(request, "name");
+        String phone = WebUtil.param(request, "phone");
+        String email = WebUtil.param(request, "email");
+        String address = WebUtil.param(request, "address");
 
-        supplierDAO.insert(supplier);
-        WebUtil.setFlashSuccess(request, "Đã thêm nhà cung cấp thành công");
-        WebUtil.redirect(request, response, "/admin/suppliers");
+        // Validate beforehand
+        if (supplierDAO.getByCode(code) != null) {
+            WebUtil.setFlashError(request, "Lỗi: Nhà cung cấp này đã tồn tại (Mã nhà cung cấp '" + code + "' đã được sử dụng)!");
+            WebUtil.redirect(request, response, "/admin/suppliers?action=create");
+            return;
+        }
+
+        Supplier supplier = new Supplier();
+        supplier.setCode(code);
+        supplier.setName(name);
+        supplier.setPhone(phone);
+        supplier.setEmail(email);
+        supplier.setAddress(address);
+
+        try {
+            supplierDAO.insert(supplier);
+            WebUtil.setFlashSuccess(request, "Đã thêm nhà cung cấp thành công");
+            WebUtil.redirect(request, response, "/admin/suppliers");
+        } catch (SQLException ex) {
+            if (ex.getErrorCode() == 1062 || (ex.getMessage() != null && ex.getMessage().contains("Duplicate entry"))) {
+                WebUtil.setFlashError(request, "Lỗi: Nhà cung cấp này đã tồn tại (Mã nhà cung cấp '" + code + "' đã được sử dụng)!");
+                WebUtil.redirect(request, response, "/admin/suppliers?action=create");
+            } else {
+                throw ex;
+            }
+        }
     }
 
     private void updateSupplier(HttpServletRequest request, HttpServletResponse response)
@@ -144,15 +171,40 @@ public class SupplierServlet extends HttpServlet {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         Supplier supplier = supplierDAO.getById(id);
         if (supplier != null) {
-            supplier.setCode(WebUtil.param(request, "code"));
+            String newCode = WebUtil.param(request, "code");
+            
+            // Check if code has changed and if the new code already exists
+            if (!supplier.getCode().equalsIgnoreCase(newCode)) {
+                Supplier existing = supplierDAO.getByCode(newCode);
+                if (existing != null && existing.getId() != id) {
+                    WebUtil.setFlashError(request, "Lỗi: Nhà cung cấp này đã tồn tại (Mã nhà cung cấp '" + newCode + "' đã được sử dụng)!");
+                    WebUtil.redirect(request, response, "/admin/suppliers?action=edit&id=" + id);
+                    return;
+                }
+            }
+
+            supplier.setCode(newCode);
             supplier.setName(WebUtil.param(request, "name"));
             supplier.setPhone(WebUtil.param(request, "phone"));
             supplier.setEmail(WebUtil.param(request, "email"));
             supplier.setAddress(WebUtil.param(request, "address"));
-            supplierDAO.update(supplier);
-            WebUtil.setFlashSuccess(request, "Đã cập nhật nhà cung cấp");
+            
+            try {
+                supplierDAO.update(supplier);
+                WebUtil.setFlashSuccess(request, "Đã cập nhật nhà cung cấp");
+                WebUtil.redirect(request, response, "/admin/suppliers");
+            } catch (SQLException ex) {
+                if (ex.getErrorCode() == 1062 || (ex.getMessage() != null && ex.getMessage().contains("Duplicate entry"))) {
+                    WebUtil.setFlashError(request, "Lỗi: Nhà cung cấp này đã tồn tại (Mã nhà cung cấp '" + newCode + "' đã được sử dụng)!");
+                    WebUtil.redirect(request, response, "/admin/suppliers?action=edit&id=" + id);
+                } else {
+                    throw ex;
+                }
+            }
+        } else {
+            WebUtil.setFlashError(request, "Không tìm thấy nhà cung cấp");
+            WebUtil.redirect(request, response, "/admin/suppliers");
         }
-        WebUtil.redirect(request, response, "/admin/suppliers");
     }
 
     private void deleteSupplier(HttpServletRequest request, HttpServletResponse response)

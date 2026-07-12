@@ -121,6 +121,20 @@ public class BrandDAO {
         return 0;
     }
 
+    public Brand getByCode(String code) throws SQLException {
+        String sql = "SELECT id, code, name, description, created_at, updated_at FROM brands WHERE LOWER(code) = LOWER(?)";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapBrand(rs);
+                }
+            }
+        }
+        return null;
+    }
+
     private Brand mapBrand(ResultSet rs) throws SQLException {
         Brand brand = new Brand();
         brand.setId(rs.getLong("id"));

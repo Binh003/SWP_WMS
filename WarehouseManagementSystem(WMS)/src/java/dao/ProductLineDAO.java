@@ -179,6 +179,23 @@ public class ProductLineDAO {
         return 0;
     }
 
+    public ProductLine getByCode(String code) throws SQLException {
+        String sql = "SELECT p.*, b.name as brand_name, b.code as brand_code " +
+                     "FROM product_lines p " +
+                     "INNER JOIN brands b ON p.brand_id = b.id " +
+                     "WHERE LOWER(p.code) = LOWER(?)";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapProductLineWithBrand(rs);
+                }
+            }
+        }
+        return null;
+    }
+
     private ProductLine mapProductLineWithBrand(ResultSet rs) throws SQLException {
         ProductLine pl = new ProductLine();
         pl.setId(rs.getLong("id"));

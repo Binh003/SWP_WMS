@@ -129,6 +129,20 @@ public class SupplierDAO {
         return 0;
     }
 
+    public Supplier getByCode(String code) throws SQLException {
+        String sql = "SELECT id, code, name, phone, email, address, created_at, updated_at FROM suppliers WHERE LOWER(code) = LOWER(?)";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, code);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapSupplier(rs);
+                }
+            }
+        }
+        return null;
+    }
+
     private Supplier mapSupplier(ResultSet rs) throws SQLException {
         Supplier s = new Supplier();
         s.setId(rs.getLong("id"));
