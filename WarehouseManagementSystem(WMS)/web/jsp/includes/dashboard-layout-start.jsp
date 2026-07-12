@@ -246,6 +246,7 @@
 
         <c:set var="canViewReceipts" value="${isAdmin || currentUser.hasPermission('RECEIPT_READ') || currentUser.hasPermission('RECEIPT_WRITE')}"/>
         <c:set var="canViewShipments" value="${isAdmin || currentUser.hasPermission('SHIPMENT_READ') || currentUser.hasPermission('SHIPMENT_WRITE')}"/>
+        <c:set var="canViewReports" value="${isAdmin || currentUser.hasPermission('REPORT_READ')}"/>
 
         <c:if test="${canViewReceipts}">
           <a class="${activePage == 'receipts' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/receipts">
@@ -266,6 +267,17 @@
               <line x1="12" y1="3" x2="12" y2="15"></line>
             </svg>
             <span>Xuất kho</span>
+          </a>
+        </c:if>
+
+        <c:if test="${canViewReports}">
+          <a class="${activePage == 'reports' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/reports">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <span>Báo cáo thống kê</span>
           </a>
         </c:if>
       </nav>

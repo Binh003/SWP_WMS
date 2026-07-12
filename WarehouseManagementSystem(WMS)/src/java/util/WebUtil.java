@@ -62,4 +62,17 @@ public final class WebUtil {
     public static String encode(String value) {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
+
+    public static String getWorkspacePath(HttpServletRequest request) {
+        String realPath = request.getServletContext().getRealPath("/");
+        if (realPath == null) return null;
+        java.io.File dir = new java.io.File(realPath);
+        while (dir != null) {
+            if (dir.getName().equals("WarehouseManagementSystem(WMS)")) {
+                return dir.getAbsolutePath();
+            }
+            dir = dir.getParentFile();
+        }
+        return null;
+    }
 }

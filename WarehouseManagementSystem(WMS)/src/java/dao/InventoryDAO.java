@@ -206,7 +206,9 @@ public class InventoryDAO {
         List<Inventory> list = new ArrayList<>();
         int offset = (page - 1) * limit;
         String sql = "SELECT MIN(i.id) as id, i.product_id, i.batch_code, " +
-                     "MIN(i.barcode) as min_barcode, MAX(i.barcode) as max_barcode, COUNT(i.barcode) as barcode_count, " +
+                     "MIN(i.barcode) as min_barcode, " +
+                     "CASE WHEN MIN(i.barcode) LIKE '%-%-%-%' THEN CONCAT(SUBSTRING_INDEX(MIN(i.barcode), '-', 3), '-', MAX(CAST(SUBSTRING_INDEX(i.barcode, '-', -1) AS UNSIGNED))) ELSE MAX(i.barcode) END as max_barcode, " +
+                     "COUNT(i.barcode) as barcode_count, " +
                      "SUM(i.quantity_in_stock) as quantity_in_stock, MAX(i.min_stock_level) as min_stock_level, " +
                      "MAX(i.last_updated) as last_updated, " +
                      "p.sku, p.name as product_name, p.unit, p.price, p.image_url, " +
@@ -360,6 +362,33 @@ public class InventoryDAO {
                 }
             }
         }
+        
+        // Sắp xếp tự nhiên (natural sort) theo mã vạch
+        list.sort((inv1, inv2) -> {
+            String b1 = inv1.getBarcode();
+            String b2 = inv2.getBarcode();
+            if (b1 == null || b1.isEmpty()) return (b2 == null || b2.isEmpty()) ? 0 : 1;
+            if (b2 == null || b2.isEmpty()) return -1;
+            
+            String[] parts1 = b1.split("-");
+            String[] parts2 = b2.split("-");
+            int minLen = Math.min(parts1.length, parts2.length);
+            for (int i = 0; i < minLen; i++) {
+                String p1 = parts1[i];
+                String p2 = parts2[i];
+                if (!p1.equals(p2)) {
+                    try {
+                        int num1 = Integer.parseInt(p1);
+                        int num2 = Integer.parseInt(p2);
+                        return Integer.compare(num1, num2);
+                    } catch (NumberFormatException e) {
+                        return p1.compareTo(p2);
+                    }
+                }
+            }
+            return Integer.compare(parts1.length, parts2.length);
+        });
+        
         return list;
     }
 

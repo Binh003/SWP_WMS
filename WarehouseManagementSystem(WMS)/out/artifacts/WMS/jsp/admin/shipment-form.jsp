@@ -156,7 +156,7 @@
         let stock = parseInt(selects[i].options[selects[i].selectedIndex].getAttribute('data-stock')) || 0;
         
         if (qty <= 0) {
-            alert("Số lượng xuất phải lớn hơn 0");
+            showCustomAlert("Số lượng xuất phải lớn hơn 0");
             return false;
         }
         
@@ -173,12 +173,61 @@
     // Check total
     for (let [pId, data] of productMap) {
         if (data.qty > data.stock) {
-            alert("Lỗi: Tổng số lượng xuất (" + data.qty + ") vượt quá số lượng tồn kho (" + data.stock + ") cho sản phẩm đã chọn.");
+            showCustomAlert("Lỗi: Tổng số lượng xuất (" + data.qty + ") vượt quá số lượng tồn kho (" + data.stock + ") cho sản phẩm đã chọn.");
             return false;
         }
     }
     return true;
   }
+
+  function showCustomAlert(msg) {
+    const modal = document.getElementById("customAlertModal");
+    const msgEl = document.getElementById("customAlertMessage");
+    if (modal && msgEl) {
+        msgEl.textContent = msg;
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    const closeBtn = document.getElementById("closeCustomAlertBtn");
+    const modal = document.getElementById("customAlertModal");
+    if (closeBtn && modal) {
+        closeBtn.addEventListener("click", function() {
+            modal.style.display = "none";
+            document.body.style.overflow = "auto";
+        });
+        
+        window.addEventListener("click", function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+                document.body.style.overflow = "auto";
+            }
+        });
+    }
+  });
 </script>
+
+<!-- Custom Alert Modal -->
+<div id="customAlertModal" style="display: none; position: fixed; z-index: 2500; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); transition: all 0.3s ease; justify-content: center; align-items: center;">
+  <div style="background-color: #ffffff; padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); width: 90%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position: relative; animation: modalFadeIn 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;">
+    <div style="width: 50px; height: 50px; border-radius: 50%; background: #fffbeb; border: 2px solid #f59e0b; color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
+      ⚠️
+    </div>
+    <h3 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Cảnh báo</h3>
+    <p id="customAlertMessage" style="font-size: 14px; color: #64748b; line-height: 1.5; margin: 0; font-weight: 600;"></p>
+    <button id="closeCustomAlertBtn" style="margin-top: 8px; width: 100%; height: 40px; border-radius: 8px; border: none; background: #048abf; color: #ffffff; font-weight: 700; font-size: 13px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+      Đồng ý
+    </button>
+  </div>
+</div>
+
+<style>
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>

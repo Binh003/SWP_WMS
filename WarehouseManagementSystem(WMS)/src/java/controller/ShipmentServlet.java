@@ -300,17 +300,19 @@ public class ShipmentServlet extends HttpServlet {
                 filePart.write(deployPath + java.io.File.separator + uniqueFileName);
                 
                 // Source path sync (optional, fallback if folder doesn't exist)
-                String workspacePath = "d:\\SP_SWP\\Nghia-Phase4.2\\SWP_WMS\\WarehouseManagementSystem(WMS)";
-                String srcPath = workspacePath + java.io.File.separator + "web" + java.io.File.separator + "uploads" + java.io.File.separator + "shipments";
-                java.io.File srcDir = new java.io.File(srcPath);
-                if (srcDir.exists() || srcDir.mkdirs()) {
-                    try {
-                        java.nio.file.Files.copy(
-                            java.nio.file.Paths.get(deployPath + java.io.File.separator + uniqueFileName),
-                            java.nio.file.Paths.get(srcPath + java.io.File.separator + uniqueFileName),
-                            java.nio.file.StandardCopyOption.REPLACE_EXISTING
-                        );
-                    } catch (Exception ignored) {}
+                String workspacePath = util.WebUtil.getWorkspacePath(request);
+                if (workspacePath != null) {
+                    String srcPath = workspacePath + java.io.File.separator + "web" + java.io.File.separator + "uploads" + java.io.File.separator + "shipments";
+                    java.io.File srcDir = new java.io.File(srcPath);
+                    if (srcDir.exists() || srcDir.mkdirs()) {
+                        try {
+                            java.nio.file.Files.copy(
+                                java.nio.file.Paths.get(deployPath + java.io.File.separator + uniqueFileName),
+                                java.nio.file.Paths.get(srcPath + java.io.File.separator + uniqueFileName),
+                                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                            );
+                        } catch (Exception ignored) {}
+                    }
                 }
                 
                 return "/" + relativePath;
@@ -353,17 +355,19 @@ public class ShipmentServlet extends HttpServlet {
                     part.write(deployPath + java.io.File.separator + uniqueFileName);
                     
                     // Source path sync
-                    String workspacePath = "d:\\SP_SWP\\Nghia-Phase4.2\\SWP_WMS\\WarehouseManagementSystem(WMS)";
-                    String srcPath = workspacePath + java.io.File.separator + "web" + java.io.File.separator + "uploads" + java.io.File.separator + "shipments";
-                    java.io.File srcDir = new java.io.File(srcPath);
-                    if (srcDir.exists() || srcDir.mkdirs()) {
-                        try {
-                            java.nio.file.Files.copy(
-                                java.nio.file.Paths.get(deployPath + java.io.File.separator + uniqueFileName),
-                                java.nio.file.Paths.get(srcPath + java.io.File.separator + uniqueFileName),
-                                java.nio.file.StandardCopyOption.REPLACE_EXISTING
-                            );
-                        } catch (Exception ignored) {}
+                    String workspacePath = util.WebUtil.getWorkspacePath(request);
+                    if (workspacePath != null) {
+                        String srcPath = workspacePath + java.io.File.separator + "web" + java.io.File.separator + "uploads" + java.io.File.separator + "shipments";
+                        java.io.File srcDir = new java.io.File(srcPath);
+                        if (srcDir.exists() || srcDir.mkdirs()) {
+                            try {
+                                java.nio.file.Files.copy(
+                                    java.nio.file.Paths.get(deployPath + java.io.File.separator + uniqueFileName),
+                                    java.nio.file.Paths.get(srcPath + java.io.File.separator + uniqueFileName),
+                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                                );
+                            } catch (Exception ignored) {}
+                        }
                     }
                     
                     uploadedPaths.add("/" + relativePath);

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Bảng điều khiển" scope="request"/>
 <c:set var="activePage" value="home" scope="request"/>
 <jsp:include page="includes/dashboard-layout-start.jsp"/>
@@ -210,10 +211,10 @@
   <article class="stat-card stat-card--good">
     <div>
       <p>Tổng sản phẩm tồn kho</p>
-      <strong>5,240</strong>
+      <strong><fmt:formatNumber value="${totalInventoryItems}" pattern="#,##0"/></strong>
       <span class="trend-badge trend-badge--up">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-        +2.5% so với tháng trước
+        Số lượng hiện tại trong kho
       </span>
     </div>
     <div class="stat-card__icon">
@@ -228,11 +229,20 @@
   <article class="stat-card stat-card--danger">
     <div>
       <p>Sản phẩm sắp hết hàng</p>
-      <strong>12</strong>
-      <span class="trend-badge trend-badge--down">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
-        Cần nhập thêm hàng ngay
-      </span>
+      <strong><c:out value="${lowStockCount}"/></strong>
+      <c:choose>
+        <c:when test="${lowStockCount > 0}">
+          <span class="trend-badge trend-badge--down">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
+            Cần nhập thêm hàng ngay
+          </span>
+        </c:when>
+        <c:otherwise>
+          <span class="trend-badge trend-badge--up" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+            Tồn kho ở mức an toàn
+          </span>
+        </c:otherwise>
+      </c:choose>
     </div>
     <div class="stat-card__icon">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -246,10 +256,10 @@
   <article class="stat-card stat-card--neutral">
     <div>
       <p>Giao dịch hôm nay</p>
-      <strong>+85</strong>
+      <strong>+<c:out value="${todayTransactions}"/></strong>
       <span class="trend-badge trend-badge--neutral">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-        Cập nhật: 5 phút trước
+        Phát sinh trong ngày
       </span>
     </div>
     <div class="stat-card__icon">
@@ -322,27 +332,36 @@
           <span>Thời gian</span>
         </div>
 
-        <div class="transaction-row">
-          <strong>#NK-8821</strong>
-          <div><span class="transaction-badge transaction-badge--in">Nhập kho</span></div>
-          <span class="transaction-product" style="font-weight: 600;">iPhone 15 Pro Max</span>
-          <span class="transaction-quantity" style="font-weight: 700; color: var(--text-primary);">50</span>
-          <span class="transaction-time" style="color: var(--text-secondary);">10:45 AM</span>
-        </div>
-        <div class="transaction-row">
-          <strong>#XK-4523</strong>
-          <div><span class="transaction-badge transaction-badge--out">Xuất kho</span></div>
-          <span class="transaction-product" style="font-weight: 600;">MacBook Pro M3</span>
-          <span class="transaction-quantity" style="font-weight: 700; color: var(--text-primary);">12</span>
-          <span class="transaction-time" style="color: var(--text-secondary);">09:12 AM</span>
-        </div>
-        <div class="transaction-row">
-          <strong>#NK-8820</strong>
-          <div><span class="transaction-badge transaction-badge--in">Nhập kho</span></div>
-          <span class="transaction-product" style="font-weight: 600;">Samsung Galaxy S24</span>
-          <span class="transaction-quantity" style="font-weight: 700; color: var(--text-primary);">30</span>
-          <span class="transaction-time" style="color: var(--text-secondary);">Hôm qua</span>
-        </div>
+        <c:choose>
+          <c:when test="${not empty recentTransactions}">
+            <c:forEach var="tx" items="${recentTransactions}">
+              <div class="transaction-row">
+                <a href="${pageContext.request.contextPath}/admin/${tx.type == 'RECEIPT' ? 'receipts' : 'shipments'}?action=view&id=${tx.id}" style="text-decoration: none; color: inherit;">
+                  <strong>#<c:out value="${tx.code}"/></strong>
+                </a>
+                <div>
+                  <span class="transaction-badge ${tx.type == 'RECEIPT' ? 'transaction-badge--in' : 'transaction-badge--out'}">
+                    <c:out value="${tx.type == 'RECEIPT' ? 'Nhập kho' : 'Xuất kho'}"/>
+                  </span>
+                </div>
+                <span class="transaction-product" style="font-weight: 600;" title="${tx.productName}">
+                  <c:out value="${tx.productName}"/>
+                </span>
+                <span class="transaction-quantity" style="font-weight: 700; color: var(--text-primary);">
+                  <c:out value="${tx.quantity}"/>
+                </span>
+                <span class="transaction-time" style="color: var(--text-secondary);">
+                  <fmt:formatDate value="${tx.createdAt}" pattern="dd/MM HH:mm"/>
+                </span>
+              </div>
+            </c:forEach>
+          </c:when>
+          <c:otherwise>
+            <div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 14px;">
+              Chưa có giao dịch nào phát sinh.
+            </div>
+          </c:otherwise>
+        </c:choose>
       </div>
     </section>
   </div>
@@ -363,33 +382,30 @@
       </div>
 
       <div class="stock-list">
-        <div class="stock-item">
-          <div class="stock-item__header">
-            <span class="stock-item__name">iPhone 15 Pro</span>
-            <strong class="stock-item__ratio stock-item__ratio--critical">5 / 50 (10%)</strong>
-          </div>
-          <div class="progress" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100">
-            <div class="progress__bar progress__bar--critical" style="width:10%;"></div>
-          </div>
-        </div>
-        <div class="stock-item">
-          <div class="stock-item__header">
-            <span class="stock-item__name">MacBook Pro M3</span>
-            <strong class="stock-item__ratio stock-item__ratio--critical">2 / 20 (10%)</strong>
-          </div>
-          <div class="progress" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100">
-            <div class="progress__bar progress__bar--critical" style="width:10%;"></div>
-          </div>
-        </div>
-        <div class="stock-item">
-          <div class="stock-item__header">
-            <span class="stock-item__name">iPad Air 5</span>
-            <strong class="stock-item__ratio stock-item__ratio--warning">8 / 40 (20%)</strong>
-          </div>
-          <div class="progress" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
-            <div class="progress__bar progress__bar--warning" style="width:20%;"></div>
-          </div>
-        </div>
+        <c:choose>
+          <c:when test="${not empty lowStockProducts}">
+            <c:forEach var="lp" items="${lowStockProducts}">
+              <c:set var="ratio" value="${lp.minQty > 0 ? (lp.qty * 100.0 / lp.minQty) : 0}"/>
+              <c:set var="ratioClass" value="${ratio <= 20 ? 'critical' : 'warning'}"/>
+              <div class="stock-item">
+                <div class="stock-item__header">
+                  <span class="stock-item__name"><c:out value="${lp.name}"/></span>
+                  <strong class="stock-item__ratio stock-item__ratio--${ratioClass}">
+                    <c:out value="${lp.qty}"/> / <c:out value="${lp.minQty}"/> (<fmt:formatNumber value="${ratio}" maxFractionDigits="0"/>%)
+                  </strong>
+                </div>
+                <div class="progress" role="progressbar" aria-valuenow="${ratio}" aria-valuemin="0" aria-valuemax="100">
+                  <div class="progress__bar progress__bar--${ratioClass}" style="width: <c:out value="${ratio > 100 ? 100 : ratio}"/>%;"></div>
+                </div>
+              </div>
+            </c:forEach>
+          </c:when>
+          <c:otherwise>
+            <div style="padding: 20px; text-align: center; color: #10b981; font-size: 14px; font-weight: 600;">
+              🎉 Tất cả sản phẩm đều đủ lượng tồn kho an toàn!
+            </div>
+          </c:otherwise>
+        </c:choose>
       </div>
 
       <a href="${pageContext.request.contextPath}/admin/receipts" class="outline-danger-button" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">

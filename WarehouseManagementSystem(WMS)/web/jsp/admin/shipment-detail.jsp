@@ -45,7 +45,80 @@
       <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0;">Chi tiết Phiếu Xuất: <span style="font-family: monospace; color: var(--primary-color);">${shipment.shipmentCode}</span></h2>
       <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">Thông tin chi tiết về các sản phẩm đã xuất kho.</p>
     </div>
-    <div style="display: flex; gap: 12px; align-items: center;">
+    <div style="display: flex; gap: 12px; align-items: center;" class="no-print">
+      
+      <!-- Right-aligned shipment action buttons -->
+      <c:if test="${shipment.status != 'CANCELLED' && shipment.status != 'COMPLETED'}">
+        <c:choose>
+          <c:when test="${shipment.status == 'DRAFT'}">
+            <div style="display: flex; gap: 8px;">
+              <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='PENDING'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; color: white;">
+                Gửi yêu cầu duyệt
+              </button>
+              <c:if test="${currentUser.hasPermission('SHIPMENT_WRITE')}">
+                <a href="${pageContext.request.contextPath}/admin/shipments?action=delete&id=${shipment.id}" 
+                   class="premium-btn-outline" 
+                   onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu xuất nháp này không? Hành động này không thể hoàn tác.');"
+                   style="display: inline-flex; align-items: center; justify-content: center; height: 40px !important; padding: 0 16px; font-size: 13px; text-decoration: none; color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.4); font-weight: 600; border-radius: 8px; transition: all 0.2s;"
+                   onmouseover="this.style.background='rgba(239, 68, 68, 0.05)'; this.style.borderColor='#ef4444';"
+                   onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(239, 68, 68, 0.4)';">
+                  Xóa phiếu nháp
+                </a>
+              </c:if>
+              <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #64748b; border: 1.5px solid var(--card-border); height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                Hủy phiếu
+              </button>
+            </div>
+          </c:when>
+          <c:when test="${shipment.status == 'PENDING' || shipment.status == 'APPROVED'}">
+            <c:choose>
+              <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
+                <div style="display: flex; gap: 8px;">
+                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='PICKING'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #a855f7, #9333ea) !important; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.2) !important; color: white;">
+                    Bắt đầu lấy & đóng gói
+                  </button>
+                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                    Hủy phiếu
+                  </button>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 16px; font-size: 12px; color: #1d4ed8; font-weight: 600;">
+                  Chờ lấy hàng & đóng gói...
+                </div>
+              </c:otherwise>
+            </c:choose>
+          </c:when>
+
+          <c:when test="${shipment.status == 'PICKING'}">
+            <c:choose>
+              <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
+                <div style="display: flex; gap: 8px;">
+                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='COMPLETED'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important; color: white;">
+                    Xác nhận xuất kho
+                  </button>
+                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                    Hủy phiếu
+                  </button>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div style="background: rgba(168, 85, 247, 0.05); border: 1px solid #e9d5ff; border-radius: 8px; padding: 10px 16px; font-size: 12px; color: #7e22ce; font-weight: 600;">
+                  Thủ kho đang lấy hàng...
+                </div>
+              </c:otherwise>
+            </c:choose>
+          </c:when>
+        </c:choose>
+      </c:if>
+
+      <c:if test="${shipment.status == 'COMPLETED'}">
+        <button type="button" onclick="window.print()" class="premium-btn-outline" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1.5px solid var(--card-border); border-radius: 8px; background: transparent; color: var(--text-primary);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          In Phiếu Xuất Kho
+        </button>
+      </c:if>
+
       <button type="button" id="openHistoryBtn" class="premium-btn-secondary" style="display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 16px; font-weight: 600; cursor: pointer; gap: 6px; border: 1.5px solid var(--card-border); background: #ffffff; border-radius: 8px; font-size: 13px; color: var(--text-primary); transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='var(--primary-color)';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='var(--card-border)';">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
         Lịch sử cập nhật
@@ -130,7 +203,7 @@
 
   <!-- Hidden status form (always available) -->
   <c:if test="${shipment.status != 'COMPLETED' && shipment.status != 'CANCELLED'}">
-    <form action="${pageContext.request.contextPath}/admin/shipments" method="post" id="statusForm" enctype="multipart/form-data" style="display:none;">
+    <form action="${pageContext.request.contextPath}/admin/shipments" method="post" id="statusForm" enctype="multipart/form-data" onsubmit="return validateStatusChange()" style="display:none;">
       <input type="hidden" name="action" value="updateStatus"/>
       <input type="hidden" name="id" value="${shipment.id}"/>
       <input type="hidden" name="status" id="nextStatus" value=""/>
@@ -269,21 +342,15 @@
         </div>
       </div>
 
-      <!-- Action Panel on the bottom right of document card (non-printing) -->
-      <div style="margin-top: 30px; border-top: 1.5px solid #cbd5e1; padding-top: 20px; display: flex; justify-content: flex-end;" class="no-print">
-        <button type="button" onclick="window.print()" class="premium-btn-outline" style="height: 38px !important; padding: 0 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid var(--card-border); border-radius: 8px; background: transparent; color: var(--text-primary);">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-          In Phiếu Xuất Kho
-        </button>
-      </div>
+
 
     </div>
   </c:if>
-
+  
   <c:if test="${shipment.status != 'COMPLETED'}">
-  <!-- Actions & Evidence Images Panel -->
-  <div class="premium-card" style="padding: 24px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 20px;">
-
+    <!-- Actions & Evidence Images Panel -->
+    <div class="premium-card no-print" style="padding: 24px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 20px;">
+    
     <!-- Header Section -->
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--card-border); padding-bottom: 12px; margin-bottom: 4px; flex-wrap: wrap; gap: 12px;">
       <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
@@ -298,71 +365,6 @@
           </c:otherwise>
         </c:choose>
       </h3>
-      
-      <!-- Right-aligned action buttons -->
-      <c:if test="${shipment.status != 'COMPLETED' && shipment.status != 'CANCELLED'}">
-        <c:choose>
-          <c:when test="${shipment.status == 'DRAFT'}">
-            <div style="display: flex; gap: 8px;">
-              <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='PENDING'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; font-weight: 600;">
-                Gửi yêu cầu duyệt
-              </button>
-              <c:if test="${currentUser.hasPermission('SHIPMENT_WRITE')}">
-                <a href="${pageContext.request.contextPath}/admin/shipments?action=delete&id=${shipment.id}" 
-                   class="premium-btn-outline" 
-                   onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu xuất nháp này không? Hành động này không thể hoàn tác.');"
-                   style="display: inline-flex; align-items: center; justify-content: center; height: 36px !important; padding: 0 16px; font-size: 13px; text-decoration: none; color: #ef4444; border-color: rgba(239, 68, 68, 0.4); font-weight: 600; border-radius: 8px; transition: all 0.2s;"
-                   onmouseover="this.style.background='rgba(239, 68, 68, 0.05)'; this.style.borderColor='#ef4444';"
-                   onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(239, 68, 68, 0.4)';">
-                  Xóa phiếu nháp
-                </a>
-              </c:if>
-              <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #64748b; border-color: var(--card-border); height: 36px !important; padding: 0 16px; font-size: 13px; font-weight: 600;">
-                Hủy phiếu
-              </button>
-            </div>
-          </c:when>
-          <c:when test="${shipment.status == 'PENDING' || shipment.status == 'APPROVED'}">
-            <c:choose>
-              <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
-                <div style="display: flex; gap: 8px;">
-                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='PICKING'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #a855f7, #9333ea) !important; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.2) !important;">
-                    Bắt đầu lấy & đóng gói
-                  </button>
-                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border-color: #fecaca; height: 36px !important; padding: 0 16px; font-size: 13px;">
-                    Hủy phiếu
-                  </button>
-                </div>
-              </c:when>
-              <c:otherwise>
-                <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid #bfdbfe; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #1d4ed8; font-weight: 600;">
-                  Chờ Nhân viên kho (Warehouse Staff) thực hiện lấy hàng & đóng gói...
-                </div>
-              </c:otherwise>
-            </c:choose>
-          </c:when>
-
-          <c:when test="${shipment.status == 'PICKING'}">
-            <c:choose>
-              <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
-                <div style="display: flex; gap: 8px;">
-                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='COMPLETED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important;">
-                    Xác nhận xuất kho
-                  </button>
-                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border-color: #fecaca; height: 36px !important; padding: 0 16px; font-size: 13px;">
-                    Hủy phiếu
-                  </button>
-                </div>
-              </c:when>
-              <c:otherwise>
-                <div style="background: rgba(168, 85, 247, 0.05); border: 1px solid #e9d5ff; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #7e22ce; font-weight: 600;">
-                  Nhân viên kho (Warehouse Staff) đang thực hiện lấy hàng và đóng gói sản phẩm...
-                </div>
-              </c:otherwise>
-            </c:choose>
-          </c:when>
-        </c:choose>
-      </c:if>
     </div>
 
     <c:if test="${shipment.status == 'PICKING'}">
@@ -582,6 +584,20 @@
   <img id="lightboxImage" src="" alt="Ảnh phóng to" style="max-width: 90%; max-height: 90%; object-fit: contain; border-radius: 8px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); animation: zoomIn 0.25s ease;">
 </div>
 
+<!-- Custom Alert Modal -->
+<div id="customAlertModal" style="display: none; position: fixed; z-index: 2500; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); transition: all 0.3s ease; justify-content: center; align-items: center;">
+  <div style="background-color: #ffffff; padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); width: 90%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position: relative; animation: modalFadeIn 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;">
+    <div style="width: 50px; height: 50px; border-radius: 50%; background: #fffbeb; border: 2px solid #f59e0b; color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
+      ⚠️
+    </div>
+    <h3 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Cảnh báo</h3>
+    <p id="customAlertMessage" style="font-size: 14px; color: #64748b; line-height: 1.5; margin: 0; font-weight: 600;"></p>
+    <button id="closeCustomAlertBtn" style="margin-top: 8px; width: 100%; height: 40px; border-radius: 8px; border: none; background: #048abf; color: #ffffff; font-weight: 700; font-size: 13px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+      Đồng ý
+    </button>
+  </div>
+</div>
+
 <style>
 @keyframes modalFadeIn {
   from { opacity: 0; transform: translateY(-20px); }
@@ -594,6 +610,36 @@
 </style>
 
 <script>
+function showCustomAlert(msg) {
+    const modal = document.getElementById("customAlertModal");
+    const msgEl = document.getElementById("customAlertMessage");
+    if (modal && msgEl) {
+        msgEl.textContent = msg;
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+    }
+}
+
+function validateStatusChange() {
+    const nextStatus = document.getElementById('nextStatus').value;
+    if (nextStatus === 'COMPLETED') {
+        const hasDeliveryNote = ${not empty shipment.deliveryNoteImage};
+        const deliveryNoteInput = document.getElementById('deliveryNoteImageInput');
+        if (!hasDeliveryNote && (!deliveryNoteInput || !deliveryNoteInput.files || deliveryNoteInput.files.length === 0)) {
+            showCustomAlert("Vui lòng tải lên biên bản/phiếu giao hàng có chữ ký!");
+            return false;
+        }
+
+        const hasShippingImages = ${not empty shipment.shippingImages};
+        const shippingImagesInput = document.getElementById('shippingImagesInput');
+        if (!hasShippingImages && (!shippingImagesInput || !shippingImagesInput.files || shippingImagesInput.files.length === 0)) {
+            showCustomAlert("Vui lòng tải lên ảnh xếp hàng/xác thực giao nhận!");
+            return false;
+        }
+    }
+    return true;
+}
+
 function openLightbox(src) {
     const lightbox = document.getElementById('imageLightbox');
     const lightboxImg = document.getElementById('lightboxImage');
@@ -610,8 +656,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const deliveryNoteInput = document.getElementById("deliveryNoteImageInput");
     const shippingImagesInput = document.getElementById("shippingImagesInput");
     
-
-
     // Modal controls
     const historyModal = document.getElementById("historyModal");
     const openHistoryBtn = document.getElementById("openHistoryBtn");
@@ -637,6 +681,23 @@ document.addEventListener("DOMContentLoaded", function() {
             document.body.style.overflow = "auto";
         }
     });
+
+    // Custom Alert Modal Controls
+    const closeAlertBtn = document.getElementById("closeCustomAlertBtn");
+    const alertModal = document.getElementById("customAlertModal");
+    if (closeAlertBtn && alertModal) {
+        closeAlertBtn.addEventListener("click", function() {
+            alertModal.style.display = "none";
+            document.body.style.overflow = "auto";
+        });
+        
+        window.addEventListener("click", function(event) {
+            if (event.target === alertModal) {
+                alertModal.style.display = "none";
+                document.body.style.overflow = "auto";
+            }
+        });
+    }
 
     // Lightbox Modal Controls
     const lightbox = document.getElementById('imageLightbox');

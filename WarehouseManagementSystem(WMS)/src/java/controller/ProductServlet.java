@@ -270,17 +270,19 @@ public class ProductServlet extends HttpServlet {
                 filePart.write(deployPath + java.io.File.separator + uniqueFileName);
                 
                 // 2. Source path
-                String workspacePath = "d:\\InventoryTrackingSystem\\WMS\\WarehouseManagementSystem(WMS)";
-                String srcPath = workspacePath + java.io.File.separator + "web" + java.io.File.separator + "uploads" + java.io.File.separator + "products";
-                java.io.File srcDir = new java.io.File(srcPath);
-                if (srcDir.exists() || srcDir.mkdirs()) {
-                    try {
-                        java.nio.file.Files.copy(
-                            java.nio.file.Paths.get(deployPath + java.io.File.separator + uniqueFileName),
-                            java.nio.file.Paths.get(srcPath + java.io.File.separator + uniqueFileName),
-                            java.nio.file.StandardCopyOption.REPLACE_EXISTING
-                        );
-                    } catch (Exception ignored) {}
+                String workspacePath = util.WebUtil.getWorkspacePath(request);
+                if (workspacePath != null) {
+                    String srcPath = workspacePath + java.io.File.separator + "web" + java.io.File.separator + "uploads" + java.io.File.separator + "products";
+                    java.io.File srcDir = new java.io.File(srcPath);
+                    if (srcDir.exists() || srcDir.mkdirs()) {
+                        try {
+                            java.nio.file.Files.copy(
+                                java.nio.file.Paths.get(deployPath + java.io.File.separator + uniqueFileName),
+                                java.nio.file.Paths.get(srcPath + java.io.File.separator + uniqueFileName),
+                                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                            );
+                        } catch (Exception ignored) {}
+                    }
                 }
                 
                 return "/" + relativePath;
