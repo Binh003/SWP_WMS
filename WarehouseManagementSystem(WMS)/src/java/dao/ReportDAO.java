@@ -233,4 +233,118 @@ public class ReportDAO {
         }
         return list;
     }
+
+    public List<Map<String, Object>> getDetailedInboundReport(String startDate, String endDate) throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT r.id, r.receipt_code, r.created_at, s.name AS supplier_name, u.full_name AS creator_name, r.status, " +
+            "       COALESCE((SELECT SUM(quantity) FROM receipt_details WHERE receipt_id = r.id), 0) AS total_qty, " +
+            "       COALESCE((SELECT SUM(rd.quantity * p.price) FROM receipt_details rd JOIN products p ON rd.product_id = p.id WHERE rd.receipt_id = r.id), 0) AS total_val " +
+            "FROM receipts r " +
+            "LEFT JOIN suppliers s ON r.supplier_id = s.id " +
+            "LEFT JOIN users u ON r.created_by = u.id " +
+            "WHERE 1=1 "
+        );
+        List<Object> params = new ArrayList<>();
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append("AND r.created_at >= ? ");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append("AND r.created_at <= ? ");
+            params.add(endDate.trim() + " 23:59:59");
+        }
+        sql.append("ORDER BY r.created_at DESC");
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", rs.getLong("id"));
+                    map.put("code", rs.getString("receipt_code"));
+                    map.put("createdAt", rs.getTimestamp("created_at"));
+                    map.put("supplierName", rs.getString("supplier_name"));
+                    map.put("creatorName", rs.getString("creator_name"));
+                    map.put("status", rs.getString("status"));
+                    map.put("totalQty", rs.getInt("total_qty"));
+                    map.put("totalVal", rs.getDouble("total_val"));
+                    list.add(map);
+                }
+            }
+        }
+        return list;
+    }
+
+    public List<Map<String, Object>> getDetailedOutboundReport(String startDate, String endDate) throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT s.id, s.shipment_code, s.created_at, s.destination, u.full_name AS creator_name, s.status, " +
+            "       COALESCE((SELECT SUM(quantity) FROM shipment_details WHERE shipment_id = s.id), 0) AS total_qty, " +
+            "       COALESCE((SELECT SUM(sd.quantity * p.price) FROM shipment_details sd JOIN products p ON sd.product_id = p.id WHERE sd.shipment_id = s.id), 0) AS total_val " +
+            "FROM shipments s " +
+            "LEFT JOIN users u ON s.created_by = u.id " +
+            "WHERE 1=1 "
+        );
+        List<Object> params = new ArrayList<>();
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append("AND s.created_at >= ? ");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append("AND s.created_at <= ? ");
+            params.add(endDate.trim() + " 23:59:59");
+        }
+        sql.append("ORDER BY s.created_at DESC");
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", rs.getLong("id"));
+                    map.put("code", rs.getString("shipment_code"));
+                    map.put("createdAt", rs.getTimestamp("created_at"));
+                    map.put("destination", rs.getString("destination"));
+                    map.put("creatorName", rs.getString("creator_name"));
+                    map.put("status", rs.getString("status"));
+                    map.put("totalQty", rs.getInt("total_qty"));
+                    map.put("totalVal", rs.getDouble("total_val"));
+                    list.add(map);
+                }
+            }
+        }
+        return list;
+    }
+
+    public List<Map<String, Object>> getDetailedInventoryReport() throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT i.barcode, i.batch_code, p.sku, p.name AS product_name, " +
+                     "       i.quantity_in_stock, i.min_stock_level, p.price " +
+                     "FROM inventories i " +
+                     "JOIN products p ON i.product_id = p.id " +
+                     "ORDER BY p.name ASC, i.batch_code ASC, i.barcode ASC";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("barcode", rs.getString("barcode"));
+                map.put("batchCode", rs.getString("batch_code"));
+                map.put("sku", rs.getString("sku"));
+                map.put("productName", rs.getString("product_name"));
+                map.put("quantityInStock", rs.getInt("quantity_in_stock"));
+                map.put("minStockLevel", rs.getInt("min_stock_level"));
+                map.put("price", rs.getDouble("price"));
+                list.add(map);
+            }
+        }
+        return list;
+    }
 }
