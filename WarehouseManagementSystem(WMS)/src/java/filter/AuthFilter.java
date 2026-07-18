@@ -50,32 +50,32 @@ public class AuthFilter implements Filter {
             req.getServletContext().log("Database verification error in AuthFilter: " + ex.getMessage(), ex);
         }
 
-        if (path.startsWith("/admin/")) {
+        if (path.startsWith("/manage/")) {
             boolean isAdmin = WebUtil.isAdmin(user);
             boolean hasAccess = isAdmin;
 
             if (!isAdmin) {
-                if (path.startsWith("/admin/users")) {
+                if (path.startsWith("/manage/users")) {
                     hasAccess = user.hasPermission("USER_READ") || user.hasPermission("USER_WRITE");
-                } else if (path.startsWith("/admin/roles")) {
+                } else if (path.startsWith("/manage/roles")) {
                     hasAccess = user.hasPermission("ROLE_READ") || user.hasPermission("ROLE_WRITE") || user.hasPermission("PERMISSION_READ");
-                } else if (path.startsWith("/admin/brands")) {
+                } else if (path.startsWith("/manage/brands")) {
                     hasAccess = user.hasPermission("BRAND_READ") || user.hasPermission("BRAND_WRITE");
-                } else if (path.startsWith("/admin/suppliers")) {
+                } else if (path.startsWith("/manage/suppliers")) {
                     hasAccess = user.hasPermission("SUPPLIER_READ") || user.hasPermission("SUPPLIER_WRITE");
-                } else if (path.startsWith("/admin/product-lines")) {
+                } else if (path.startsWith("/manage/product-lines")) {
                     hasAccess = user.hasPermission("PRODUCT_LINE_READ") || user.hasPermission("PRODUCT_LINE_WRITE");
-                } else if (path.startsWith("/admin/products")) {
+                } else if (path.startsWith("/manage/products")) {
                     hasAccess = user.hasPermission("PRODUCT_READ") || user.hasPermission("PRODUCT_WRITE");
-                } else if (path.startsWith("/admin/inventories")) {
+                } else if (path.startsWith("/manage/inventories")) {
                     hasAccess = user.hasPermission("INVENTORY_READ") || user.hasPermission("INVENTORY_WRITE");
-                } else if (path.startsWith("/admin/receipts")) {
+                } else if (path.startsWith("/manage/receipts")) {
                     hasAccess = user.hasPermission("RECEIPT_READ") || user.hasPermission("RECEIPT_WRITE");
-                } else if (path.startsWith("/admin/shipments")) {
+                } else if (path.startsWith("/manage/shipments")) {
                     hasAccess = user.hasPermission("SHIPMENT_READ") || user.hasPermission("SHIPMENT_WRITE");
-                } else if (path.startsWith("/admin/reports")) {
+                } else if (path.startsWith("/manage/reports")) {
                     hasAccess = user.hasPermission("REPORT_READ");
-                } else if (path.startsWith("/admin/barcode")) {
+                } else if (path.startsWith("/manage/barcode")) {
                     hasAccess = true;
                 }
             }

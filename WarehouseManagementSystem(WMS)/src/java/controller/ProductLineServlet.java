@@ -86,7 +86,7 @@ public class ProductLineServlet extends HttpServlet {
         request.setAttribute("selectedBrandId", brandId);
         request.setAttribute("brands", brandDAO.getAll());
         
-        request.getRequestDispatcher("/jsp/admin/product-lines.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/product-lines.jsp").forward(request, response);
     }
 
     private void showDetail(HttpServletRequest request, HttpServletResponse response)
@@ -95,17 +95,17 @@ public class ProductLineServlet extends HttpServlet {
         ProductLine productLine = productLineDAO.getById(id);
         if (productLine == null) {
             WebUtil.setFlashError(request, "Không tìm thấy dòng sản phẩm");
-            WebUtil.redirect(request, response, "/admin/product-lines");
+            WebUtil.redirect(request, response, "/manage/product-lines");
             return;
         }
         request.setAttribute("productLine", productLine);
-        request.getRequestDispatcher("/jsp/admin/product-line-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/product-line-detail.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         request.setAttribute("brands", brandDAO.getAll());
-        request.getRequestDispatcher("/jsp/admin/product-line-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/product-line-form.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
@@ -114,12 +114,12 @@ public class ProductLineServlet extends HttpServlet {
         ProductLine productLine = productLineDAO.getById(id);
         if (productLine == null) {
             WebUtil.setFlashError(request, "Không tìm thấy dòng sản phẩm");
-            WebUtil.redirect(request, response, "/admin/product-lines");
+            WebUtil.redirect(request, response, "/manage/product-lines");
             return;
         }
         request.setAttribute("productLine", productLine);
         request.setAttribute("brands", brandDAO.getAll());
-        request.getRequestDispatcher("/jsp/admin/product-line-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/product-line-form.jsp").forward(request, response);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class ProductLineServlet extends HttpServlet {
                 case "create" -> createProductLine(request, response);
                 case "update" -> updateProductLine(request, response);
                 case "delete" -> deleteProductLine(request, response);
-                default -> WebUtil.redirect(request, response, "/admin/product-lines");
+                default -> WebUtil.redirect(request, response, "/manage/product-lines");
             }
         } catch (SQLException ex) {
             String msg = ex.getMessage();
@@ -140,7 +140,7 @@ public class ProductLineServlet extends HttpServlet {
             } else {
                 WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + msg);
             }
-            WebUtil.redirect(request, response, "/admin/product-lines");
+            WebUtil.redirect(request, response, "/manage/product-lines");
         }
     }
 
@@ -154,7 +154,7 @@ public class ProductLineServlet extends HttpServlet {
         // Validate beforehand
         if (productLineDAO.getByCode(code) != null) {
             WebUtil.setFlashError(request, "Lỗi: Dòng sản phẩm này đã tồn tại (Mã dòng sản phẩm '" + code + "' đã được sử dụng)!");
-            WebUtil.redirect(request, response, "/admin/product-lines?action=create");
+            WebUtil.redirect(request, response, "/manage/product-lines?action=create");
             return;
         }
 
@@ -167,11 +167,11 @@ public class ProductLineServlet extends HttpServlet {
         try {
             productLineDAO.insert(pl);
             WebUtil.setFlashSuccess(request, "Đã thêm dòng sản phẩm thành công");
-            WebUtil.redirect(request, response, "/admin/product-lines");
+            WebUtil.redirect(request, response, "/manage/product-lines");
         } catch (SQLException ex) {
             if (ex.getErrorCode() == 1062 || (ex.getMessage() != null && ex.getMessage().contains("Duplicate entry"))) {
                 WebUtil.setFlashError(request, "Lỗi: Dòng sản phẩm này đã tồn tại (Mã dòng sản phẩm '" + code + "' đã được sử dụng)!");
-                WebUtil.redirect(request, response, "/admin/product-lines?action=create");
+                WebUtil.redirect(request, response, "/manage/product-lines?action=create");
             } else {
                 throw ex;
             }
@@ -190,7 +190,7 @@ public class ProductLineServlet extends HttpServlet {
                 ProductLine existing = productLineDAO.getByCode(newCode);
                 if (existing != null && existing.getId() != id) {
                     WebUtil.setFlashError(request, "Lỗi: Dòng sản phẩm này đã tồn tại (Mã dòng sản phẩm '" + newCode + "' đã được sử dụng)!");
-                    WebUtil.redirect(request, response, "/admin/product-lines?action=edit&id=" + id);
+                    WebUtil.redirect(request, response, "/manage/product-lines?action=edit&id=" + id);
                     return;
                 }
             }
@@ -203,18 +203,18 @@ public class ProductLineServlet extends HttpServlet {
             try {
                 productLineDAO.update(pl);
                 WebUtil.setFlashSuccess(request, "Đã cập nhật dòng sản phẩm");
-                WebUtil.redirect(request, response, "/admin/product-lines");
+                WebUtil.redirect(request, response, "/manage/product-lines");
             } catch (SQLException ex) {
                 if (ex.getErrorCode() == 1062 || (ex.getMessage() != null && ex.getMessage().contains("Duplicate entry"))) {
                     WebUtil.setFlashError(request, "Lỗi: Dòng sản phẩm này đã tồn tại (Mã dòng sản phẩm '" + newCode + "' đã được sử dụng)!");
-                    WebUtil.redirect(request, response, "/admin/product-lines?action=edit&id=" + id);
+                    WebUtil.redirect(request, response, "/manage/product-lines?action=edit&id=" + id);
                 } else {
                     throw ex;
                 }
             }
         } else {
             WebUtil.setFlashError(request, "Không tìm thấy dòng sản phẩm");
-            WebUtil.redirect(request, response, "/admin/product-lines");
+            WebUtil.redirect(request, response, "/manage/product-lines");
         }
     }
 
@@ -223,6 +223,6 @@ public class ProductLineServlet extends HttpServlet {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         productLineDAO.delete(id);
         WebUtil.setFlashSuccess(request, "Đã xóa dòng sản phẩm");
-        WebUtil.redirect(request, response, "/admin/product-lines");
+        WebUtil.redirect(request, response, "/manage/product-lines");
     }
 }

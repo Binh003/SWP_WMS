@@ -119,7 +119,7 @@ public class ShipmentServlet extends HttpServlet {
         
         request.setAttribute("creators", shipmentDAO.getCreators());
         
-        request.getRequestDispatcher("/jsp/admin/shipments.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/shipments.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
@@ -130,7 +130,7 @@ public class ShipmentServlet extends HttpServlet {
         String generatedCode = "PX-" + System.currentTimeMillis();
         request.setAttribute("generatedCode", generatedCode);
         
-        request.getRequestDispatcher("/jsp/admin/shipment-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/shipment-form.jsp").forward(request, response);
     }
 
     private void viewShipment(HttpServletRequest request, HttpServletResponse response)
@@ -139,11 +139,11 @@ public class ShipmentServlet extends HttpServlet {
         Shipment shipment = shipmentDAO.getById(id);
         if (shipment == null) {
             WebUtil.setFlashError(request, "Không tìm thấy phiếu xuất");
-            WebUtil.redirect(request, response, "/admin/shipments");
+            WebUtil.redirect(request, response, "/manage/shipments");
             return;
         }
         request.setAttribute("shipment", shipment);
-        request.getRequestDispatcher("/jsp/admin/shipment-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/shipment-detail.jsp").forward(request, response);
     }
 
     private void deleteDraft(HttpServletRequest request, HttpServletResponse response)
@@ -155,7 +155,7 @@ public class ShipmentServlet extends HttpServlet {
         } catch (SQLException ex) {
             WebUtil.setFlashError(request, "Lỗi khi xóa phiếu: " + ex.getMessage());
         }
-        WebUtil.redirect(request, response, "/admin/shipments");
+        WebUtil.redirect(request, response, "/manage/shipments");
     }
 
     @Override
@@ -168,11 +168,11 @@ public class ShipmentServlet extends HttpServlet {
             } else if ("updateStatus".equals(action)) {
                 updateShipmentStatus(request, response);
             } else {
-                WebUtil.redirect(request, response, "/admin/shipments");
+                WebUtil.redirect(request, response, "/manage/shipments");
             }
         } catch (SQLException ex) {
             WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + ex.getMessage());
-            WebUtil.redirect(request, response, "/admin/shipments");
+            WebUtil.redirect(request, response, "/manage/shipments");
         }
     }
 
@@ -223,7 +223,7 @@ public class ShipmentServlet extends HttpServlet {
         
         if (s.getDetails().isEmpty()) {
             WebUtil.setFlashError(request, "Lỗi: Vui lòng thêm ít nhất 1 sản phẩm với số lượng > 0");
-            WebUtil.redirect(request, response, "/admin/shipments?action=create");
+            WebUtil.redirect(request, response, "/manage/shipments?action=create");
             return;
         }
 
@@ -231,10 +231,10 @@ public class ShipmentServlet extends HttpServlet {
             shipmentDAO.insertWithDetails(s);
             String msg = "Đã tạo phiếu xuất kho thành công";
             WebUtil.setFlashSuccess(request, msg);
-            WebUtil.redirect(request, response, "/admin/shipments");
+            WebUtil.redirect(request, response, "/manage/shipments");
         } catch (SQLException ex) {
             WebUtil.setFlashError(request, "Lỗi tạo phiếu xuất: " + ex.getMessage());
-            WebUtil.redirect(request, response, "/admin/shipments?action=create");
+            WebUtil.redirect(request, response, "/manage/shipments?action=create");
         }
     }
 
@@ -271,7 +271,7 @@ public class ShipmentServlet extends HttpServlet {
             }
         }
         
-        WebUtil.redirect(request, response, "/admin/shipments?action=view&id=" + id);
+        WebUtil.redirect(request, response, "/manage/shipments?action=view&id=" + id);
     }
 
     private String handleFileUpload(HttpServletRequest request, String fieldName) throws ServletException, IOException {

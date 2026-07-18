@@ -36,7 +36,7 @@ public class UserAdminServlet extends HttpServlet {
             
             if (!canWrite && ("create".equals(action) || "edit".equals(action))) {
                 WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
-                WebUtil.redirect(request, response, "/admin/users");
+                WebUtil.redirect(request, response, "/manage/users");
                 return;
             }
 
@@ -92,14 +92,14 @@ public class UserAdminServlet extends HttpServlet {
         request.setAttribute("totalCount", totalCount);
         request.setAttribute("totalPages", totalPages);
 
-        request.getRequestDispatcher("/jsp/admin/users.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/users.jsp").forward(request, response);
     }
 
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         request.setAttribute("roles", roleDAO.findAll());
-        request.getRequestDispatcher("/jsp/admin/user-create.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/user-create.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
@@ -108,30 +108,30 @@ public class UserAdminServlet extends HttpServlet {
         User user = userDAO.findById(id);
         if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
             WebUtil.setFlashError(request, "Không thể chỉnh sửa tài khoản quản trị hệ thống");
-            WebUtil.redirect(request, response, "/admin/users");
+            WebUtil.redirect(request, response, "/manage/users");
             return;
         }
         request.setAttribute("user", user);
         request.setAttribute("roles", roleDAO.findAll());
-        request.getRequestDispatcher("/jsp/admin/user-edit.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/user-edit.jsp").forward(request, response);
     }
 
     private void showDetail(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         String idStr = WebUtil.param(request, "id");
         if (idStr == null || idStr.isEmpty()) {
-            WebUtil.redirect(request, response, "/admin/users");
+            WebUtil.redirect(request, response, "/manage/users");
             return;
         }
         long id = Long.parseLong(idStr);
         User user = userDAO.findById(id);
         if (user == null) {
             WebUtil.setFlashError(request, "Không tìm thấy tài khoản");
-            WebUtil.redirect(request, response, "/admin/users");
+            WebUtil.redirect(request, response, "/manage/users");
             return;
         }
         request.setAttribute("user", user);
-        request.getRequestDispatcher("/jsp/admin/user-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/user-detail.jsp").forward(request, response);
     }
 
 
@@ -142,7 +142,7 @@ public class UserAdminServlet extends HttpServlet {
         boolean canWrite = currentUser != null && (currentUser.hasRole("ADMIN") || currentUser.hasPermission("USER_WRITE"));
         if (!canWrite) {
             WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
-            WebUtil.redirect(request, response, "/admin/users");
+            WebUtil.redirect(request, response, "/manage/users");
             return;
         }
         
@@ -153,11 +153,11 @@ public class UserAdminServlet extends HttpServlet {
                 case "update" -> updateUser(request, response);
                 case "toggle" -> toggleUser(request, response);
                 case "roles" -> updateRoles(request, response);
-                default -> WebUtil.redirect(request, response, "/admin/users");
+                default -> WebUtil.redirect(request, response, "/manage/users");
             }
         } catch (SQLException ex) {
             WebUtil.setFlashError(request, ex.getMessage());
-            WebUtil.redirect(request, response, "/admin/users");
+            WebUtil.redirect(request, response, "/manage/users");
         }
     }
 
@@ -205,7 +205,7 @@ public class UserAdminServlet extends HttpServlet {
 
         userDAO.insert(user);
         WebUtil.setFlashSuccess(request, "Đã tạo tài khoản");
-        WebUtil.redirect(request, response, "/admin/users");
+        WebUtil.redirect(request, response, "/manage/users");
     }
 
     private void updateUser(HttpServletRequest request, HttpServletResponse response)
@@ -214,7 +214,7 @@ public class UserAdminServlet extends HttpServlet {
         User user = userDAO.findById(id);
         if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
             WebUtil.setFlashError(request, "Không thể chỉnh sửa tài khoản quản trị hệ thống");
-            WebUtil.redirect(request, response, "/admin/users");
+            WebUtil.redirect(request, response, "/manage/users");
             return;
         }
 
@@ -251,7 +251,7 @@ public class UserAdminServlet extends HttpServlet {
         }
         userDAO.replaceRoles(id, resolveRoles(request));
         WebUtil.setFlashSuccess(request, "Đã cập nhật tài khoản");
-        WebUtil.redirect(request, response, "/admin/users");
+        WebUtil.redirect(request, response, "/manage/users");
     }
 
     private void toggleUser(HttpServletRequest request, HttpServletResponse response)
@@ -260,7 +260,7 @@ public class UserAdminServlet extends HttpServlet {
         User user = userDAO.findById(id);
         if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
             WebUtil.setFlashError(request, "Không thể thay đổi trạng thái tài khoản quản trị hệ thống");
-            WebUtil.redirect(request, response, "/admin/users");
+            WebUtil.redirect(request, response, "/manage/users");
             return;
         }
         String status = WebUtil.param(request, "status");
@@ -278,7 +278,7 @@ public class UserAdminServlet extends HttpServlet {
             userDAO.setEnabled(id, enabled);
             WebUtil.setFlashSuccess(request, enabled ? "Đã kích hoạt" : "Đã vô hiệu hóa");
         }
-        WebUtil.redirect(request, response, "/admin/users");
+        WebUtil.redirect(request, response, "/manage/users");
     }
 
     private void updateRoles(HttpServletRequest request, HttpServletResponse response)
@@ -287,12 +287,12 @@ public class UserAdminServlet extends HttpServlet {
         User user = userDAO.findById(id);
         if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
             WebUtil.setFlashError(request, "Không thể thay đổi vai trò tài khoản quản trị hệ thống");
-            WebUtil.redirect(request, response, "/admin/users");
+            WebUtil.redirect(request, response, "/manage/users");
             return;
         }
         userDAO.replaceRoles(id, resolveRoles(request));
         WebUtil.setFlashSuccess(request, "Đã cập nhật vai trò");
-        WebUtil.redirect(request, response, "/admin/users");
+        WebUtil.redirect(request, response, "/manage/users");
     }
 
     private List<Role> resolveRoles(HttpServletRequest request) throws SQLException {

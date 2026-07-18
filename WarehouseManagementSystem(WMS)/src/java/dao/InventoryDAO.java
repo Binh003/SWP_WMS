@@ -445,4 +445,15 @@ public class InventoryDAO {
         }
         return historyList;
     }
+
+    public void updateMinStockLevelForProductAndBatch(long productId, String batchCode, int minStockLevel) throws SQLException {
+        String sql = "UPDATE inventories SET min_stock_level = ? WHERE product_id = ? AND batch_code = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, minStockLevel);
+            ps.setLong(2, productId);
+            ps.setString(3, batchCode == null ? "" : batchCode);
+            ps.executeUpdate();
+        }
+    }
 }

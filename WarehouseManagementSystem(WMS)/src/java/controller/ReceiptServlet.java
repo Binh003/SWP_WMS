@@ -127,7 +127,7 @@ public class ReceiptServlet extends HttpServlet {
         request.setAttribute("suppliers", supplierDAO.getAll());
         request.setAttribute("creators", receiptDAO.getCreators());
         
-        request.getRequestDispatcher("/jsp/admin/receipts.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/receipts.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
@@ -139,7 +139,7 @@ public class ReceiptServlet extends HttpServlet {
         String generatedCode = "PN-" + System.currentTimeMillis();
         request.setAttribute("generatedCode", generatedCode);
         
-        request.getRequestDispatcher("/jsp/admin/receipt-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/receipt-form.jsp").forward(request, response);
     }
 
     private void viewReceipt(HttpServletRequest request, HttpServletResponse response)
@@ -148,11 +148,11 @@ public class ReceiptServlet extends HttpServlet {
         Receipt receipt = receiptDAO.getById(id);
         if (receipt == null) {
             WebUtil.setFlashError(request, "Không tìm thấy phiếu nhập");
-            WebUtil.redirect(request, response, "/admin/receipts");
+            WebUtil.redirect(request, response, "/manage/receipts");
             return;
         }
         request.setAttribute("receipt", receipt);
-        request.getRequestDispatcher("/jsp/admin/receipt-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/receipt-detail.jsp").forward(request, response);
     }
 
     private void deleteDraft(HttpServletRequest request, HttpServletResponse response)
@@ -164,7 +164,7 @@ public class ReceiptServlet extends HttpServlet {
         } catch (SQLException ex) {
             WebUtil.setFlashError(request, "Lỗi khi xóa phiếu: " + ex.getMessage());
         }
-        WebUtil.redirect(request, response, "/admin/receipts");
+        WebUtil.redirect(request, response, "/manage/receipts");
     }
 
     @Override
@@ -181,11 +181,11 @@ public class ReceiptServlet extends HttpServlet {
             } else if ("updateReceivingImages".equals(action)) {
                 updateReceivingImages(request, response);
             } else {
-                WebUtil.redirect(request, response, "/admin/receipts");
+                WebUtil.redirect(request, response, "/manage/receipts");
             }
         } catch (SQLException ex) {
             WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + ex.getMessage());
-            WebUtil.redirect(request, response, "/admin/receipts");
+            WebUtil.redirect(request, response, "/manage/receipts");
         }
     }
 
@@ -202,7 +202,7 @@ public class ReceiptServlet extends HttpServlet {
         r.setInvoiceImage(handleFileUpload(request));
         if (r.getInvoiceImage() == null || r.getInvoiceImage().trim().isEmpty()) {
             WebUtil.setFlashError(request, "Lỗi: Bắt buộc phải có ảnh hóa đơn yêu cầu nhập kho!");
-            WebUtil.redirect(request, response, "/admin/receipts?action=create");
+            WebUtil.redirect(request, response, "/manage/receipts?action=create");
             return;
         }
         
@@ -252,7 +252,7 @@ public class ReceiptServlet extends HttpServlet {
         
         if (r.getDetails().isEmpty()) {
             WebUtil.setFlashError(request, "Lỗi: Vui lòng thêm ít nhất 1 sản phẩm với số lượng > 0");
-            WebUtil.redirect(request, response, "/admin/receipts?action=create");
+            WebUtil.redirect(request, response, "/manage/receipts?action=create");
             return;
         }
 
@@ -260,7 +260,7 @@ public class ReceiptServlet extends HttpServlet {
         
         String msg = "DRAFT".equals(status) ? "Đã tạo bản nháp phiếu nhập kho thành công" : "Đã gửi yêu cầu phê duyệt phiếu nhập kho thành công";
         WebUtil.setFlashSuccess(request, msg);
-        WebUtil.redirect(request, response, "/admin/receipts");
+        WebUtil.redirect(request, response, "/manage/receipts");
     }
 
     private void updateReceiptStatus(HttpServletRequest request, HttpServletResponse response)
@@ -275,7 +275,7 @@ public class ReceiptServlet extends HttpServlet {
             String receivingImages = handleMultipleFilesUpload(request, "receivingImagesFiles");
             if (receivingImages == null || receivingImages.trim().isEmpty()) {
                 WebUtil.setFlashError(request, "Lỗi: Bắt buộc phải chụp/tải lên ảnh hàng hóa đã nhận làm bằng chứng khi xác nhận nhận hàng!");
-                WebUtil.redirect(request, response, "/admin/receipts?action=view&id=" + id);
+                WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
                 return;
             }
             List<ReceiptDetail> updatedDetails = new ArrayList<>();
@@ -311,7 +311,7 @@ public class ReceiptServlet extends HttpServlet {
         else if ("CANCELLED".equals(status)) msg = "Đã hủy phiếu nhập";
         
         WebUtil.setFlashSuccess(request, msg);
-        WebUtil.redirect(request, response, "/admin/receipts?action=view&id=" + id);
+        WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
     }
 
     private void updateInvoiceImage(HttpServletRequest request, HttpServletResponse response)
@@ -324,7 +324,7 @@ public class ReceiptServlet extends HttpServlet {
         } else {
             WebUtil.setFlashError(request, "Lỗi: Không thể tải ảnh lên hoặc ảnh trống");
         }
-        WebUtil.redirect(request, response, "/admin/receipts?action=view&id=" + id);
+        WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
     }
 
     private void updateReceivingImages(HttpServletRequest request, HttpServletResponse response)
@@ -337,7 +337,7 @@ public class ReceiptServlet extends HttpServlet {
         } else {
             WebUtil.setFlashError(request, "Lỗi: Không thể tải ảnh lên hoặc số lượng ảnh trống");
         }
-        WebUtil.redirect(request, response, "/admin/receipts?action=view&id=" + id);
+        WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
     }
 
     private String handleFileUpload(HttpServletRequest request) throws ServletException, IOException {

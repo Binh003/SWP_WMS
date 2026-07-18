@@ -96,7 +96,7 @@ public class InventoryServlet extends HttpServlet {
         request.setAttribute("brands", brandDAO.getAll());
         request.setAttribute("productLines", productLineDAO.getAll());
         
-        request.getRequestDispatcher("/jsp/admin/inventories.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/inventories.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
@@ -113,11 +113,16 @@ public class InventoryServlet extends HttpServlet {
         }
         if (inventory == null) {
             WebUtil.setFlashError(request, "Không tìm thấy tồn kho");
-            WebUtil.redirect(request, response, "/admin/inventories");
+            WebUtil.redirect(request, response, "/manage/inventories");
             return;
         }
+        
+        // Calculate the total quantity of this product in this batch
+        int totalQty = inventoryDAO.getQuantityByProductAndBatch(inventory.getProductId(), inventory.getBatchCode());
+        inventory.setQuantityInStock(totalQty);
+        
         request.setAttribute("inventory", inventory);
-        request.getRequestDispatcher("/jsp/admin/inventory-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/inventory-form.jsp").forward(request, response);
     }
 
     private void showBatchDetail(HttpServletRequest request, HttpServletResponse response)
@@ -134,7 +139,7 @@ public class InventoryServlet extends HttpServlet {
         }
         if (inventory == null) {
             WebUtil.setFlashError(request, "Không tìm thấy thông tin tồn kho");
-            WebUtil.redirect(request, response, "/admin/inventories");
+            WebUtil.redirect(request, response, "/manage/inventories");
             return;
         }
         
@@ -144,7 +149,7 @@ public class InventoryServlet extends HttpServlet {
         request.setAttribute("inventory", inventory);
         request.setAttribute("itemizedList", itemizedList);
         request.setAttribute("totalQuantity", totalQuantity);
-        request.getRequestDispatcher("/jsp/admin/inventory-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/inventory-detail.jsp").forward(request, response);
     }
 
     private void showItemDetail(HttpServletRequest request, HttpServletResponse response)
@@ -156,12 +161,12 @@ public class InventoryServlet extends HttpServlet {
         }
         if (inventory == null) {
             WebUtil.setFlashError(request, "Không tìm thấy thông tin chi tiết của sản phẩm đơn lẻ này");
-            WebUtil.redirect(request, response, "/admin/inventories");
+            WebUtil.redirect(request, response, "/manage/inventories");
             return;
         }
         
         request.setAttribute("inventory", inventory);
-        request.getRequestDispatcher("/jsp/admin/inventory-item-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/inventory-item-detail.jsp").forward(request, response);
     }
 
 
@@ -174,11 +179,11 @@ public class InventoryServlet extends HttpServlet {
             if ("update".equals(action)) {
                 updateInventory(request, response);
             } else {
-                WebUtil.redirect(request, response, "/admin/inventories");
+                WebUtil.redirect(request, response, "/manage/inventories");
             }
         } catch (SQLException ex) {
             WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + ex.getMessage());
-            WebUtil.redirect(request, response, "/admin/inventories");
+            WebUtil.redirect(request, response, "/manage/inventories");
         }
     }
 
@@ -199,24 +204,31 @@ public class InventoryServlet extends HttpServlet {
                 int minStockLevel = Integer.parseInt(WebUtil.param(request, "minStockLevel"));
                 if (minStockLevel < 0) {
                     WebUtil.setFlashError(request, "Lỗi: Mức tồn kho tối thiểu không được nhỏ hơn 0!");
-                    WebUtil.redirect(request, response, "/admin/inventories?action=edit&id=" + i.getId());
+                    WebUtil.redirect(request, response, "/manage/inventories?action=edit&id=" + i.getId());
                     return;
                 }
                 String batchCode = WebUtil.param(request, "batchCode");
                 String barcode = WebUtil.param(request, "barcode");
+                
+                long productId = i.getProductId();
+                String oldBatchCode = i.getBatchCode();
                 
                 i.setBatchCode(batchCode != null ? batchCode.trim() : "");
                 i.setBarcode(barcode != null ? barcode.trim() : "");
                 i.setMinStockLevel(minStockLevel);
                 
                 inventoryDAO.update(i);
+                
+                // Also update min_stock_level for all other items of the same product and batch
+                inventoryDAO.updateMinStockLevelForProductAndBatch(productId, oldBatchCode, minStockLevel);
+                
                 WebUtil.setFlashSuccess(request, "Đã cập nhật cấu hình tồn kho");
             } catch (NumberFormatException e) {
                 WebUtil.setFlashError(request, "Lỗi: Mức tồn kho tối thiểu không hợp lệ!");
-                WebUtil.redirect(request, response, "/admin/inventories?action=edit&id=" + i.getId());
+                WebUtil.redirect(request, response, "/manage/inventories?action=edit&id=" + i.getId());
                 return;
             }
         }
-        WebUtil.redirect(request, response, "/admin/inventories");
+        WebUtil.redirect(request, response, "/manage/inventories");
     }
 }

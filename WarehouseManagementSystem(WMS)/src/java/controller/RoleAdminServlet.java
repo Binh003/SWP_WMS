@@ -30,31 +30,31 @@ public class RoleAdminServlet extends HttpServlet {
 
             String action = WebUtil.param(request, "action");
             String idParam = WebUtil.param(request, "id");
-            String forwardJsp = "/jsp/admin/roles.jsp";
+            String forwardJsp = "/jsp/manage/roles.jsp";
 
             if ("create".equalsIgnoreCase(action)) {
                 if (!canWrite) {
                     WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
-                    WebUtil.redirect(request, response, "/admin/roles");
+                    WebUtil.redirect(request, response, "/manage/roles");
                     return;
                 }
-                forwardJsp = "/jsp/admin/role-create.jsp";
+                forwardJsp = "/jsp/manage/role-create.jsp";
             } else if ("detail".equalsIgnoreCase(action)) {
                 long selectedId = parseLong(idParam, 0);
                 Role selected = selectedId > 0 ? roleDAO.findByIdWithPermissions(selectedId) : null;
                 if (selected != null) {
                     request.setAttribute("selectedRole", selected);
                     request.setAttribute("selectedRoleId", selectedId);
-                    forwardJsp = "/jsp/admin/role-detail.jsp";
+                    forwardJsp = "/jsp/manage/role-detail.jsp";
                 } else {
                     WebUtil.setFlashError(request, "Không tìm thấy vai trò");
-                    WebUtil.redirect(request, response, "/admin/roles");
+                    WebUtil.redirect(request, response, "/manage/roles");
                     return;
                 }
             } else if ("edit".equalsIgnoreCase(action) || (idParam != null && !idParam.isEmpty() && !"detail".equalsIgnoreCase(action))) {
                 if (!canWrite) {
                     WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
-                    WebUtil.redirect(request, response, "/admin/roles");
+                    WebUtil.redirect(request, response, "/manage/roles");
                     return;
                 }
                 long selectedId = parseLong(idParam, 0);
@@ -62,12 +62,12 @@ public class RoleAdminServlet extends HttpServlet {
                 if (selected != null) {
                     if ("ADMIN".equalsIgnoreCase(selected.getCode())) {
                         WebUtil.setFlashError(request, "Không thể chỉnh sửa vai trò ADMIN mặc định");
-                        WebUtil.redirect(request, response, "/admin/roles");
+                        WebUtil.redirect(request, response, "/manage/roles");
                         return;
                     }
                     request.setAttribute("selectedRole", selected);
                     request.setAttribute("selectedRoleId", selectedId);
-                    forwardJsp = "/jsp/admin/role-edit.jsp";
+                    forwardJsp = "/jsp/manage/role-edit.jsp";
                 }
             } else {
                 String search = request.getParameter("search");
@@ -122,7 +122,7 @@ public class RoleAdminServlet extends HttpServlet {
         boolean canWrite = currentUser != null && (currentUser.hasRole("ADMIN") || currentUser.hasPermission("ROLE_WRITE"));
         if (!canWrite) {
             WebUtil.setFlashError(request, "Bạn không có quyền thực hiện thao tác này");
-            WebUtil.redirect(request, response, "/admin/roles");
+            WebUtil.redirect(request, response, "/manage/roles");
             return;
         }
         
@@ -135,17 +135,17 @@ public class RoleAdminServlet extends HttpServlet {
                 Role role = roleDAO.findByIdWithPermissions(id);
                 if (role == null) {
                     WebUtil.setFlashError(request, "Vai trò không tồn tại");
-                    WebUtil.redirect(request, response, "/admin/roles");
+                    WebUtil.redirect(request, response, "/manage/roles");
                     return;
                 }
                 if ("ADMIN".equalsIgnoreCase(role.getCode()) && !enabled) {
                     WebUtil.setFlashError(request, "Không thể khóa vai trò ADMIN mặc định");
-                    WebUtil.redirect(request, response, "/admin/roles");
+                    WebUtil.redirect(request, response, "/manage/roles");
                     return;
                 }
                 roleDAO.setEnabled(id, enabled);
                 WebUtil.setFlashSuccess(request, "Đã " + (enabled ? "kích hoạt" : "hủy kích hoạt") + " vai trò thành công");
-                WebUtil.redirect(request, response, "/admin/roles");
+                WebUtil.redirect(request, response, "/manage/roles");
                 return;
             }
 
@@ -153,13 +153,13 @@ public class RoleAdminServlet extends HttpServlet {
                 String code = WebUtil.param(request, "code");
                 if (code == null || code.trim().isEmpty()) {
                     WebUtil.setFlashError(request, "Mã vai trò không được để trống");
-                    WebUtil.redirect(request, response, "/admin/roles?action=create");
+                    WebUtil.redirect(request, response, "/manage/roles?action=create");
                     return;
                 }
                 code = code.trim().toUpperCase();
                 if (roleDAO.existsByCode(code)) {
                     WebUtil.setFlashError(request, "Mã vai trò đã tồn tại");
-                    WebUtil.redirect(request, response, "/admin/roles?action=create");
+                    WebUtil.redirect(request, response, "/manage/roles?action=create");
                     return;
                 }
 
@@ -178,7 +178,7 @@ public class RoleAdminServlet extends HttpServlet {
                 roleDAO.replacePermissions(newId, permissionCodes);
 
                 WebUtil.setFlashSuccess(request, "Đã tạo vai trò mới thành công");
-                WebUtil.redirect(request, response, "/admin/roles?id=" + newId);
+                WebUtil.redirect(request, response, "/manage/roles?id=" + newId);
                 return;
             }
 
@@ -187,12 +187,12 @@ public class RoleAdminServlet extends HttpServlet {
             Role role = roleDAO.findByIdWithPermissions(id);
             if (role == null) {
                 WebUtil.setFlashError(request, "Vai trò không tồn tại");
-                WebUtil.redirect(request, response, "/admin/roles");
+                WebUtil.redirect(request, response, "/manage/roles");
                 return;
             }
             if ("ADMIN".equalsIgnoreCase(role.getCode())) {
                 WebUtil.setFlashError(request, "Không thể chỉnh sửa vai trò ADMIN mặc định");
-                WebUtil.redirect(request, response, "/admin/roles");
+                WebUtil.redirect(request, response, "/manage/roles");
                 return;
             }
 
@@ -201,7 +201,7 @@ public class RoleAdminServlet extends HttpServlet {
 
             if ("ADMIN".equalsIgnoreCase(role.getCode()) && !enabled) {
                 WebUtil.setFlashError(request, "Không thể khóa vai trò ADMIN mặc định");
-                WebUtil.redirect(request, response, "/admin/roles?id=" + id);
+                WebUtil.redirect(request, response, "/manage/roles?id=" + id);
                 return;
             }
 
@@ -213,10 +213,10 @@ public class RoleAdminServlet extends HttpServlet {
             roleDAO.replacePermissions(id, permissionCodes);
 
             WebUtil.setFlashSuccess(request, "Đã cập nhật vai trò");
-            WebUtil.redirect(request, response, "/admin/roles?id=" + id);
+            WebUtil.redirect(request, response, "/manage/roles?id=" + id);
         } catch (SQLException ex) {
             WebUtil.setFlashError(request, ex.getMessage());
-            String redirectUrl = "/admin/roles";
+            String redirectUrl = "/manage/roles";
             String idStr = WebUtil.param(request, "id");
             if (idStr != null && !idStr.isEmpty()) {
                 redirectUrl += "?id=" + idStr;

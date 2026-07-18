@@ -74,7 +74,7 @@ public class SupplierServlet extends HttpServlet {
         request.setAttribute("limit", limit);
         request.setAttribute("search", search);
         
-        request.getRequestDispatcher("/jsp/admin/suppliers.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/suppliers.jsp").forward(request, response);
     }
 
     private void showDetail(HttpServletRequest request, HttpServletResponse response)
@@ -83,16 +83,16 @@ public class SupplierServlet extends HttpServlet {
         Supplier supplier = supplierDAO.getById(id);
         if (supplier == null) {
             WebUtil.setFlashError(request, "Không tìm thấy nhà cung cấp");
-            WebUtil.redirect(request, response, "/admin/suppliers");
+            WebUtil.redirect(request, response, "/manage/suppliers");
             return;
         }
         request.setAttribute("supplier", supplier);
-        request.getRequestDispatcher("/jsp/admin/supplier-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/supplier-detail.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-        request.getRequestDispatcher("/jsp/admin/supplier-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/supplier-form.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
@@ -101,11 +101,11 @@ public class SupplierServlet extends HttpServlet {
         Supplier supplier = supplierDAO.getById(id);
         if (supplier == null) {
             WebUtil.setFlashError(request, "Không tìm thấy nhà cung cấp");
-            WebUtil.redirect(request, response, "/admin/suppliers");
+            WebUtil.redirect(request, response, "/manage/suppliers");
             return;
         }
         request.setAttribute("supplier", supplier);
-        request.getRequestDispatcher("/jsp/admin/supplier-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/supplier-form.jsp").forward(request, response);
     }
 
     @Override
@@ -117,7 +117,7 @@ public class SupplierServlet extends HttpServlet {
                 case "create" -> createSupplier(request, response);
                 case "update" -> updateSupplier(request, response);
                 case "delete" -> deleteSupplier(request, response);
-                default -> WebUtil.redirect(request, response, "/admin/suppliers");
+                default -> WebUtil.redirect(request, response, "/manage/suppliers");
             }
         } catch (SQLException ex) {
             String msg = ex.getMessage();
@@ -126,7 +126,7 @@ public class SupplierServlet extends HttpServlet {
             } else {
                 WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + msg);
             }
-            WebUtil.redirect(request, response, "/admin/suppliers");
+            WebUtil.redirect(request, response, "/manage/suppliers");
         }
     }
 
@@ -141,7 +141,7 @@ public class SupplierServlet extends HttpServlet {
         // Validate beforehand
         if (supplierDAO.getByCode(code) != null) {
             WebUtil.setFlashError(request, "Lỗi: Nhà cung cấp này đã tồn tại (Mã nhà cung cấp '" + code + "' đã được sử dụng)!");
-            WebUtil.redirect(request, response, "/admin/suppliers?action=create");
+            WebUtil.redirect(request, response, "/manage/suppliers?action=create");
             return;
         }
 
@@ -155,11 +155,11 @@ public class SupplierServlet extends HttpServlet {
         try {
             supplierDAO.insert(supplier);
             WebUtil.setFlashSuccess(request, "Đã thêm nhà cung cấp thành công");
-            WebUtil.redirect(request, response, "/admin/suppliers");
+            WebUtil.redirect(request, response, "/manage/suppliers");
         } catch (SQLException ex) {
             if (ex.getErrorCode() == 1062 || (ex.getMessage() != null && ex.getMessage().contains("Duplicate entry"))) {
                 WebUtil.setFlashError(request, "Lỗi: Nhà cung cấp này đã tồn tại (Mã nhà cung cấp '" + code + "' đã được sử dụng)!");
-                WebUtil.redirect(request, response, "/admin/suppliers?action=create");
+                WebUtil.redirect(request, response, "/manage/suppliers?action=create");
             } else {
                 throw ex;
             }
@@ -178,7 +178,7 @@ public class SupplierServlet extends HttpServlet {
                 Supplier existing = supplierDAO.getByCode(newCode);
                 if (existing != null && existing.getId() != id) {
                     WebUtil.setFlashError(request, "Lỗi: Nhà cung cấp này đã tồn tại (Mã nhà cung cấp '" + newCode + "' đã được sử dụng)!");
-                    WebUtil.redirect(request, response, "/admin/suppliers?action=edit&id=" + id);
+                    WebUtil.redirect(request, response, "/manage/suppliers?action=edit&id=" + id);
                     return;
                 }
             }
@@ -192,18 +192,18 @@ public class SupplierServlet extends HttpServlet {
             try {
                 supplierDAO.update(supplier);
                 WebUtil.setFlashSuccess(request, "Đã cập nhật nhà cung cấp");
-                WebUtil.redirect(request, response, "/admin/suppliers");
+                WebUtil.redirect(request, response, "/manage/suppliers");
             } catch (SQLException ex) {
                 if (ex.getErrorCode() == 1062 || (ex.getMessage() != null && ex.getMessage().contains("Duplicate entry"))) {
                     WebUtil.setFlashError(request, "Lỗi: Nhà cung cấp này đã tồn tại (Mã nhà cung cấp '" + newCode + "' đã được sử dụng)!");
-                    WebUtil.redirect(request, response, "/admin/suppliers?action=edit&id=" + id);
+                    WebUtil.redirect(request, response, "/manage/suppliers?action=edit&id=" + id);
                 } else {
                     throw ex;
                 }
             }
         } else {
             WebUtil.setFlashError(request, "Không tìm thấy nhà cung cấp");
-            WebUtil.redirect(request, response, "/admin/suppliers");
+            WebUtil.redirect(request, response, "/manage/suppliers");
         }
     }
 
@@ -212,6 +212,6 @@ public class SupplierServlet extends HttpServlet {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         supplierDAO.delete(id);
         WebUtil.setFlashSuccess(request, "Đã xóa nhà cung cấp");
-        WebUtil.redirect(request, response, "/admin/suppliers");
+        WebUtil.redirect(request, response, "/manage/suppliers");
     }
 }

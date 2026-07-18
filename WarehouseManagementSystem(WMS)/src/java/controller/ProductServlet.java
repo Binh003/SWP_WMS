@@ -54,13 +54,13 @@ public class ProductServlet extends HttpServlet {
         Product product = productDAO.getById(id);
         if (product == null) {
             WebUtil.setFlashError(request, "Không tìm thấy sản phẩm");
-            WebUtil.redirect(request, response, "/admin/products");
+            WebUtil.redirect(request, response, "/manage/products");
             return;
         }
         Inventory inventory = inventoryDAO.getByProductId(id);
         request.setAttribute("product", product);
         request.setAttribute("inventory", inventory);
-        request.getRequestDispatcher("/jsp/admin/product-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/product-detail.jsp").forward(request, response);
     }
 
     private void listProducts(HttpServletRequest request, HttpServletResponse response)
@@ -108,13 +108,13 @@ public class ProductServlet extends HttpServlet {
         request.setAttribute("brands", brandDAO.getAll());
         request.setAttribute("productLines", productLineDAO.getAll());
         
-        request.getRequestDispatcher("/jsp/admin/products.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/products.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         request.setAttribute("productLines", productLineDAO.getAll());
-        request.getRequestDispatcher("/jsp/admin/product-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/product-form.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
@@ -123,12 +123,12 @@ public class ProductServlet extends HttpServlet {
         Product product = productDAO.getById(id);
         if (product == null) {
             WebUtil.setFlashError(request, "Không tìm thấy sản phẩm");
-            WebUtil.redirect(request, response, "/admin/products");
+            WebUtil.redirect(request, response, "/manage/products");
             return;
         }
         request.setAttribute("product", product);
         request.setAttribute("productLines", productLineDAO.getAll());
-        request.getRequestDispatcher("/jsp/admin/product-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/jsp/manage/product-form.jsp").forward(request, response);
     }
 
     @Override
@@ -140,11 +140,11 @@ public class ProductServlet extends HttpServlet {
                 case "create" -> createProduct(request, response);
                 case "update" -> updateProduct(request, response);
                 case "delete" -> deleteProduct(request, response);
-                default -> WebUtil.redirect(request, response, "/admin/products");
+                default -> WebUtil.redirect(request, response, "/manage/products");
             }
         } catch (SQLException ex) {
             WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + ex.getMessage());
-            WebUtil.redirect(request, response, "/admin/products");
+            WebUtil.redirect(request, response, "/manage/products");
         }
     }
 
@@ -155,7 +155,7 @@ public class ProductServlet extends HttpServlet {
         // Check if SKU exists
         if (productDAO.getBySku(sku) != null) {
             WebUtil.setFlashError(request, "Lỗi: SKU đã tồn tại trong hệ thống!");
-            WebUtil.redirect(request, response, "/admin/products?action=create");
+            WebUtil.redirect(request, response, "/manage/products?action=create");
             return;
         }
 
@@ -171,13 +171,13 @@ public class ProductServlet extends HttpServlet {
                 double price = Double.parseDouble(priceStr);
                 if (price < 0) {
                     WebUtil.setFlashError(request, "Lỗi: Giá bán không được nhỏ hơn 0!");
-                    WebUtil.redirect(request, response, "/admin/products?action=create");
+                    WebUtil.redirect(request, response, "/manage/products?action=create");
                     return;
                 }
                 p.setPrice(price);
             } catch (NumberFormatException e) {
                 WebUtil.setFlashError(request, "Lỗi: Giá bán không hợp lệ!");
-                WebUtil.redirect(request, response, "/admin/products?action=create");
+                WebUtil.redirect(request, response, "/manage/products?action=create");
                 return;
             }
         }
@@ -194,7 +194,7 @@ public class ProductServlet extends HttpServlet {
         inventoryDAO.insert(inv);
 
         WebUtil.setFlashSuccess(request, "Đã thêm sản phẩm thành công");
-        WebUtil.redirect(request, response, "/admin/products");
+        WebUtil.redirect(request, response, "/manage/products");
     }
 
     private void updateProduct(HttpServletRequest request, HttpServletResponse response)
@@ -207,7 +207,7 @@ public class ProductServlet extends HttpServlet {
             // Check SKU unique if changed
             if (!p.getSku().equals(newSku) && productDAO.getBySku(newSku) != null) {
                 WebUtil.setFlashError(request, "Lỗi: SKU đã tồn tại trong hệ thống!");
-                WebUtil.redirect(request, response, "/admin/products?action=edit&id=" + id);
+                WebUtil.redirect(request, response, "/manage/products?action=edit&id=" + id);
                 return;
             }
 
@@ -222,13 +222,13 @@ public class ProductServlet extends HttpServlet {
                     double price = Double.parseDouble(priceStr);
                     if (price < 0) {
                         WebUtil.setFlashError(request, "Lỗi: Giá bán không được nhỏ hơn 0!");
-                        WebUtil.redirect(request, response, "/admin/products?action=edit&id=" + id);
+                        WebUtil.redirect(request, response, "/manage/products?action=edit&id=" + id);
                         return;
                     }
                     p.setPrice(price);
                 } catch (NumberFormatException e) {
                     WebUtil.setFlashError(request, "Lỗi: Giá bán không hợp lệ!");
-                    WebUtil.redirect(request, response, "/admin/products?action=edit&id=" + id);
+                    WebUtil.redirect(request, response, "/manage/products?action=edit&id=" + id);
                     return;
                 }
             } else {
@@ -240,7 +240,7 @@ public class ProductServlet extends HttpServlet {
             productDAO.update(p);
             WebUtil.setFlashSuccess(request, "Đã cập nhật sản phẩm");
         }
-        WebUtil.redirect(request, response, "/admin/products");
+        WebUtil.redirect(request, response, "/manage/products");
     }
 
     private String handleFileUpload(HttpServletRequest request) throws ServletException, IOException {
@@ -303,6 +303,6 @@ public class ProductServlet extends HttpServlet {
             // Cannot delete if there are foreign key constraints (e.g., inventory or orders)
             WebUtil.setFlashError(request, "Không thể xóa sản phẩm này vì có dữ liệu liên quan (tồn kho, phiếu nhập/xuất...).");
         }
-        WebUtil.redirect(request, response, "/admin/products");
+        WebUtil.redirect(request, response, "/manage/products");
     }
 }

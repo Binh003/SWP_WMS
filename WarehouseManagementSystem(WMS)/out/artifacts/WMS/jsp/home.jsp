@@ -279,7 +279,7 @@
       </div>
 
       <div class="quick-grid">
-        <a href="${pageContext.request.contextPath}/admin/receipts" class="quick-card">
+        <a href="${pageContext.request.contextPath}/manage/receipts" class="quick-card">
           <span>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 2v14M19 9l-7 7-7-7M2 22h20"/>
@@ -287,7 +287,7 @@
           </span>
           Nhập kho
         </a>
-        <a href="${pageContext.request.contextPath}/admin/shipments" class="quick-card">
+        <a href="${pageContext.request.contextPath}/manage/shipments" class="quick-card">
           <span>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 16V2M5 9l7-7 7 7M2 22h20"/>
@@ -295,7 +295,7 @@
           </span>
           Xuất kho
         </a>
-        <a href="${pageContext.request.contextPath}/admin/inventories" class="quick-card">
+        <a href="${pageContext.request.contextPath}/manage/inventories" class="quick-card">
           <span>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -306,7 +306,7 @@
           </span>
           Kiểm kho
         </a>
-        <a href="${pageContext.request.contextPath}/admin/products" class="quick-card">
+        <a href="${pageContext.request.contextPath}/manage/products" class="quick-card">
           <span>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 5v14M5 12h14"/>
@@ -320,7 +320,7 @@
     <section class="transactions-section">
       <div class="section-heading section-heading--split">
         <h2>Giao dịch gần đây</h2>
-        <a href="${pageContext.request.contextPath}/admin/receipts" style="text-decoration: none; font-size: 13px; font-weight: 600; color: var(--primary-color);">Xem tất cả</a>
+        <a href="${pageContext.request.contextPath}/manage/receipts" style="text-decoration: none; font-size: 13px; font-weight: 600; color: var(--primary-color);">Xem tất cả</a>
       </div>
 
       <div class="transaction-table">
@@ -336,7 +336,7 @@
           <c:when test="${not empty recentTransactions}">
             <c:forEach var="tx" items="${recentTransactions}">
               <div class="transaction-row">
-                <a href="${pageContext.request.contextPath}/admin/${tx.type == 'RECEIPT' ? 'receipts' : 'shipments'}?action=view&id=${tx.id}" style="text-decoration: none; color: inherit;">
+                <a href="${pageContext.request.contextPath}/manage/${tx.type == 'RECEIPT' ? 'receipts' : 'shipments'}?action=view&id=${tx.id}" style="text-decoration: none; color: inherit;">
                   <strong>#<c:out value="${tx.code}"/></strong>
                 </a>
                 <div>
@@ -408,7 +408,7 @@
         </c:choose>
       </div>
 
-      <a href="${pageContext.request.contextPath}/admin/receipts" class="outline-danger-button" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <a href="${pageContext.request.contextPath}/manage/receipts" class="outline-danger-button" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 5v14M5 12h14"/>
         </svg>

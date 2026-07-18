@@ -329,6 +329,7 @@ public class ReportDAO {
                      "       i.quantity_in_stock, i.min_stock_level, p.price " +
                      "FROM inventories i " +
                      "JOIN products p ON i.product_id = p.id " +
+                     "WHERE i.quantity_in_stock > 0 " +
                      "ORDER BY p.name ASC, i.batch_code ASC, i.barcode ASC";
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -346,5 +347,478 @@ public class ReportDAO {
             }
         }
         return list;
+    }
+
+    public List<Map<String, Object>> getNXTReport(String startDate, String endDate, String sku, Long brandId, Long productLineId) throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        
+        StringBuilder sql = new StringBuilder(
+            "SELECT " +
+            "    p.id AS product_id, " +
+            "    p.sku, " +
+            "    p.name AS product_name, " +
+            "    p.unit, " +
+            "    p.price, " +
+            "    b.name AS brand_name, " +
+            "    pl.name AS product_line_name, " +
+            "    COALESCE(inv.current_qty, 0) AS current_qty, " +
+            "    COALESCE(in_period.qty, 0) AS inbound_qty, " +
+            "    COALESCE(out_period.qty, 0) AS outbound_qty, " +
+            "    COALESCE(in_after.qty, 0) AS inbound_after, " +
+            "    COALESCE(out_after.qty, 0) AS outbound_after " +
+            "FROM products p " +
+            "JOIN product_lines pl ON p.product_line_id = pl.id " +
+            "JOIN brands b ON pl.brand_id = b.id " +
+            "LEFT JOIN ( " +
+            "    SELECT product_id, SUM(quantity_in_stock) AS current_qty " +
+            "    FROM inventories " +
+            "    GROUP BY product_id " +
+                        ") inv ON p.id = inv.product_id " +
+            "LEFT JOIN ( " +
+            "    SELECT rd.product_id, SUM(rd.quantity) AS qty " +
+            "    FROM receipt_details rd " +
+            "    JOIN receipts r ON rd.receipt_id = r.id " +
+            "    WHERE r.status = 'COMPLETED' " +
+            "      AND r.created_at >= ? " +
+            "      AND r.created_at <= ? " +
+            "    GROUP BY rd.product_id " +
+            ") in_period ON p.id = in_period.product_id " +
+            "LEFT JOIN ( " +
+            "    SELECT sd.product_id, SUM(sd.quantity) AS qty " +
+            "    FROM shipment_details sd " +
+            "    JOIN shipments s ON sd.shipment_id = s.id " +
+            "    WHERE s.status = 'COMPLETED' " +
+            "      AND s.created_at >= ? " +
+            "      AND s.created_at <= ? " +
+            "    GROUP BY sd.product_id " +
+            ") out_period ON p.id = out_period.product_id " +
+            "LEFT JOIN ( " +
+            "    SELECT rd.product_id, SUM(rd.quantity) AS qty " +
+            "    FROM receipt_details rd " +
+            "    JOIN receipts r ON rd.receipt_id = r.id " +
+            "    WHERE r.status = 'COMPLETED' " +
+            "      AND r.created_at > ? " +
+            "    GROUP BY rd.product_id " +
+            ") in_after ON p.id = in_after.product_id " +
+            "LEFT JOIN ( " +
+            "    SELECT sd.product_id, SUM(sd.quantity) AS qty " +
+            "    FROM shipment_details sd " +
+            "    JOIN shipments s ON sd.shipment_id = s.id " +
+            "    WHERE s.status = 'COMPLETED' " +
+            "      AND s.created_at > ? " +
+            "    GROUP BY sd.product_id " +
+            ") out_after ON p.id = out_after.product_id " +
+            "WHERE 1=1 "
+        );
+        
+        List<Object> params = new ArrayList<>();
+        params.add(startDate + " 00:00:00");
+        params.add(endDate + " 23:59:59");
+        params.add(startDate + " 00:00:00");
+        params.add(endDate + " 23:59:59");
+        params.add(endDate + " 23:59:59");
+        params.add(endDate + " 23:59:59");
+
+        if (sku != null && !sku.trim().isEmpty()) {
+            sql.append("AND (p.sku LIKE ? OR p.name LIKE ?) ");
+            params.add("%" + sku.trim() + "%");
+            params.add("%" + sku.trim() + "%");
+        }
+        if (brandId != null) {
+            sql.append("AND pl.brand_id = ? ");
+            params.add(brandId);
+        }
+        if (productLineId != null) {
+            sql.append("AND p.product_line_id = ? ");
+            params.add(productLineId);
+        }
+        
+        sql.append("ORDER BY p.name ASC");
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("productId", rs.getLong("product_id"));
+                    map.put("sku", rs.getString("sku"));
+                    map.put("productName", rs.getString("product_name"));
+                    map.put("unit", rs.getString("unit"));
+                    map.put("price", rs.getDouble("price"));
+                    map.put("brandName", rs.getString("brand_name"));
+                    map.put("productLineName", rs.getString("product_line_name"));
+                    
+                    int currentQty = rs.getInt("current_qty");
+                    int inboundQty = rs.getInt("inbound_qty");
+                    int outboundQty = rs.getInt("outbound_qty");
+                    int inboundAfter = rs.getInt("inbound_after");
+                    int outboundAfter = rs.getInt("outbound_after");
+                    
+                    int endingQty = currentQty - inboundAfter + outboundAfter;
+                    int beginningQty = endingQty - inboundQty + outboundQty;
+                    
+                    map.put("beginningQty", beginningQty);
+                    map.put("inboundQty", inboundQty);
+                    map.put("outboundQty", outboundQty);
+                    map.put("endingQty", endingQty);
+                    
+                    list.add(map);
+                }
+            }
+        }
+        return list;
+    }
+
+    public List<Map<String, Object>> getDetailedInboundReport(String startDate, String endDate, int page, int limit) throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT r.id, r.receipt_code, r.created_at, s.name AS supplier_name, u.full_name AS creator_name, r.status, " +
+            "       COALESCE((SELECT SUM(quantity) FROM receipt_details WHERE receipt_id = r.id), 0) AS total_qty, " +
+            "       COALESCE((SELECT SUM(rd.quantity * p.price) FROM receipt_details rd JOIN products p ON rd.product_id = p.id WHERE rd.receipt_id = r.id), 0) AS total_val " +
+            "FROM receipts r " +
+            "LEFT JOIN suppliers s ON r.supplier_id = s.id " +
+            "LEFT JOIN users u ON r.created_by = u.id " +
+            "WHERE 1=1 "
+        );
+        List<Object> params = new ArrayList<>();
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append("AND r.created_at >= ? ");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append("AND r.created_at <= ? ");
+            params.add(endDate.trim() + " 23:59:59");
+        }
+        sql.append("ORDER BY r.created_at DESC LIMIT ? OFFSET ?");
+        int offset = (page - 1) * limit;
+        params.add(limit);
+        params.add(offset);
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", rs.getLong("id"));
+                    map.put("code", rs.getString("receipt_code"));
+                    map.put("createdAt", rs.getTimestamp("created_at"));
+                    map.put("supplierName", rs.getString("supplier_name"));
+                    map.put("creatorName", rs.getString("creator_name"));
+                    map.put("status", rs.getString("status"));
+                    map.put("totalQty", rs.getInt("total_qty"));
+                    map.put("totalVal", rs.getDouble("total_val"));
+                    list.add(map);
+                }
+            }
+        }
+        return list;
+    }
+
+    public int countDetailedInboundReport(String startDate, String endDate) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM receipts r WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append("AND r.created_at >= ? ");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append("AND r.created_at <= ? ");
+            params.add(endDate.trim() + " 23:59:59");
+        }
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+    public List<Map<String, Object>> getDetailedOutboundReport(String startDate, String endDate, int page, int limit) throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT s.id, s.shipment_code, s.created_at, s.destination, u.full_name AS creator_name, s.status, " +
+            "       COALESCE((SELECT SUM(quantity) FROM shipment_details WHERE shipment_id = s.id), 0) AS total_qty, " +
+            "       COALESCE((SELECT SUM(sd.quantity * p.price) FROM shipment_details sd JOIN products p ON sd.product_id = p.id WHERE sd.shipment_id = s.id), 0) AS total_val " +
+            "FROM shipments s " +
+            "LEFT JOIN users u ON s.created_by = u.id " +
+            "WHERE 1=1 "
+        );
+        List<Object> params = new ArrayList<>();
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append("AND s.created_at >= ? ");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append("AND s.created_at <= ? ");
+            params.add(endDate.trim() + " 23:59:59");
+        }
+        sql.append("ORDER BY s.created_at DESC LIMIT ? OFFSET ?");
+        int offset = (page - 1) * limit;
+        params.add(limit);
+        params.add(offset);
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", rs.getLong("id"));
+                    map.put("code", rs.getString("shipment_code"));
+                    map.put("createdAt", rs.getTimestamp("created_at"));
+                    map.put("destination", rs.getString("destination"));
+                    map.put("creatorName", rs.getString("creator_name"));
+                    map.put("status", rs.getString("status"));
+                    map.put("totalQty", rs.getInt("total_qty"));
+                    map.put("totalVal", rs.getDouble("total_val"));
+                    list.add(map);
+                }
+            }
+        }
+        return list;
+    }
+
+    public int countDetailedOutboundReport(String startDate, String endDate) throws SQLException {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM shipments s WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append("AND s.created_at >= ? ");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append("AND s.created_at <= ? ");
+            params.add(endDate.trim() + " 23:59:59");
+        }
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+    public List<Map<String, Object>> getDetailedInventoryReport(int page, int limit) throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT i.barcode, i.batch_code, p.sku, p.name AS product_name, " +
+                     "       i.quantity_in_stock, i.min_stock_level, p.price " +
+                     "FROM inventories i " +
+                     "JOIN products p ON i.product_id = p.id " +
+                     "WHERE i.quantity_in_stock > 0 " +
+                     "ORDER BY p.name ASC, i.batch_code ASC, i.barcode ASC " +
+                     "LIMIT ? OFFSET ?";
+        int offset = (page - 1) * limit;
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            ps.setInt(2, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("barcode", rs.getString("barcode"));
+                    map.put("batchCode", rs.getString("batch_code"));
+                    map.put("sku", rs.getString("sku"));
+                    map.put("productName", rs.getString("product_name"));
+                    map.put("quantityInStock", rs.getInt("quantity_in_stock"));
+                    map.put("minStockLevel", rs.getInt("min_stock_level"));
+                    map.put("price", rs.getDouble("price"));
+                    list.add(map);
+                }
+            }
+        }
+        return list;
+    }
+
+    public int countDetailedInventoryReport() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM inventories i WHERE i.quantity_in_stock > 0";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+    public List<Map<String, Object>> getNXTReport(String startDate, String endDate, String sku, Long brandId, Long productLineId, int page, int limit) throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        
+        StringBuilder sql = new StringBuilder(
+            "SELECT " +
+            "    p.id AS product_id, " +
+            "    p.sku, " +
+            "    p.name AS product_name, " +
+            "    p.unit, " +
+            "    p.price, " +
+            "    b.name AS brand_name, " +
+            "    pl.name AS product_line_name, " +
+            "    COALESCE(inv.current_qty, 0) AS current_qty, " +
+            "    COALESCE(in_period.qty, 0) AS inbound_qty, " +
+            "    COALESCE(out_period.qty, 0) AS outbound_qty, " +
+            "    COALESCE(in_after.qty, 0) AS inbound_after, " +
+            "    COALESCE(out_after.qty, 0) AS outbound_after " +
+            "FROM products p " +
+            "JOIN product_lines pl ON p.product_line_id = pl.id " +
+            "JOIN brands b ON pl.brand_id = b.id " +
+            "LEFT JOIN ( " +
+            "    SELECT product_id, SUM(quantity_in_stock) AS current_qty " +
+            "    FROM inventories " +
+            "    GROUP BY product_id " +
+            ") inv ON p.id = inv.product_id " +
+            "LEFT JOIN ( " +
+            "    SELECT rd.product_id, SUM(rd.quantity) AS qty " +
+            "    FROM receipt_details rd " +
+            "    JOIN receipts r ON rd.receipt_id = r.id " +
+            "    WHERE r.status = 'COMPLETED' " +
+            "      AND r.created_at >= ? " +
+            "      AND r.created_at <= ? " +
+            "    GROUP BY rd.product_id " +
+            ") in_period ON p.id = in_period.product_id " +
+            "LEFT JOIN ( " +
+            "    SELECT sd.product_id, SUM(sd.quantity) AS qty " +
+            "    FROM shipment_details sd " +
+            "    JOIN shipments s ON sd.shipment_id = s.id " +
+            "    WHERE s.status = 'COMPLETED' " +
+            "      AND s.created_at >= ? " +
+            "      AND s.created_at <= ? " +
+            "    GROUP BY sd.product_id " +
+            ") out_period ON p.id = out_period.product_id " +
+            "LEFT JOIN ( " +
+            "    SELECT rd.product_id, SUM(rd.quantity) AS qty " +
+            "    FROM receipt_details rd " +
+            "    JOIN receipts r ON rd.receipt_id = r.id " +
+            "    WHERE r.status = 'COMPLETED' " +
+            "      AND r.created_at > ? " +
+            "    GROUP BY rd.product_id " +
+            ") in_after ON p.id = in_after.product_id " +
+            "LEFT JOIN ( " +
+            "    SELECT sd.product_id, SUM(sd.quantity) AS qty " +
+            "    FROM shipment_details sd " +
+            "    JOIN shipments s ON sd.shipment_id = s.id " +
+            "    WHERE s.status = 'COMPLETED' " +
+            "      AND s.created_at > ? " +
+            "    GROUP BY sd.product_id " +
+            ") out_after ON p.id = out_after.product_id " +
+            "WHERE 1=1 "
+        );
+        
+        List<Object> params = new ArrayList<>();
+        params.add(startDate + " 00:00:00");
+        params.add(endDate + " 23:59:59");
+        params.add(startDate + " 00:00:00");
+        params.add(endDate + " 23:59:59");
+        params.add(endDate + " 23:59:59");
+        params.add(endDate + " 23:59:59");
+
+        if (sku != null && !sku.trim().isEmpty()) {
+            sql.append("AND (p.sku LIKE ? OR p.name LIKE ?) ");
+            params.add("%" + sku.trim() + "%");
+            params.add("%" + sku.trim() + "%");
+        }
+        if (brandId != null) {
+            sql.append("AND pl.brand_id = ? ");
+            params.add(brandId);
+        }
+        if (productLineId != null) {
+            sql.append("AND p.product_line_id = ? ");
+            params.add(productLineId);
+        }
+        
+        sql.append("ORDER BY p.name ASC LIMIT ? OFFSET ?");
+        int offset = (page - 1) * limit;
+        params.add(limit);
+        params.add(offset);
+
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("productId", rs.getLong("product_id"));
+                    map.put("sku", rs.getString("sku"));
+                    map.put("productName", rs.getString("product_name"));
+                    map.put("unit", rs.getString("unit"));
+                    map.put("price", rs.getDouble("price"));
+                    map.put("brandName", rs.getString("brand_name"));
+                    map.put("productLineName", rs.getString("product_line_name"));
+                    
+                    int currentQty = rs.getInt("current_qty");
+                    int inboundQty = rs.getInt("inbound_qty");
+                    int outboundQty = rs.getInt("outbound_qty");
+                    int inboundAfter = rs.getInt("inbound_after");
+                    int outboundAfter = rs.getInt("outbound_after");
+                    
+                    int endingQty = currentQty - inboundAfter + outboundAfter;
+                    int beginningQty = endingQty - inboundQty + outboundQty;
+                    
+                    map.put("beginningQty", beginningQty);
+                    map.put("inboundQty", inboundQty);
+                    map.put("outboundQty", outboundQty);
+                    map.put("endingQty", endingQty);
+                    
+                    list.add(map);
+                }
+            }
+        }
+        return list;
+    }
+
+    public int countNXTReport(String sku, Long brandId, Long productLineId) throws SQLException {
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(*) " +
+            "FROM products p " +
+            "JOIN product_lines pl ON p.product_line_id = pl.id " +
+            "JOIN brands b ON pl.brand_id = b.id " +
+            "WHERE 1=1 "
+        );
+        List<Object> params = new ArrayList<>();
+        if (sku != null && !sku.trim().isEmpty()) {
+            sql.append("AND (p.sku LIKE ? OR p.name LIKE ?) ");
+            params.add("%" + sku.trim() + "%");
+            params.add("%" + sku.trim() + "%");
+        }
+        if (brandId != null) {
+            sql.append("AND pl.brand_id = ? ");
+            params.add(brandId);
+        }
+        if (productLineId != null) {
+            sql.append("AND p.product_line_id = ? ");
+            params.add(productLineId);
+        }
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
     }
 }

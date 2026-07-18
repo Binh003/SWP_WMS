@@ -172,7 +172,7 @@
         <c:set var="canViewInventories" value="${isAdmin || currentUser.hasPermission('INVENTORY_READ') || currentUser.hasPermission('INVENTORY_WRITE')}"/>
         
         <c:if test="${canManageUsers}">
-          <a class="${activePage == 'users' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/users">
+          <a class="${activePage == 'users' ? 'active' : ''}" href="${pageContext.request.contextPath}/manage/users">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
@@ -184,7 +184,7 @@
         </c:if>
 
         <c:if test="${canManageRoles}">
-          <a class="${activePage == 'roles' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/roles">
+          <a class="${activePage == 'roles' ? 'active' : ''}" href="${pageContext.request.contextPath}/manage/roles">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
             </svg>
@@ -193,7 +193,7 @@
         </c:if>
 
         <c:if test="${canViewBrands}">
-          <a class="${activePage == 'brands' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/brands">
+          <a class="${activePage == 'brands' ? 'active' : ''}" href="${pageContext.request.contextPath}/manage/brands">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
               <line x1="7" y1="7" x2="7.01" y2="7"></line>
@@ -203,7 +203,7 @@
         </c:if>
 
         <c:if test="${canViewSuppliers}">
-          <a class="${activePage == 'suppliers' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/suppliers">
+          <a class="${activePage == 'suppliers' ? 'active' : ''}" href="${pageContext.request.contextPath}/manage/suppliers">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="11" width="18" height="10" rx="2" ry="2"></rect>
               <circle cx="12" cy="5" r="2"></circle>
@@ -214,7 +214,7 @@
         </c:if>
 
         <c:if test="${canViewProductLines}">
-          <a class="${activePage == 'product-lines' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/product-lines">
+          <a class="${activePage == 'product-lines' ? 'active' : ''}" href="${pageContext.request.contextPath}/manage/product-lines">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
               <rect x="9" y="9" width="6" height="6"></rect>
@@ -224,7 +224,7 @@
         </c:if>
 
         <c:if test="${canViewProducts}">
-          <a class="${activePage == 'products' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/products">
+          <a class="${activePage == 'products' ? 'active' : ''}" href="${pageContext.request.contextPath}/manage/products">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
@@ -235,7 +235,7 @@
         </c:if>
 
         <c:if test="${canViewInventories}">
-          <a class="${activePage == 'inventories' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/inventories">
+          <a class="${activePage == 'inventories' ? 'active' : ''}" href="${pageContext.request.contextPath}/manage/inventories">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
               <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
@@ -249,7 +249,7 @@
         <c:set var="canViewReports" value="${isAdmin || currentUser.hasPermission('REPORT_READ')}"/>
 
         <c:if test="${canViewReceipts}">
-          <a class="${activePage == 'receipts' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/receipts">
+          <a class="${activePage == 'receipts' ? 'active' : ''}" href="${pageContext.request.contextPath}/manage/receipts">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
@@ -260,7 +260,7 @@
         </c:if>
 
         <c:if test="${canViewShipments}">
-          <a class="${activePage == 'shipments' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/shipments">
+          <a class="${activePage == 'shipments' ? 'active' : ''}" href="${pageContext.request.contextPath}/manage/shipments">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="17 8 12 3 7 8"></polyline>
@@ -271,7 +271,7 @@
         </c:if>
 
         <c:if test="${canViewReports}">
-          <a class="${activePage == 'reports' ? 'active' : ''}" href="${pageContext.request.contextPath}/admin/reports">
+          <a class="${activePage == 'reports' ? 'active' : ''}" href="${pageContext.request.contextPath}/manage/reports">
             <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="20" x2="18" y2="10"></line>
               <line x1="12" y1="20" x2="12" y2="4"></line>

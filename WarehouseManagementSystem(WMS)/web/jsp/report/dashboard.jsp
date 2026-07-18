@@ -283,6 +283,39 @@
       page-break-inside: avoid;
     }
   }
+
+  /* Pagination Buttons styling */
+  .pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1.5px solid var(--card-border);
+    background: #ffffff;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .pagination-btn:hover:not(:disabled) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(4, 138, 191, 0.02);
+  }
+  .pagination-btn--active {
+    background: var(--primary-color) !important;
+    color: #ffffff !important;
+    border-color: var(--primary-color) !important;
+  }
+  .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8fafc;
+  }
 </style>
 
 <div class="report-container">
@@ -303,7 +336,7 @@
         In báo cáo
       </button>
       <c:if test="${reportType != 'overview'}">
-        <a href="?action=export&reportType=${reportType}&startDate=${startDate}&endDate=${endDate}" class="filter-btn" style="margin: 0; text-decoration: none; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 16px; height: 42px; border-radius: 10px; font-weight: 600; background: #10b981; color: white; white-space: nowrap; box-sizing: border-box;">
+        <a href="?action=export&reportType=${reportType}&startDate=${startDate}&endDate=${endDate}&sku=${param.sku}&brandId=${param.brandId}&productLineId=${param.productLineId}" class="filter-btn" style="margin: 0; text-decoration: none; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 16px; height: 42px; border-radius: 10px; font-weight: 600; background: #10b981; color: white; white-space: nowrap; box-sizing: border-box;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
@@ -334,24 +367,59 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg>
       Tồn kho (Inventory)
     </a>
+    <a href="?reportType=nxt" class="report-tab-btn ${reportType == 'nxt' ? 'active' : ''}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 20h-5v-5M3 3l18 17"/></svg>
+      Nhập Xuất Tồn
+    </a>
   </div>
 
-  <!-- Form Bộ lọc Ngày tháng cho Nhập kho & Xuất kho -->
-  <c:if test="${reportType == 'inbound' || reportType == 'outbound'}">
-    <form method="GET" action="" class="filter-card">
+  <!-- Form Bộ lọc Ngày tháng cho Nhập kho & Xuất kho & Nhập Xuất Tồn -->
+  <c:if test="${reportType == 'inbound' || reportType == 'outbound' || reportType == 'nxt'}">
+    <form method="GET" action="" class="filter-card" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;">
       <input type="hidden" name="reportType" value="${reportType}" />
-      <div class="filter-group">
+      <div class="filter-group" style="flex: 1; min-width: 140px;">
         <label>Từ ngày</label>
-        <input type="date" name="startDate" class="filter-input" value="${startDate}" />
+        <input type="date" name="startDate" class="filter-input" value="${startDate}" style="width: 100%;" required />
       </div>
-      <div class="filter-group">
+      <div class="filter-group" style="flex: 1; min-width: 140px;">
         <label>Đến ngày</label>
-        <input type="date" name="endDate" class="filter-input" value="${endDate}" />
+        <input type="date" name="endDate" class="filter-input" value="${endDate}" style="width: 100%;" required />
       </div>
-      <button type="submit" class="filter-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        Lọc dữ liệu
-      </button>
+      
+      <c:if test="${reportType == 'nxt'}">
+        <div class="filter-group" style="flex: 1.5; min-width: 180px;">
+          <label>Tìm theo SKU/Tên sản phẩm</label>
+          <input type="text" name="sku" class="filter-input" value="${param.sku}" placeholder="Nhập SKU hoặc Tên..." style="width: 100%;" />
+        </div>
+        <div class="filter-group" style="flex: 1.2; min-width: 150px;">
+          <label>Hãng sản xuất</label>
+          <select name="brandId" class="filter-input" style="width: 100%; background: #f8fafc; cursor: pointer;">
+            <option value="">Tất cả các Hãng</option>
+            <c:forEach var="b" items="${brands}">
+              <option value="${b.id}" ${param.brandId == b.id ? 'selected' : ''}>${b.name}</option>
+            </c:forEach>
+          </select>
+        </div>
+        <div class="filter-group" style="flex: 1.2; min-width: 150px;">
+          <label>Dòng sản phẩm</label>
+          <select name="productLineId" class="filter-input" style="width: 100%; background: #f8fafc; cursor: pointer;">
+            <option value="">Tất cả các Dòng SP</option>
+            <c:forEach var="pl" items="${productLines}">
+              <option value="${pl.id}" ${param.productLineId == pl.id ? 'selected' : ''}>${pl.name}</option>
+            </c:forEach>
+          </select>
+        </div>
+      </c:if>
+      
+      <div style="display: flex; gap: 8px;">
+        <button type="submit" class="filter-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Lọc dữ liệu
+        </button>
+        <c:if test="${reportType == 'nxt' && (not empty param.sku || not empty param.brandId || not empty param.productLineId)}">
+          <a href="?reportType=nxt&startDate=${startDate}&endDate=${endDate}" class="filter-btn" style="background: #ef4444; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Xóa lọc phụ</a>
+        </c:if>
+      </div>
     </form>
   </c:if>
 
@@ -569,6 +637,58 @@
             </tbody>
           </table>
         </div>
+        <!-- Pagination Toolbar -->
+        <c:if test="${totalItems > 0}">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1.5px solid var(--card-border); flex-wrap: wrap; gap: 16px;">
+            <div style="font-size: 14px; color: var(--text-secondary); font-weight: 600;">
+              Hiển thị 
+              <c:choose>
+                <c:when test="${totalItems == 0}">0</c:when>
+                <c:otherwise>${(currentPage - 1) * limit + 1}</c:otherwise>
+              </c:choose>
+              đến 
+              <c:choose>
+                <c:when test="${currentPage * limit > totalItems}">${totalItems}</c:when>
+                <c:otherwise>${currentPage * limit}</c:otherwise>
+              </c:choose>
+              trong số <strong>${totalItems}</strong> bản ghi
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <!-- Limit selector -->
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số dòng:</span>
+                <select onchange="changeLimit(this.value)" style="padding: 6px 12px; border: 1.5px solid var(--card-border); border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; height: 36px; box-sizing: border-box;">
+                  <option value="5" ${limit == 5 ? 'selected' : ''}>5</option>
+                  <option value="10" ${limit == 10 ? 'selected' : ''}>10</option>
+                  <option value="20" ${limit == 20 ? 'selected' : ''}>20</option>
+                  <option value="50" ${limit == 50 ? 'selected' : ''}>50</option>
+                </select>
+              </div>
+
+              <!-- Pagination Buttons -->
+              <div style="display: flex; gap: 6px;">
+                <button onclick="goToPage(1)" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang đầu">
+                  &laquo;
+                </button>
+                <button onclick="goToPage(${currentPage - 1})" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang trước">
+                  &lsaquo;
+                </button>
+                <c:forEach var="p" begin="${currentPage - 2 < 1 ? 1 : currentPage - 2}" end="${currentPage + 2 > totalPages ? totalPages : currentPage + 2}">
+                  <button onclick="goToPage(${p})" class="pagination-btn ${p == currentPage ? 'pagination-btn--active' : ''}">
+                    ${p}
+                  </button>
+                </c:forEach>
+                <button onclick="goToPage(${currentPage + 1})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang sau">
+                  &rsaquo;
+                </button>
+                <button onclick="goToPage(${totalPages})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang cuối">
+                  &raquo;
+                </button>
+              </div>
+            </div>
+          </div>
+        </c:if>
       </div>
     </c:when>
 
@@ -651,6 +771,58 @@
             </tbody>
           </table>
         </div>
+        <!-- Pagination Toolbar -->
+        <c:if test="${totalItems > 0}">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1.5px solid var(--card-border); flex-wrap: wrap; gap: 16px;">
+            <div style="font-size: 14px; color: var(--text-secondary); font-weight: 600;">
+              Hiển thị 
+              <c:choose>
+                <c:when test="${totalItems == 0}">0</c:when>
+                <c:otherwise>${(currentPage - 1) * limit + 1}</c:otherwise>
+              </c:choose>
+              đến 
+              <c:choose>
+                <c:when test="${currentPage * limit > totalItems}">${totalItems}</c:when>
+                <c:otherwise>${currentPage * limit}</c:otherwise>
+              </c:choose>
+              trong số <strong>${totalItems}</strong> bản ghi
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <!-- Limit selector -->
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số dòng:</span>
+                <select onchange="changeLimit(this.value)" style="padding: 6px 12px; border: 1.5px solid var(--card-border); border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; height: 36px; box-sizing: border-box;">
+                  <option value="5" ${limit == 5 ? 'selected' : ''}>5</option>
+                  <option value="10" ${limit == 10 ? 'selected' : ''}>10</option>
+                  <option value="20" ${limit == 20 ? 'selected' : ''}>20</option>
+                  <option value="50" ${limit == 50 ? 'selected' : ''}>50</option>
+                </select>
+              </div>
+
+              <!-- Pagination Buttons -->
+              <div style="display: flex; gap: 6px;">
+                <button onclick="goToPage(1)" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang đầu">
+                  &laquo;
+                </button>
+                <button onclick="goToPage(${currentPage - 1})" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang trước">
+                  &lsaquo;
+                </button>
+                <c:forEach var="p" begin="${currentPage - 2 < 1 ? 1 : currentPage - 2}" end="${currentPage + 2 > totalPages ? totalPages : currentPage + 2}">
+                  <button onclick="goToPage(${p})" class="pagination-btn ${p == currentPage ? 'pagination-btn--active' : ''}">
+                    ${p}
+                  </button>
+                </c:forEach>
+                <button onclick="goToPage(${currentPage + 1})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang sau">
+                  &rsaquo;
+                </button>
+                <button onclick="goToPage(${totalPages})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang cuối">
+                  &raquo;
+                </button>
+              </div>
+            </div>
+          </div>
+        </c:if>
       </div>
     </c:when>
 
@@ -743,9 +915,212 @@
             </tbody>
           </table>
         </div>
+        <!-- Pagination Toolbar -->
+        <c:if test="${totalItems > 0}">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1.5px solid var(--card-border); flex-wrap: wrap; gap: 16px;">
+            <div style="font-size: 14px; color: var(--text-secondary); font-weight: 600;">
+              Hiển thị 
+              <c:choose>
+                <c:when test="${totalItems == 0}">0</c:when>
+                <c:otherwise>${(currentPage - 1) * limit + 1}</c:otherwise>
+              </c:choose>
+              đến 
+              <c:choose>
+                <c:when test="${currentPage * limit > totalItems}">${totalItems}</c:when>
+                <c:otherwise>${currentPage * limit}</c:otherwise>
+              </c:choose>
+              trong số <strong>${totalItems}</strong> bản ghi
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <!-- Limit selector -->
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số dòng:</span>
+                <select onchange="changeLimit(this.value)" style="padding: 6px 12px; border: 1.5px solid var(--card-border); border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; height: 36px; box-sizing: border-box;">
+                  <option value="5" ${limit == 5 ? 'selected' : ''}>5</option>
+                  <option value="10" ${limit == 10 ? 'selected' : ''}>10</option>
+                  <option value="20" ${limit == 20 ? 'selected' : ''}>20</option>
+                  <option value="50" ${limit == 50 ? 'selected' : ''}>50</option>
+                </select>
+              </div>
+
+              <!-- Pagination Buttons -->
+              <div style="display: flex; gap: 6px;">
+                <button onclick="goToPage(1)" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang đầu">
+                  &laquo;
+                </button>
+                <button onclick="goToPage(${currentPage - 1})" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang trước">
+                  &lsaquo;
+                </button>
+                <c:forEach var="p" begin="${currentPage - 2 < 1 ? 1 : currentPage - 2}" end="${currentPage + 2 > totalPages ? totalPages : currentPage + 2}">
+                  <button onclick="goToPage(${p})" class="pagination-btn ${p == currentPage ? 'pagination-btn--active' : ''}">
+                    ${p}
+                  </button>
+                </c:forEach>
+                <button onclick="goToPage(${currentPage + 1})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang sau">
+                  &rsaquo;
+                </button>
+                <button onclick="goToPage(${totalPages})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang cuối">
+                  &raquo;
+                </button>
+              </div>
+            </div>
+          </div>
+        </c:if>
       </div>
     </c:when>
 
+    <%-- ==================== TAB 5: NHẬP XUẤT TỒN (NXT) ==================== --%>
+    <c:when test="${reportType == 'nxt'}">
+      <!-- Thẻ thống kê nhanh cho Nhập Xuất Tồn -->
+      <div class="quick-stats-grid">
+        <div class="report-stat-card">
+          <div class="report-stat-card__info">
+            <p>Tổng Tồn Đầu Kỳ</p>
+            <strong><fmt:formatNumber value="${totalBeg}" pattern="#,##0"/></strong>
+          </div>
+          <div class="report-stat-card__icon icon-blue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path></svg>
+          </div>
+        </div>
+        <div class="report-stat-card">
+          <div class="report-stat-card__info">
+            <p>Tổng Nhập Trong Kỳ</p>
+            <strong><fmt:formatNumber value="${totalIn}" pattern="#,##0"/></strong>
+          </div>
+          <div class="report-stat-card__icon icon-green">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v14M19 9l-7 7-7-7M2 22h20"/></svg>
+          </div>
+        </div>
+        <div class="report-stat-card">
+          <div class="report-stat-card__info">
+            <p>Tổng Xuất Trong Kỳ</p>
+            <strong><fmt:formatNumber value="${totalOut}" pattern="#,##0"/></strong>
+          </div>
+          <div class="report-stat-card__icon icon-red">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V2M5 9l7-7 7 7M2 22h20"/></svg>
+          </div>
+        </div>
+        <div class="report-stat-card">
+          <div class="report-stat-card__info">
+            <p>Tổng Tồn Cuối Kỳ</p>
+            <strong><fmt:formatNumber value="${totalEnd}" pattern="#,##0"/></strong>
+            <div style="font-size: 11px; color: #64748b; margin-top: 4px; font-weight: 600;">
+              Trị giá: <fmt:formatNumber value="${totalValueEnd}" type="currency" currencyCode="VND"/>
+            </div>
+          </div>
+          <div class="report-stat-card__icon icon-purple">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bảng chi tiết -->
+      <div class="details-section">
+        <div class="details-section__header">
+          <h3>Báo cáo Tổng hợp Nhập Xuất Tồn kho chi tiết</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Tên sản phẩm</th>
+                <th>Hãng / Dòng SP</th>
+                <th>Đơn vị</th>
+                <th style="text-align: right;">Đơn giá</th>
+                <th style="text-align: right; background-color: #eff6ff;">Tồn đầu</th>
+                <th style="text-align: right; background-color: #f0fdf4;">Nhập kho</th>
+                <th style="text-align: right; background-color: #fef2f2;">Xuất kho</th>
+                <th style="text-align: right; background-color: #faf5ff;">Tồn cuối</th>
+                <th style="text-align: right;">Giá trị tồn cuối</th>
+              </tr>
+            </thead>
+            <tbody>
+              <c:choose>
+                <c:when test="${not empty nxtReport}">
+                  <c:forEach var="item" items="${nxtReport}">
+                    <tr>
+                      <td><code><c:out value="${item.sku}"/></code></td>
+                      <td><strong><c:out value="${item.productName}"/></strong></td>
+                      <td>
+                        <small style="color: #64748b;"><c:out value="${item.brandName}"/> - <c:out value="${item.productLineName}"/></small>
+                      </td>
+                      <td><c:out value="${item.unit}"/></td>
+                      <td style="text-align: right; font-weight: 500;"><fmt:formatNumber value="${item.price}" type="currency" currencyCode="VND"/></td>
+                      <td style="text-align: right; font-weight: 600; background-color: #eff6ff;"><fmt:formatNumber value="${item.beginningQty}" pattern="#,##0"/></td>
+                      <td style="text-align: right; font-weight: 600; background-color: #f0fdf4; color: #16a34a;">+<fmt:formatNumber value="${item.inboundQty}" pattern="#,##0"/></td>
+                      <td style="text-align: right; font-weight: 600; background-color: #fef2f2; color: #dc2626;">-<fmt:formatNumber value="${item.outboundQty}" pattern="#,##0"/></td>
+                      <td style="text-align: right; font-weight: 700; background-color: #faf5ff; color: #1e293b;"><fmt:formatNumber value="${item.endingQty}" pattern="#,##0"/></td>
+                      <td style="text-align: right; font-weight: 700; color: #4f46e5;">
+                        <fmt:formatNumber value="${item.endingQty * item.price}" type="currency" currencyCode="VND"/>
+                      </td>
+                    </tr>
+                  </c:forEach>
+                </c:when>
+                <c:otherwise>
+                  <tr>
+                    <td colspan="10" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy dữ liệu nào phù hợp với bộ lọc đã chọn.</td>
+                  </tr>
+                </c:otherwise>
+              </c:choose>
+            </tbody>
+          </table>
+        </div>
+        <!-- Pagination Toolbar -->
+        <c:if test="${totalItems > 0}">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1.5px solid var(--card-border); flex-wrap: wrap; gap: 16px;">
+            <div style="font-size: 14px; color: var(--text-secondary); font-weight: 600;">
+              Hiển thị 
+              <c:choose>
+                <c:when test="${totalItems == 0}">0</c:when>
+                <c:otherwise>${(currentPage - 1) * limit + 1}</c:otherwise>
+              </c:choose>
+              đến 
+              <c:choose>
+                <c:when test="${currentPage * limit > totalItems}">${totalItems}</c:when>
+                <c:otherwise>${currentPage * limit}</c:otherwise>
+              </c:choose>
+              trong số <strong>${totalItems}</strong> bản ghi
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 16px;">
+              <!-- Limit selector -->
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số dòng:</span>
+                <select onchange="changeLimit(this.value)" style="padding: 6px 12px; border: 1.5px solid var(--card-border); border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); outline: none; background: #ffffff; cursor: pointer; height: 36px; box-sizing: border-box;">
+                  <option value="5" ${limit == 5 ? 'selected' : ''}>5</option>
+                  <option value="10" ${limit == 10 ? 'selected' : ''}>10</option>
+                  <option value="20" ${limit == 20 ? 'selected' : ''}>20</option>
+                  <option value="50" ${limit == 50 ? 'selected' : ''}>50</option>
+                </select>
+              </div>
+
+              <!-- Pagination Buttons -->
+              <div style="display: flex; gap: 6px;">
+                <button onclick="goToPage(1)" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang đầu">
+                  &laquo;
+                </button>
+                <button onclick="goToPage(${currentPage - 1})" ${currentPage == 1 ? 'disabled' : ''} class="pagination-btn" title="Trang trước">
+                  &lsaquo;
+                </button>
+                <c:forEach var="p" begin="${currentPage - 2 < 1 ? 1 : currentPage - 2}" end="${currentPage + 2 > totalPages ? totalPages : currentPage + 2}">
+                  <button onclick="goToPage(${p})" class="pagination-btn ${p == currentPage ? 'pagination-btn--active' : ''}">
+                    ${p}
+                  </button>
+                </c:forEach>
+                <button onclick="goToPage(${currentPage + 1})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang sau">
+                  &rsaquo;
+                </button>
+                <button onclick="goToPage(${totalPages})" ${currentPage == totalPages || totalPages == 0 ? 'disabled' : ''} class="pagination-btn" title="Trang cuối">
+                  &raquo;
+                </button>
+              </div>
+            </div>
+          </div>
+        </c:if>
+      </div>
+    </c:when>
   </c:choose>
 
 </div>
@@ -967,6 +1342,19 @@
       });
     }
 
+    // Hỗ trợ phân trang
+    window.goToPage = function(page) {
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('page', page);
+      window.location.search = urlParams.toString();
+    }
+
+    window.changeLimit = function(limit) {
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('limit', limit);
+      urlParams.set('page', 1);
+      window.location.search = urlParams.toString();
+    }
   });
 </script>
 

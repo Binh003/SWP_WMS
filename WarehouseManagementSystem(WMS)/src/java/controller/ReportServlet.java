@@ -1,6 +1,8 @@
 package controller;
 
 import dao.ReportDAO;
+import dao.BrandDAO;
+import dao.ProductLineDAO;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -14,6 +16,8 @@ import java.util.Map;
 public class ReportServlet extends HttpServlet {
 
     private final ReportDAO reportDAO = new ReportDAO();
+    private final BrandDAO brandDAO = new BrandDAO();
+    private final ProductLineDAO productLineDAO = new ProductLineDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -218,12 +222,114 @@ public class ReportServlet extends HttpServlet {
                     out.println("    <td>Giá trị: " + curFmt.format(totalVal) + "</td>");
                     out.println("  </tr>");
                     out.println("</table>");
+                } else if ("nxt".equals(reportType)) {
+                    String finalStartDate = startDate;
+                    String finalEndDate = endDate;
+                    if (finalStartDate == null || finalStartDate.trim().isEmpty()) {
+                        java.time.LocalDate now = java.time.LocalDate.now();
+                        finalStartDate = now.withDayOfMonth(1).toString();
+                    }
+                    if (finalEndDate == null || finalEndDate.trim().isEmpty()) {
+                        finalEndDate = java.time.LocalDate.now().toString();
+                    }
+
+                    String sku = request.getParameter("sku");
+                    String brandIdStr = request.getParameter("brandId");
+                    Long brandId = null;
+                    if (brandIdStr != null && !brandIdStr.isEmpty()) {
+                        try { brandId = Long.parseLong(brandIdStr); } catch (NumberFormatException ignored) {}
+                    }
+                    String productLineIdStr = request.getParameter("productLineId");
+                    Long productLineId = null;
+                    if (productLineIdStr != null && !productLineIdStr.isEmpty()) {
+                        try { productLineId = Long.parseLong(productLineIdStr); } catch (NumberFormatException ignored) {}
+                    }
+
+                    List<Map<String, Object>> list = reportDAO.getNXTReport(finalStartDate, finalEndDate, sku, brandId, productLineId);
+                    int totalBeg = 0;
+                    int totalIn = 0;
+                    int totalOut = 0;
+                    int totalEnd = 0;
+                    double totalValueEnd = 0.0;
+                    for (Map<String, Object> r : list) {
+                        totalBeg += (int) r.get("beginningQty");
+                        totalIn += (int) r.get("inboundQty");
+                        totalOut += (int) r.get("outboundQty");
+                        totalEnd += (int) r.get("endingQty");
+                        totalValueEnd += ((int) r.get("endingQty") * (double) r.get("price"));
+                    }
+
+                    out.println("<table>");
+                    out.println("  <tr><td colspan='11' class='title'>BÁO CÁO TỔNG HỢP NHẬP XUẤT TỒN</td></tr>");
+                    out.println("  <tr><td colspan='11' class='bold'>Từ ngày: " + finalStartDate + " &nbsp;&nbsp;&nbsp;&nbsp; Đến ngày: " + finalEndDate + "</td></tr>");
+                    out.println("  <tr><td colspan='11'>Ngày xuất báo cáo: " + dateFmt.format(new java.util.Date()) + "</td></tr>");
+                    out.println("  <tr><td colspan='11'></td></tr>");
+                    
+                    out.println("  <tr>");
+                    out.println("    <th>SKU</th>");
+                    out.println("    <th>Tên sản phẩm</th>");
+                    out.println("    <th>Hãng</th>");
+                    out.println("    <th>Dòng sản phẩm</th>");
+                    out.println("    <th>Đơn vị</th>");
+                    out.println("    <th>Đơn giá</th>");
+                    out.println("    <th>Tồn đầu kỳ</th>");
+                    out.println("    <th>Nhập trong kỳ</th>");
+                    out.println("    <th>Xuất trong kỳ</th>");
+                    out.println("    <th>Tồn cuối kỳ</th>");
+                    out.println("    <th>Giá trị tồn cuối</th>");
+                    out.println("  </tr>");
+
+                    for (Map<String, Object> r : list) {
+                        int beg = (int) r.get("beginningQty");
+                        int inQty = (int) r.get("inboundQty");
+                        int outQty = (int) r.get("outboundQty");
+                        int end = (int) r.get("endingQty");
+                        double price = (double) r.get("price");
+                        double val = end * price;
+
+                        out.println("  <tr>");
+                        out.println("    <td>" + r.get("sku") + "</td>");
+                        out.println("    <td>" + r.get("productName") + "</td>");
+                        out.println("    <td>" + r.get("brandName") + "</td>");
+                        out.println("    <td>" + r.get("productLineName") + "</td>");
+                        out.println("    <td>" + r.get("unit") + "</td>");
+                        out.println("    <td>" + curFmt.format(price) + "</td>");
+                        out.println("    <td>" + beg + "</td>");
+                        out.println("    <td>" + inQty + "</td>");
+                        out.println("    <td>" + outQty + "</td>");
+                        out.println("    <td>" + end + "</td>");
+                        out.println("    <td>" + curFmt.format(val) + "</td>");
+                        out.println("  </tr>");
+                    }
+
+                    out.println("  <tr class='bg-summary bold'>");
+                    out.println("    <td colspan='6'>TỔNG CỘNG</td>");
+                    out.println("    <td>" + totalBeg + "</td>");
+                    out.println("    <td>" + totalIn + "</td>");
+                    out.println("    <td>" + totalOut + "</td>");
+                    out.println("    <td>" + totalEnd + "</td>");
+                    out.println("    <td>" + curFmt.format(totalValueEnd) + "</td>");
+                    out.println("  </tr>");
+                    out.println("</table>");
                 }
 
                 out.println("</body>");
                 out.println("</html>");
                 return;
             }
+
+            int page = 1;
+            int limit = 10;
+            String pageParam = request.getParameter("page");
+            String limitParam = request.getParameter("limit");
+            if (pageParam != null && !pageParam.isEmpty()) {
+                try { page = Integer.parseInt(pageParam); } catch (NumberFormatException ignored) {}
+            }
+            if (limitParam != null && !limitParam.isEmpty()) {
+                try { limit = Integer.parseInt(limitParam); } catch (NumberFormatException ignored) {}
+            }
+            request.setAttribute("currentPage", page);
+            request.setAttribute("limit", limit);
 
             // Always fetch overview to keep quick stats available
             Map<String, Object> overviewStats = reportDAO.getOverviewStats();
@@ -242,42 +348,55 @@ public class ReportServlet extends HttpServlet {
                 List<Map<String, Object>> topMoving = reportDAO.getTopMovingProducts();
                 request.setAttribute("topMoving", topMoving);
             } else if ("inbound".equals(reportType)) {
-                List<Map<String, Object>> inboundReport = reportDAO.getDetailedInboundReport(startDate, endDate);
-                request.setAttribute("inboundReport", inboundReport);
+                List<Map<String, Object>> fullInbound = reportDAO.getDetailedInboundReport(startDate, endDate);
                 
                 // Calculate summaries
                 int totalInboundQty = 0;
                 double totalInboundVal = 0.0;
-                for (Map<String, Object> r : inboundReport) {
+                for (Map<String, Object> r : fullInbound) {
                     totalInboundQty += (int) r.get("totalQty");
                     totalInboundVal += (double) r.get("totalVal");
                 }
                 request.setAttribute("totalInboundQty", totalInboundQty);
                 request.setAttribute("totalInboundVal", totalInboundVal);
-                request.setAttribute("totalInboundReceipts", inboundReport.size());
+                request.setAttribute("totalInboundReceipts", fullInbound.size());
+                
+                int totalItems = fullInbound.size();
+                int totalPages = (int) Math.ceil((double) totalItems / limit);
+                request.setAttribute("totalItems", totalItems);
+                request.setAttribute("totalPages", totalPages);
+                
+                List<Map<String, Object>> inboundReport = reportDAO.getDetailedInboundReport(startDate, endDate, page, limit);
+                request.setAttribute("inboundReport", inboundReport);
             } else if ("outbound".equals(reportType)) {
-                List<Map<String, Object>> outboundReport = reportDAO.getDetailedOutboundReport(startDate, endDate);
-                request.setAttribute("outboundReport", outboundReport);
+                List<Map<String, Object>> fullOutbound = reportDAO.getDetailedOutboundReport(startDate, endDate);
 
                 // Calculate summaries
                 int totalOutboundQty = 0;
                 double totalOutboundVal = 0.0;
-                for (Map<String, Object> r : outboundReport) {
+                for (Map<String, Object> r : fullOutbound) {
                     totalOutboundQty += (int) r.get("totalQty");
                     totalOutboundVal += (double) r.get("totalVal");
                 }
                 request.setAttribute("totalOutboundQty", totalOutboundQty);
                 request.setAttribute("totalOutboundVal", totalOutboundVal);
-                request.setAttribute("totalOutboundShipments", outboundReport.size());
+                request.setAttribute("totalOutboundShipments", fullOutbound.size());
+
+                int totalItems = fullOutbound.size();
+                int totalPages = (int) Math.ceil((double) totalItems / limit);
+                request.setAttribute("totalItems", totalItems);
+                request.setAttribute("totalPages", totalPages);
+
+                List<Map<String, Object>> outboundReport = reportDAO.getDetailedOutboundReport(startDate, endDate, page, limit);
+                request.setAttribute("outboundReport", outboundReport);
             } else if ("inventory".equals(reportType)) {
-                List<Map<String, Object>> inventoryReport = reportDAO.getDetailedInventoryReport();
-                request.setAttribute("inventoryReport", inventoryReport);
+                List<Map<String, Object>> fullInventory = reportDAO.getDetailedInventoryReport();
 
                 // Calculate summaries
                 int totalInvQty = 0;
                 double totalInvVal = 0.0;
                 int totalLowStock = 0;
-                for (Map<String, Object> r : inventoryReport) {
+                for (Map<String, Object> r : fullInventory) {
                     int qty = (int) r.get("quantityInStock");
                     int min = (int) r.get("minStockLevel");
                     double price = (double) r.get("price");
@@ -289,8 +408,74 @@ public class ReportServlet extends HttpServlet {
                 }
                 request.setAttribute("totalInvQty", totalInvQty);
                 request.setAttribute("totalInvVal", totalInvVal);
-                request.setAttribute("totalInvProductsCount", inventoryReport.size());
+                request.setAttribute("totalInvProductsCount", fullInventory.size());
                 request.setAttribute("totalInvLowStock", totalLowStock);
+
+                int totalItems = fullInventory.size();
+                int totalPages = (int) Math.ceil((double) totalItems / limit);
+                request.setAttribute("totalItems", totalItems);
+                request.setAttribute("totalPages", totalPages);
+
+                List<Map<String, Object>> inventoryReport = reportDAO.getDetailedInventoryReport(page, limit);
+                request.setAttribute("inventoryReport", inventoryReport);
+            } else if ("nxt".equals(reportType)) {
+                String finalStartDate = startDate;
+                String finalEndDate = endDate;
+                if (finalStartDate == null || finalStartDate.trim().isEmpty()) {
+                    java.time.LocalDate now = java.time.LocalDate.now();
+                    finalStartDate = now.withDayOfMonth(1).toString();
+                }
+                if (finalEndDate == null || finalEndDate.trim().isEmpty()) {
+                    finalEndDate = java.time.LocalDate.now().toString();
+                }
+                
+                String sku = request.getParameter("sku");
+                String brandIdStr = request.getParameter("brandId");
+                Long brandId = null;
+                if (brandIdStr != null && !brandIdStr.isEmpty()) {
+                    try { brandId = Long.parseLong(brandIdStr); } catch (NumberFormatException ignored) {}
+                }
+                String productLineIdStr = request.getParameter("productLineId");
+                Long productLineId = null;
+                if (productLineIdStr != null && !productLineIdStr.isEmpty()) {
+                    try { productLineId = Long.parseLong(productLineIdStr); } catch (NumberFormatException ignored) {}
+                }
+                
+                List<Map<String, Object>> fullNXT = reportDAO.getNXTReport(finalStartDate, finalEndDate, sku, brandId, productLineId);
+                
+                // Calculate summaries
+                int totalBeg = 0;
+                int totalIn = 0;
+                int totalOut = 0;
+                int totalEnd = 0;
+                double totalValueEnd = 0.0;
+                for (Map<String, Object> r : fullNXT) {
+                    totalBeg += (int) r.get("beginningQty");
+                    totalIn += (int) r.get("inboundQty");
+                    totalOut += (int) r.get("outboundQty");
+                    totalEnd += (int) r.get("endingQty");
+                    totalValueEnd += ((int) r.get("endingQty") * (double) r.get("price"));
+                }
+                request.setAttribute("totalBeg", totalBeg);
+                request.setAttribute("totalIn", totalIn);
+                request.setAttribute("totalOut", totalOut);
+                request.setAttribute("totalEnd", totalEnd);
+                request.setAttribute("totalValueEnd", totalValueEnd);
+                
+                int totalItems = fullNXT.size();
+                int totalPages = (int) Math.ceil((double) totalItems / limit);
+                request.setAttribute("totalItems", totalItems);
+                request.setAttribute("totalPages", totalPages);
+                
+                List<Map<String, Object>> nxtReport = reportDAO.getNXTReport(finalStartDate, finalEndDate, sku, brandId, productLineId, page, limit);
+                request.setAttribute("nxtReport", nxtReport);
+                
+                request.setAttribute("brands", brandDAO.getAll());
+                request.setAttribute("productLines", productLineDAO.getAll());
+                
+                // Override startDate/endDate with defaults if they were not set originally
+                request.setAttribute("startDate", finalStartDate);
+                request.setAttribute("endDate", finalEndDate);
             }
 
             request.getRequestDispatcher("/jsp/report/dashboard.jsp").forward(request, response);
