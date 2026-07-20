@@ -16,7 +16,7 @@ public class AuthFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-        throws IOException, ServletException {
+            throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse resp = (HttpServletResponse) response;
         String path = req.getRequestURI().substring(req.getContextPath().length());
@@ -41,11 +41,11 @@ public class AuthFilter implements Filter {
                 resp.sendRedirect(req.getContextPath() + "/login");
                 return;
             }
-            
+
             // Cập nhật session user để luôn có danh sách roles/permissions mới nhất
             req.getSession().setAttribute(util.SessionKeys.CURRENT_USER, freshUser);
             user = freshUser;
-            
+
         } catch (java.sql.SQLException ex) {
             req.getServletContext().log("Database verification error in AuthFilter: " + ex.getMessage(), ex);
         }
@@ -81,7 +81,16 @@ public class AuthFilter implements Filter {
             }
 
             if (!hasAccess) {
-                resp.sendRedirect(req.getContextPath() + "/home");
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+
+                req.setAttribute(
+                        "errorMessage",
+                        "Bạn không có quyền truy cập chức năng này."
+                );
+
+                req.getRequestDispatcher("/jsp/403.jsp")
+                        .forward(req, resp);
+
                 return;
             }
         }
@@ -94,14 +103,14 @@ public class AuthFilter implements Filter {
             return true;
         }
         return path.equals("/login")
-            || path.equals("/register")
-            || path.equals("/forgot-password")
-            || path.equals("/reset-password")
-            || path.startsWith("/css/")
-            || path.endsWith(".css")
-            || path.endsWith(".js")
-            || path.endsWith(".png")
-            || path.endsWith(".jpg")
-            || path.endsWith(".svg");
+                || path.equals("/register")
+                || path.equals("/forgot-password")
+                || path.equals("/reset-password")
+                || path.startsWith("/css/")
+                || path.endsWith(".css")
+                || path.endsWith(".js")
+                || path.endsWith(".png")
+                || path.endsWith(".jpg")
+                || path.endsWith(".svg");
     }
 }
