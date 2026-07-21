@@ -183,15 +183,14 @@ public class ReportServlet extends HttpServlet {
                     }
 
                     out.println("<table>");
-                    out.println("  <tr><td colspan='8' class='title'>BÁO CÁO CHI TIẾT TỒN KHO THỰC TẾ</td></tr>");
-                    out.println("  <tr><td colspan='8'>Ngày xuất báo cáo: " + dateFmt.format(new java.util.Date()) + "</td></tr>");
-                    out.println("  <tr><td colspan='8'></td></tr>");
+                    out.println("  <tr><td colspan='7' class='title'>BÁO CÁO CHI TIẾT TỒN KHO THỰC TẾ</td></tr>");
+                    out.println("  <tr><td colspan='7'>Ngày xuất báo cáo: " + dateFmt.format(new java.util.Date()) + "</td></tr>");
+                    out.println("  <tr><td colspan='7'></td></tr>");
                     
                     out.println("  <tr>");
-                    out.println("    <th>Mã vạch</th>");
+                    out.println("    <th>Tên sản phẩm</th>");
                     out.println("    <th>Mã lô</th>");
                     out.println("    <th>SKU</th>");
-                    out.println("    <th>Tên sản phẩm</th>");
                     out.println("    <th>Đơn giá</th>");
                     out.println("    <th>Lượng tồn kho</th>");
                     out.println("    <th>Định mức tối thiểu</th>");
@@ -204,10 +203,9 @@ public class ReportServlet extends HttpServlet {
                         boolean isLow = (min > 0 && qty <= min);
 
                         out.println("  <tr>");
-                        out.println("    <td>" + r.get("barcode") + "</td>");
+                        out.println("    <td>" + r.get("productName") + "</td>");
                         out.println("    <td>" + r.get("batchCode") + "</td>");
                         out.println("    <td>" + r.get("sku") + "</td>");
-                        out.println("    <td>" + r.get("productName") + "</td>");
                         out.println("    <td>" + curFmt.format(r.get("price")) + "</td>");
                         out.println("    <td" + (isLow ? " style='color: red; font-weight: bold;'" : "") + ">" + qty + "</td>");
                         out.println("    <td>" + min + "</td>");
@@ -216,7 +214,7 @@ public class ReportServlet extends HttpServlet {
                     }
 
                     out.println("  <tr class='bg-summary bold'>");
-                    out.println("    <td colspan='5'>TỔNG CỘNG / TỔNG HỢP</td>");
+                    out.println("    <td colspan='4'>TỔNG CỘNG / TỔNG HỢP</td>");
                     out.println("    <td>" + totalQty + "</td>");
                     out.println("    <td>Dưới định mức: " + lowStockCount + "</td>");
                     out.println("    <td>Giá trị: " + curFmt.format(totalVal) + "</td>");

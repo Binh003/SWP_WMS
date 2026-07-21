@@ -325,18 +325,19 @@ public class ReportDAO {
 
     public List<Map<String, Object>> getDetailedInventoryReport() throws SQLException {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT i.barcode, i.batch_code, p.sku, p.name AS product_name, " +
-                     "       i.quantity_in_stock, i.min_stock_level, p.price " +
+        String sql = "SELECT i.batch_code, p.sku, p.name AS product_name, " +
+                     "       SUM(i.quantity_in_stock) AS quantity_in_stock, " +
+                     "       MAX(i.min_stock_level) AS min_stock_level, p.price " +
                      "FROM inventories i " +
                      "JOIN products p ON i.product_id = p.id " +
                      "WHERE i.quantity_in_stock > 0 " +
-                     "ORDER BY p.name ASC, i.batch_code ASC, i.barcode ASC";
+                     "GROUP BY i.product_id, i.batch_code, p.sku, p.name, p.price " +
+                     "ORDER BY p.name ASC, i.batch_code ASC";
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Map<String, Object> map = new HashMap<>();
-                map.put("barcode", rs.getString("barcode"));
                 map.put("batchCode", rs.getString("batch_code"));
                 map.put("sku", rs.getString("sku"));
                 map.put("productName", rs.getString("product_name"));
@@ -619,12 +620,14 @@ public class ReportDAO {
 
     public List<Map<String, Object>> getDetailedInventoryReport(int page, int limit) throws SQLException {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT i.barcode, i.batch_code, p.sku, p.name AS product_name, " +
-                     "       i.quantity_in_stock, i.min_stock_level, p.price " +
+        String sql = "SELECT i.batch_code, p.sku, p.name AS product_name, " +
+                     "       SUM(i.quantity_in_stock) AS quantity_in_stock, " +
+                     "       MAX(i.min_stock_level) AS min_stock_level, p.price " +
                      "FROM inventories i " +
                      "JOIN products p ON i.product_id = p.id " +
                      "WHERE i.quantity_in_stock > 0 " +
-                     "ORDER BY p.name ASC, i.batch_code ASC, i.barcode ASC " +
+                     "GROUP BY i.product_id, i.batch_code, p.sku, p.name, p.price " +
+                     "ORDER BY p.name ASC, i.batch_code ASC " +
                      "LIMIT ? OFFSET ?";
         int offset = (page - 1) * limit;
         try (Connection conn = DBConfig.getConnection();
@@ -634,7 +637,6 @@ public class ReportDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> map = new HashMap<>();
-                    map.put("barcode", rs.getString("barcode"));
                     map.put("batchCode", rs.getString("batch_code"));
                     map.put("sku", rs.getString("sku"));
                     map.put("productName", rs.getString("product_name"));
@@ -649,7 +651,7 @@ public class ReportDAO {
     }
 
     public int countDetailedInventoryReport() throws SQLException {
-        String sql = "SELECT COUNT(*) FROM inventories i WHERE i.quantity_in_stock > 0";
+        String sql = "SELECT COUNT(*) FROM (SELECT 1 FROM inventories i WHERE i.quantity_in_stock > 0 GROUP BY i.product_id, i.batch_code) AS sub";
         try (Connection conn = DBConfig.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {

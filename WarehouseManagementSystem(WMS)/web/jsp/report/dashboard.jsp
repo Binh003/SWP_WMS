@@ -868,10 +868,9 @@
           <table class="report-table">
             <thead>
               <tr>
-                <th>Mã vạch (Barcode)</th>
+                <th>Tên sản phẩm</th>
                 <th>Mã lô (Batch)</th>
                 <th>SKU</th>
-                <th>Tên sản phẩm</th>
                 <th style="text-align: right;">Đơn giá</th>
                 <th style="text-align: right;">Lượng tồn kho</th>
                 <th style="text-align: right;">Định mức tối thiểu</th>
@@ -884,10 +883,9 @@
                   <c:forEach var="item" items="${inventoryReport}">
                     <c:set var="isLow" value="${item.minStockLevel > 0 && item.quantityInStock <= item.minStockLevel}"/>
                     <tr>
-                      <td><code><c:out value="${item.barcode}"/></code></td>
+                      <td><strong><c:out value="${item.productName}"/></strong></td>
                       <td><code><c:out value="${item.batchCode}"/></code></td>
                       <td><c:out value="${item.sku}"/></td>
-                      <td><strong><c:out value="${item.productName}"/></strong></td>
                       <td style="text-align: right; font-weight: 500;"><fmt:formatNumber value="${item.price}" type="currency" currencyCode="VND"/></td>
                       <td style="text-align: right; font-weight: 700; color: ${isLow ? '#ef4444' : '#1e293b'};">
                         <fmt:formatNumber value="${item.quantityInStock}" pattern="#,##0"/>
@@ -908,7 +906,7 @@
                 </c:when>
                 <c:otherwise>
                   <tr>
-                    <td colspan="8" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy thông tin tồn kho.</td>
+                    <td colspan="7" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy thông tin tồn kho.</td>
                   </tr>
                 </c:otherwise>
               </c:choose>
