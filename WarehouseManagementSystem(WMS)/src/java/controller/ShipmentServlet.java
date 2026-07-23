@@ -41,6 +41,7 @@ public class ShipmentServlet extends HttpServlet {
                 case "create" -> showCreateForm(request, response);
                 case "view" -> viewShipment(request, response);
                 case "delete" -> deleteDraft(request, response);
+                case "deleteShippingImage" -> deleteShippingImage(request, response);
                 default -> listShipments(request, response);
             }
         } catch (SQLException ex) {
@@ -167,6 +168,10 @@ public class ShipmentServlet extends HttpServlet {
                 createShipment(request, response);
             } else if ("updateStatus".equals(action)) {
                 updateShipmentStatus(request, response);
+            } else if ("updateShippingImages".equals(action)) {
+                updateShippingImages(request, response);
+            } else if ("deleteShippingImage".equals(action)) {
+                deleteShippingImage(request, response);
             } else {
                 WebUtil.redirect(request, response, "/manage/shipments");
             }
@@ -247,8 +252,18 @@ public class ShipmentServlet extends HttpServlet {
         long userId = currentUser != null ? currentUser.getId() : 1L;
         
         if ("COMPLETED".equals(status)) {
-            // Upload shipping images and delivery note image when completing shipment (from PICKING to COMPLETED)
-            String shippingImages = handleMultipleFilesUpload(request, "shippingImagesFiles");
+            Shipment shipment = shipmentDAO.getById(id);
+            String existingImages = (shipment != null) ? shipment.getShippingImages() : null;
+            String newUploadedImages = handleMultipleFilesUpload(request, "shippingImagesFiles");
+            
+            String shippingImages = existingImages;
+            if (newUploadedImages != null && !newUploadedImages.trim().isEmpty()) {
+                if (existingImages != null && !existingImages.trim().isEmpty()) {
+                    shippingImages = existingImages + "," + newUploadedImages;
+                } else {
+                    shippingImages = newUploadedImages;
+                }
+            }
             String deliveryNoteImage = handleFileUpload(request, "deliveryNoteImageFile");
             
             try {
@@ -271,6 +286,39 @@ public class ShipmentServlet extends HttpServlet {
             }
         }
         
+        WebUtil.redirect(request, response, "/manage/shipments?action=view&id=" + id);
+    }
+
+    private void updateShippingImages(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, IOException, ServletException {
+        long id = Long.parseLong(WebUtil.param(request, "id"));
+        String imageUrls = handleMultipleFilesUpload(request, "shippingImagesFiles");
+        if (imageUrls != null && !imageUrls.trim().isEmpty()) {
+            Shipment shipment = shipmentDAO.getById(id);
+            if (shipment != null && shipment.getShippingImages() != null && !shipment.getShippingImages().trim().isEmpty()) {
+                imageUrls = shipment.getShippingImages() + "," + imageUrls;
+            }
+            shipmentDAO.updateShippingImages(id, imageUrls);
+            WebUtil.setFlashSuccess(request, "Đã cập nhật hình ảnh sản phẩm xuất kho thành công");
+        } else {
+            WebUtil.setFlashError(request, "Lỗi: Không thể tải ảnh lên hoặc số lượng ảnh trống");
+        }
+        WebUtil.redirect(request, response, "/manage/shipments?action=view&id=" + id);
+    }
+
+    private void deleteShippingImage(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, IOException, ServletException {
+        long id = Long.parseLong(WebUtil.param(request, "id"));
+        String imageUrl = WebUtil.param(request, "imageUrl");
+        
+        Shipment shipment = shipmentDAO.getById(id);
+        if (shipment != null && imageUrl != null) {
+            List<String> list = shipment.getShippingImagesList();
+            list.remove(imageUrl.trim());
+            String newImages = String.join(",", list);
+            shipmentDAO.updateShippingImages(id, newImages.trim().isEmpty() ? null : newImages);
+            WebUtil.setFlashSuccess(request, "Đã xóa ảnh sản phẩm xuất kho thành công");
+        }
         WebUtil.redirect(request, response, "/manage/shipments?action=view&id=" + id);
     }
 

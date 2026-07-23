@@ -602,4 +602,14 @@ public class ShipmentDAO {
             }
         }
     }
+
+    public void updateShippingImages(long id, String shippingImages) throws SQLException {
+        String sql = "UPDATE shipments SET shipping_images = ? WHERE id = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, shippingImages);
+            ps.setLong(2, id);
+            ps.executeUpdate();
+        }
+    }
 }

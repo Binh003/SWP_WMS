@@ -288,7 +288,7 @@
       <!-- Evidence Images (Inside Document) -->
       <c:if test="${not empty receipt.receivingImages}">
         <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0; text-transform: uppercase;">Ảnh hàng hóa nhận kho làm bằng chứng</h3>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 30px;" class="no-print">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 30px;">
           <c:forEach var="img" items="${receipt.receivingImagesList}">
             <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px; background: #ffffff; width: 120px; height: 120px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden;" onclick="openLightbox('${pageContext.request.contextPath}${img}')">
               <img src="${pageContext.request.contextPath}${img}" alt="Ảnh bằng chứng" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;">
@@ -358,7 +358,14 @@
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--card-border); padding-bottom: 12px; margin-bottom: 4px; flex-wrap: wrap; gap: 12px;">
       <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-        Hình ảnh chứng từ & Bằng chứng
+        <c:choose>
+          <c:when test="${receipt.status == 'DRAFT' || receipt.status == 'PENDING_APPROVAL' || receipt.status == 'APPROVED'}">
+            Hình ảnh chứng từ
+          </c:when>
+          <c:otherwise>
+            Hình ảnh chứng từ & Bằng chứng
+          </c:otherwise>
+        </c:choose>
       </h3>
       
       <!-- Right-aligned action buttons -->
@@ -502,56 +509,61 @@
         </c:if>
       </div>
 
-      <!-- Card 2: Ảnh hàng hóa đã nhận -->
-      <div style="background: #ffffff; border: 1px solid var(--card-border); padding: 16px; border-radius: 10px; display: flex; flex-direction: column; gap: 12px;">
-        <div style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Ảnh hàng hóa đã nhận (Bằng chứng)</div>
-        <c:choose>
-          <c:when test="${not empty receipt.receivingImages}">
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1.5px solid var(--card-border); height: 160px; overflow-y: auto;">
-              <c:forEach var="img" items="${receipt.receivingImagesList}">
-                <div style="position: relative; overflow: hidden; border-radius: 6px; border: 1px solid var(--card-border); padding: 2px; background: #ffffff; display: flex; align-items: center; justify-content: center; height: 65px;">
-                  <a href="javascript:void(0)" onclick="openLightbox('${pageContext.request.contextPath}${img}')" style="display: block; width: 100%; height: 100%; text-align: center;">
-                    <img src="${pageContext.request.contextPath}${img}" alt="Ảnh nhận hàng" style="height: 100%; max-width: 100%; object-fit: contain; border-radius: 4px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1.0)'">
-                  </a>
-                </div>
-              </c:forEach>
-            </div>
-          </c:when>
-          <c:otherwise>
-            <c:choose>
-              <c:when test="${receipt.status == 'RECEIVING'}">
-                <!-- Mandatorily upload receiving images in RECEIVING state -->
-                <div id="receivingUploadSection" style="background: rgba(139, 92, 246, 0.03); border: 1.5px dashed #8b5cf6; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px;">
-                  <label style="font-size: 12px; font-weight: 700; color: #8b5cf6; display: block; margin: 0;">
-                    Ảnh hàng hóa nhận kho làm bằng chứng (Bắt buộc tối thiểu 1 ảnh, tối đa 4 ảnh)
-                  </label>
-                  <input type="file" name="receivingImagesFiles" id="receivingImagesInput" form="statusForm" accept="image/*" multiple style="font-size: 12px; width: 100%;">
-                  <div style="font-size: 11px; color: var(--text-secondary);">Giữ Ctrl/Cmd để chọn nhiều ảnh (Tối đa 4 ảnh).</div>
-                  <div id="imagePreviewContainer" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;"></div>
-                </div>
-              </c:when>
-              <c:otherwise>
-                <div style="height: 160px; display: flex; align-items: center; justify-content: center; border: 1.5px dashed var(--card-border); border-radius: 8px; text-align: center; color: var(--text-secondary); font-size: 13px; background: #f8fafc;">
-                  Chưa có ảnh nhận hàng (bằng chứng)
-                </div>
-              </c:otherwise>
-            </c:choose>
-          </c:otherwise>
-        </c:choose>
+      <!-- Card 2: Ảnh hàng hóa đã nhận (Bằng chứng) -->
+      <c:if test="${receipt.status == 'RECEIVING' || receipt.status == 'RECEIVED' || receipt.status == 'COMPLETED' || not empty receipt.receivingImages}">
+        <div style="background: #ffffff; border: 1px solid var(--card-border); padding: 16px; border-radius: 10px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Ảnh hàng hóa đã nhận (Bằng chứng)</div>
+          <c:choose>
+            <c:when test="${not empty receipt.receivingImages}">
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1.5px solid var(--card-border); max-height: 180px; overflow-y: auto;">
+                <c:forEach var="img" items="${receipt.receivingImagesList}">
+                  <div style="position: relative; border-radius: 6px; border: 1px solid var(--card-border); padding: 2px; background: #ffffff; display: flex; align-items: center; justify-content: center; height: 75px;">
+                    <a href="javascript:void(0)" onclick="openLightbox('${pageContext.request.contextPath}${img}')" style="display: block; width: 100%; height: 100%; text-align: center;">
+                      <img src="${pageContext.request.contextPath}${img}" alt="Ảnh nhận hàng" style="height: 100%; max-width: 100%; object-fit: contain; border-radius: 4px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1.0)'">
+                    </a>
+                    <c:if test="${receipt.status == 'RECEIVING' || receipt.status == 'RECEIVED'}">
+                      <a href="${pageContext.request.contextPath}/manage/receipts?action=deleteReceivingImage&id=${receipt.id}&imageUrl=${img}"
+                         onclick="return confirm('Bạn có chắc chắn muốn xóa ảnh bằng chứng này không?');"
+                         title="Xóa ảnh bằng chứng này"
+                         style="position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: #ef4444; color: #ffffff; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; font-weight: bold; line-height: 1; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.25);"
+                         onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                        &times;
+                      </a>
+                    </c:if>
+                  </div>
+                </c:forEach>
+              </div>
+            </c:when>
+            <c:otherwise>
+              <div style="height: 120px; display: flex; align-items: center; justify-content: center; border: 1.5px dashed var(--card-border); border-radius: 8px; text-align: center; color: var(--text-secondary); font-size: 13px; background: #f8fafc;">
+                Chưa có ảnh nhận hàng (bằng chứng)
+              </div>
+            </c:otherwise>
+          </c:choose>
 
-        <c:if test="${receipt.status == 'RECEIVED'}">
-          <form action="${pageContext.request.contextPath}/manage/receipts" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 8px;" id="updateReceivingImagesForm">
-            <input type="hidden" name="action" value="updateReceivingImages"/>
-            <input type="hidden" name="id" value="${receipt.id}"/>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <input type="file" name="receivingImagesFiles" id="updateReceivingImagesInput" accept="image/*" multiple required style="font-size: 12px; width: 100%;">
-              <button type="submit" class="premium-btn-secondary" style="height: 32px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; width: 100%; border-radius: 6px; background: rgba(139, 92, 246, 0.05); border: 1.5px solid #8b5cf6; color: #8b5cf6; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#8b5cf6'; this.style.color='#fff';" onmouseout="this.style.background='rgba(139, 92, 246, 0.05)'; this.style.color='#8b5cf6';">
-                Cập nhật ảnh nhận hàng
-              </button>
-            </div>
-          </form>
-        </c:if>
-      </div>
+          <c:if test="${receipt.status == 'RECEIVING' || receipt.status == 'RECEIVED'}">
+            <form action="${pageContext.request.contextPath}/manage/receipts" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 8px;" id="updateReceivingImagesForm">
+              <input type="hidden" name="action" value="updateReceivingImages"/>
+              <input type="hidden" name="id" value="${receipt.id}"/>
+              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+                  <c:choose>
+                    <c:when test="${not empty receipt.receivingImages}">Tải thêm / Bổ sung ảnh bằng chứng:</c:when>
+                    <c:otherwise>Tải lên ảnh nhận hàng làm bằng chứng:</c:otherwise>
+                  </c:choose>
+                </label>
+                <input type="file" name="receivingImagesFiles" id="updateReceivingImagesInput" accept="image/*" multiple required style="font-size: 12px; width: 100%;">
+                <button type="submit" class="premium-btn-secondary" style="height: 32px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; width: 100%; border-radius: 6px; background: rgba(139, 92, 246, 0.05); border: 1.5px solid #8b5cf6; color: #8b5cf6; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#8b5cf6'; this.style.color='#fff';" onmouseout="this.style.background='rgba(139, 92, 246, 0.05)'; this.style.color='#8b5cf6';">
+                  <c:choose>
+                    <c:when test="${not empty receipt.receivingImages}">+ Tải thêm ảnh bằng chứng</c:when>
+                    <c:otherwise>Tải lên ảnh nhận hàng</c:otherwise>
+                  </c:choose>
+                </button>
+              </div>
+            </form>
+          </c:if>
+        </div>
+      </c:if>
     </div>
   </div>
   </div>
@@ -815,10 +827,11 @@ document.addEventListener("DOMContentLoaded", function() {
     if (statusForm) {
         statusForm.addEventListener("submit", function(e) {
             if (nextStatus.value === "RECEIVED") {
-                if (!fileInput || fileInput.files.length === 0) {
+                const hasExistingImages = ${not empty receipt.receivingImages};
+                if (!hasExistingImages && (!fileInput || fileInput.files.length === 0)) {
                     e.preventDefault();
                     alert("Vui lòng chụp hoặc tải lên ít nhất 1 ảnh hàng hóa đã nhận để làm bằng chứng.");
-                } else if (fileInput.files.length > 4) {
+                } else if (fileInput && fileInput.files.length > 4) {
                     e.preventDefault();
                     alert("Bạn chỉ được phép tải lên tối đa 4 ảnh hàng hóa.");
                 }

@@ -299,22 +299,14 @@
       </table>
 
       <!-- Evidence Images (Inside Document) -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px;">
-        <c:if test="${not empty shipment.deliveryNoteImage}">
-          <div>
-            <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 8px 0; text-transform: uppercase;">Biên bản bàn giao ký nhận</h3>
-            <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px; background: #ffffff; height: 160px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; max-width: 100%;" onclick="openLightbox('${pageContext.request.contextPath}${shipment.deliveryNoteImage}')">
-              <img src="${pageContext.request.contextPath}${shipment.deliveryNoteImage}" alt="Biên bản giao hàng" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;">
-            </div>
-          </div>
-        </c:if>
+      <div style="margin-bottom: 30px;">
         <c:if test="${not empty shipment.shippingImages}">
           <div>
-            <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 8px 0; text-transform: uppercase;">Ảnh bốc xếp hàng làm bằng chứng</h3>
+            <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 8px 0; text-transform: uppercase;">Hình ảnh sản phẩm cần xuất kho</h3>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
               <c:forEach var="img" items="${shipment.shippingImagesList}">
                 <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px; background: #ffffff; width: 75px; height: 75px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden;" onclick="openLightbox('${pageContext.request.contextPath}${img}')">
-                  <img src="${pageContext.request.contextPath}${img}" alt="Ảnh xếp xe" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;">
+                  <img src="${pageContext.request.contextPath}${img}" alt="Ảnh sản phẩm xuất kho" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;">
                 </div>
               </c:forEach>
             </div>
@@ -342,8 +334,6 @@
         </div>
       </div>
 
-
-
     </div>
   </c:if>
   
@@ -357,7 +347,7 @@
         <c:choose>
           <c:when test="${shipment.status == 'PICKING'}">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-            Bằng chứng & Ảnh giao nhận
+            Hình ảnh sản phẩm cần xuất kho
           </c:when>
           <c:otherwise>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6v6l4 2"></path></svg>
@@ -369,53 +359,59 @@
 
     <c:if test="${shipment.status == 'PICKING'}">
       <!-- Images Grid -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-        <!-- Card 1: Ảnh phiếu giao hàng (Delivery Note) -->
+      <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+        <!-- Card: Hình ảnh sản phẩm cần xuất kho (Shipping Images) -->
         <div style="background: #ffffff; border: 1px solid var(--card-border); padding: 16px; border-radius: 10px; display: flex; flex-direction: column; gap: 12px;">
-          <div style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Biên bản/Phiếu giao hàng có chữ ký</div>
-          <c:choose>
-            <c:when test="${not empty shipment.deliveryNoteImage}">
-              <div style="position: relative; overflow: hidden; border-radius: 8px; border: 1.5px solid var(--card-border); padding: 4px; background: #f8fafc; display: flex; align-items: center; justify-content: center; height: 160px;">
-                <a href="javascript:void(0)" onclick="openLightbox('${pageContext.request.contextPath}${shipment.deliveryNoteImage}')" style="display: block; width: 100%; height: 100%; text-align: center;">
-                  <img src="${pageContext.request.contextPath}${shipment.deliveryNoteImage}" alt="Phiếu giao hàng" style="height: 100%; max-width: 100%; object-fit: contain; border-radius: 6px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1.0)'">
-                </a>
-              </div>
-            </c:when>
-            <c:otherwise>
-              <div id="deliveryNoteUploadSection" style="background: rgba(4, 138, 191, 0.03); border: 1.5px dashed var(--primary-color); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px;">
-                <label style="font-size: 12px; font-weight: 700; color: var(--primary-color); display: block; margin: 0;">
-                  Tải lên phiếu giao hàng đã ký nhận (Tùy chọn)
-                </label>
-                <input type="file" name="deliveryNoteImageFile" id="deliveryNoteImageInput" form="statusForm" accept="image/*" style="font-size: 12px; width: 100%;">
-              </div>
-            </c:otherwise>
-          </c:choose>
-        </div>
-
-        <!-- Card 2: Ảnh xếp hàng lên xe (Shipping Images) -->
-        <div style="background: #ffffff; border: 1px solid var(--card-border); padding: 16px; border-radius: 10px; display: flex; flex-direction: column; gap: 12px;">
-          <div style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Ảnh xếp hàng/xác thực giao nhận</div>
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Hình ảnh sản phẩm cần xuất kho</div>
           <c:choose>
             <c:when test="${not empty shipment.shippingImages}">
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1.5px solid var(--card-border); height: 160px; overflow-y: auto;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1.5px solid var(--card-border); max-height: 180px; overflow-y: auto;">
                 <c:forEach var="img" items="${shipment.shippingImagesList}">
-                  <div style="position: relative; overflow: hidden; border-radius: 6px; border: 1px solid var(--card-border); padding: 2px; background: #ffffff; display: flex; align-items: center; justify-content: center; height: 65px;">
+                  <div style="position: relative; border-radius: 6px; border: 1px solid var(--card-border); padding: 2px; background: #ffffff; display: flex; align-items: center; justify-content: center; height: 75px;">
                     <a href="javascript:void(0)" onclick="openLightbox('${pageContext.request.contextPath}${img}')" style="display: block; width: 100%; height: 100%; text-align: center;">
-                      <img src="${pageContext.request.contextPath}${img}" alt="Ảnh xếp xe" style="height: 100%; max-width: 100%; object-fit: contain; border-radius: 4px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1.0)'">
+                      <img src="${pageContext.request.contextPath}${img}" alt="Ảnh sản phẩm xuất kho" style="height: 100%; max-width: 100%; object-fit: contain; border-radius: 4px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1.0)'">
                     </a>
+                    <c:if test="${shipment.status == 'PICKING'}">
+                      <a href="${pageContext.request.contextPath}/manage/shipments?action=deleteShippingImage&id=${shipment.id}&imageUrl=${img}"
+                         onclick="return confirm('Bạn có chắc chắn muốn xóa ảnh này không?');"
+                         title="Xóa ảnh này"
+                         style="position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: #ef4444; color: #ffffff; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; font-weight: bold; line-height: 1; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.25);"
+                         onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                        &times;
+                      </a>
+                    </c:if>
                   </div>
                 </c:forEach>
               </div>
             </c:when>
             <c:otherwise>
-              <div id="shippingImagesUploadSection" style="background: rgba(139, 92, 246, 0.03); border: 1.5px dashed #8b5cf6; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px;">
-                <label style="font-size: 12px; font-weight: 700; color: #8b5cf6; display: block; margin: 0;">
-                  Ảnh bốc hàng/xếp hàng lên xe (Tùy chọn, tối đa 4 ảnh)
-                </label>
-                <input type="file" name="shippingImagesFiles" id="shippingImagesInput" form="statusForm" accept="image/*" multiple style="font-size: 12px; width: 100%;">
+              <div style="height: 120px; display: flex; align-items: center; justify-content: center; border: 1.5px dashed var(--card-border); border-radius: 8px; text-align: center; color: var(--text-secondary); font-size: 13px; background: #f8fafc;">
+                Chưa có hình ảnh sản phẩm xuất kho
               </div>
             </c:otherwise>
           </c:choose>
+
+          <c:if test="${shipment.status == 'PICKING'}">
+            <form action="${pageContext.request.contextPath}/manage/shipments" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 8px;" id="updateShippingImagesForm">
+              <input type="hidden" name="action" value="updateShippingImages"/>
+              <input type="hidden" name="id" value="${shipment.id}"/>
+              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+                  <c:choose>
+                    <c:when test="${not empty shipment.shippingImages}">Tải thêm / Bổ sung hình ảnh sản phẩm xuất kho:</c:when>
+                    <c:otherwise>Tải lên hình ảnh sản phẩm xuất kho (Bắt buộc tối thiểu 1 ảnh):</c:otherwise>
+                  </c:choose>
+                </label>
+                <input type="file" name="shippingImagesFiles" id="shippingImagesInput" accept="image/*" multiple required style="font-size: 12px; width: 100%;">
+                <button type="submit" class="premium-btn-secondary" style="height: 32px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; width: 100%; border-radius: 6px; background: rgba(139, 92, 246, 0.05); border: 1.5px solid #8b5cf6; color: #8b5cf6; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#8b5cf6'; this.style.color='#fff';" onmouseout="this.style.background='rgba(139, 92, 246, 0.05)'; this.style.color='#8b5cf6';">
+                  <c:choose>
+                    <c:when test="${not empty shipment.shippingImages}">+ Tải thêm ảnh sản phẩm</c:when>
+                    <c:otherwise>Tải lên ảnh sản phẩm</c:otherwise>
+                  </c:choose>
+                </button>
+              </div>
+            </form>
+          </c:if>
         </div>
       </div>
     </c:if>
@@ -623,17 +619,10 @@ function showCustomAlert(msg) {
 function validateStatusChange() {
     const nextStatus = document.getElementById('nextStatus').value;
     if (nextStatus === 'COMPLETED') {
-        const hasDeliveryNote = ${not empty shipment.deliveryNoteImage};
-        const deliveryNoteInput = document.getElementById('deliveryNoteImageInput');
-        if (!hasDeliveryNote && (!deliveryNoteInput || !deliveryNoteInput.files || deliveryNoteInput.files.length === 0)) {
-            showCustomAlert("Vui lòng tải lên biên bản/phiếu giao hàng có chữ ký!");
-            return false;
-        }
-
         const hasShippingImages = ${not empty shipment.shippingImages};
         const shippingImagesInput = document.getElementById('shippingImagesInput');
         if (!hasShippingImages && (!shippingImagesInput || !shippingImagesInput.files || shippingImagesInput.files.length === 0)) {
-            showCustomAlert("Vui lòng tải lên ảnh xếp hàng/xác thực giao nhận!");
+            showCustomAlert("Vui lòng tải lên hình ảnh sản phẩm cần xuất kho!");
             return false;
         }
     }

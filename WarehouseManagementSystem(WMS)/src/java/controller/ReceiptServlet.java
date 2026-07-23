@@ -41,6 +41,7 @@ public class ReceiptServlet extends HttpServlet {
                 case "create" -> showCreateForm(request, response);
                 case "view" -> viewReceipt(request, response);
                 case "delete" -> deleteDraft(request, response);
+                case "deleteReceivingImage" -> deleteReceivingImage(request, response);
                 default -> listReceipts(request, response);
             }
         } catch (SQLException ex) {
@@ -180,6 +181,8 @@ public class ReceiptServlet extends HttpServlet {
                 updateInvoiceImage(request, response);
             } else if ("updateReceivingImages".equals(action)) {
                 updateReceivingImages(request, response);
+            } else if ("deleteReceivingImage".equals(action)) {
+                deleteReceivingImage(request, response);
             } else {
                 WebUtil.redirect(request, response, "/manage/receipts");
             }
@@ -212,28 +215,19 @@ public class ReceiptServlet extends HttpServlet {
         }
         r.setStatus(status);
 
-        // Get details (for simplicity, we assume single item submission from simple form, or arrays for multi-item)
         String[] productIds = request.getParameterValues("productId[]");
         String[] quantities = request.getParameterValues("quantity[]");
         String[] batchCodes = request.getParameterValues("batchCode[]");
         
         if (productIds == null || productIds.length == 0) {
-            // fallback to single if not array
-            String singleProductId = WebUtil.param(request, "productId");
-            String singleQty = WebUtil.param(request, "quantity");
-            String singleBatch = WebUtil.param(request, "batchCode");
-            if (singleProductId != null && !singleProductId.isEmpty() && singleQty != null && !singleQty.isEmpty()) {
-                ReceiptDetail rd = new ReceiptDetail();
-                rd.setProductId(Long.parseLong(singleProductId));
-                rd.setQuantity(Integer.parseInt(singleQty));
-                rd.setBatchCode(singleBatch != null ? singleBatch.trim() : "");
-                if (rd.getQuantity() > 0) {
-                    r.getDetails().add(rd);
-                }
-            }
-        } else {
-            for (int i = 0; i < productIds.length; i++) {
-                if (productIds[i] != null && !productIds[i].trim().isEmpty() && quantities[i] != null && !quantities[i].trim().isEmpty()) {
+            WebUtil.setFlashError(request, "Lỗi: Vui lòng chọn ít nhất 1 sản phẩm nhập kho!");
+            WebUtil.redirect(request, response, "/manage/receipts?action=create");
+            return;
+        }
+        
+        for (int i = 0; i < productIds.length; i++) {
+            if (productIds[i] != null && !productIds[i].trim().isEmpty()) {
+                if (quantities != null && i < quantities.length && quantities[i] != null) {
                     int qty = Integer.parseInt(quantities[i]);
                     if (qty > 0) {
                         ReceiptDetail rd = new ReceiptDetail();
@@ -272,14 +266,25 @@ public class ReceiptServlet extends HttpServlet {
         long userId = currentUser != null ? currentUser.getId() : 1L;
         
         if ("RECEIVED".equals(status)) {
-            String receivingImages = handleMultipleFilesUpload(request, "receivingImagesFiles");
+            Receipt receipt = receiptDAO.getById(id);
+            String existingImages = (receipt != null) ? receipt.getReceivingImages() : null;
+            String newUploadedImages = handleMultipleFilesUpload(request, "receivingImagesFiles");
+            
+            String receivingImages = existingImages;
+            if (newUploadedImages != null && !newUploadedImages.trim().isEmpty()) {
+                if (existingImages != null && !existingImages.trim().isEmpty()) {
+                    receivingImages = existingImages + "," + newUploadedImages;
+                } else {
+                    receivingImages = newUploadedImages;
+                }
+            }
+            
             if (receivingImages == null || receivingImages.trim().isEmpty()) {
                 WebUtil.setFlashError(request, "Lỗi: Bắt buộc phải chụp/tải lên ảnh hàng hóa đã nhận làm bằng chứng khi xác nhận nhận hàng!");
                 WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
                 return;
             }
             List<ReceiptDetail> updatedDetails = new ArrayList<>();
-            Receipt receipt = receiptDAO.getById(id);
             if (receipt != null) {
                 for (ReceiptDetail detail : receipt.getDetails()) {
                     String paramVal = request.getParameter("actualQuantity_" + detail.getId());
@@ -331,11 +336,31 @@ public class ReceiptServlet extends HttpServlet {
         throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         String imageUrls = handleMultipleFilesUpload(request, "receivingImagesFiles");
-        if (imageUrls != null) {
+        if (imageUrls != null && !imageUrls.trim().isEmpty()) {
+            Receipt receipt = receiptDAO.getById(id);
+            if (receipt != null && receipt.getReceivingImages() != null && !receipt.getReceivingImages().trim().isEmpty()) {
+                imageUrls = receipt.getReceivingImages() + "," + imageUrls;
+            }
             receiptDAO.updateReceivingImages(id, imageUrls);
             WebUtil.setFlashSuccess(request, "Đã cập nhật ảnh nhận hàng thành công");
         } else {
             WebUtil.setFlashError(request, "Lỗi: Không thể tải ảnh lên hoặc số lượng ảnh trống");
+        }
+        WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
+    }
+
+    private void deleteReceivingImage(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, IOException, ServletException {
+        long id = Long.parseLong(WebUtil.param(request, "id"));
+        String imageUrl = WebUtil.param(request, "imageUrl");
+        
+        Receipt receipt = receiptDAO.getById(id);
+        if (receipt != null && imageUrl != null) {
+            List<String> list = receipt.getReceivingImagesList();
+            list.remove(imageUrl.trim());
+            String newImages = String.join(",", list);
+            receiptDAO.updateReceivingImages(id, newImages.trim().isEmpty() ? null : newImages);
+            WebUtil.setFlashSuccess(request, "Đã xóa ảnh bằng chứng thành công");
         }
         WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
     }
