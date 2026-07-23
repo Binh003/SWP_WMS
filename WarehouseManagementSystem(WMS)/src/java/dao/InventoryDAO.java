@@ -34,26 +34,40 @@ public class InventoryDAO {
     }
 
     public Inventory getByProductId(long productId) throws SQLException {
-        String sql = "SELECT i.*, p.sku, p.name as product_name, p.unit, p.price, p.image_url, " +
-                     "pl.id as product_line_id, pl.name as product_line_name, " +
-                     "b.id as brand_id, b.name as brand_name " +
-                     "FROM inventories i " +
-                     "INNER JOIN products p ON i.product_id = p.id " +
-                     "INNER JOIN product_lines pl ON p.product_line_id = pl.id " +
-                     "INNER JOIN brands b ON pl.brand_id = b.id " +
-                     "WHERE i.product_id = ? " +
-                     "LIMIT 1";
-        try (Connection conn = DBConfig.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, productId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapInventory(rs);
-                }
+    String sql =
+        "SELECT " +
+        "MIN(i.id) AS id, " +
+        "i.product_id, " +
+        "MIN(i.batch_code) AS batch_code, " +
+        "MIN(i.barcode) AS barcode, " +
+        "SUM(i.quantity_in_stock) AS quantity_in_stock, " +
+        "MAX(i.min_stock_level) AS min_stock_level, " +
+        "MAX(i.last_updated) AS last_updated, " +
+        "p.sku, p.name AS product_name, p.unit, p.price, p.image_url, " +
+        "pl.id AS product_line_id, pl.name AS product_line_name, " +
+        "b.id AS brand_id, b.name AS brand_name " +
+        "FROM inventories i " +
+        "INNER JOIN products p ON i.product_id = p.id " +
+        "INNER JOIN product_lines pl ON p.product_line_id = pl.id " +
+        "INNER JOIN brands b ON pl.brand_id = b.id " +
+        "WHERE i.product_id = ? " +
+        "GROUP BY i.product_id, p.sku, p.name, p.unit, p.price, p.image_url, " +
+        "pl.id, pl.name, b.id, b.name";
+
+    try (Connection conn = DBConfig.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setLong(1, productId);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return mapInventory(rs);
             }
         }
-        return null;
     }
+
+    return null;
+}
 
     public Inventory getById(long id) throws SQLException {
         String sql = "SELECT i.*, p.sku, p.name as product_name, p.unit, p.price, p.image_url, " +

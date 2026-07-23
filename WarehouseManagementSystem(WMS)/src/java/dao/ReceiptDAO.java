@@ -224,17 +224,26 @@ public class ReceiptDAO {
                     psDetail.setLong(1, receipt.getId());
                     psDetail.setLong(2, detail.getProductId());
                     psDetail.setInt(3, detail.getQuantity());
-                    psDetail.setString(4, detail.getBatchCode());
-                    psDetail.setString(5, detail.getBarcode());
+                    String batchCode = normalizeNullableCode(detail.getBatchCode());
+                    String barcode = normalizeNullableCode(detail.getBarcode());
+
+                    if (batchCode == null) psDetail.setNull(4, Types.VARCHAR);
+                    else psDetail.setString(4, batchCode);
+
+                    if (barcode == null) psDetail.setNull(5, Types.VARCHAR);
+                    else psDetail.setString(5, barcode);
+
                     psDetail.addBatch();
                 }
                 psDetail.executeBatch();
                 
                 if ("COMPLETED".equals(receipt.getStatus())) {
                     for (ReceiptDetail detail : receipt.getDetails()) {
-                        int qty = detail.getQuantity();
-                        for (int k = 1; k <= qty; k++) {
-                            String itemBarcode = detail.getBarcode() + "-" + k;
+                        List<String> itemBarcodes = parseBarcodes(detail.getBarcode());
+                        if (itemBarcodes.size() != detail.getQuantity()) {
+                            throw new SQLException("Số Barcode không khớp số lượng của sản phẩm ID " + detail.getProductId());
+                        }
+                        for (String itemBarcode : itemBarcodes) {
                             long inventoryId = -1;
                             try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckInv)) {
                                 psCheck.setLong(1, detail.getProductId());
@@ -314,17 +323,47 @@ public class ReceiptDAO {
                 throw new SQLException("Receipt not found with id: " + id);
             }
             
-            // 1b. Update quantities in receipt_details if provided
+            // 1b. Save actual quantity, Batch Code and Barcode entered at RECEIVING.
             if (updatedDetails != null && !updatedDetails.isEmpty()) {
-                String sqlUpdateDetail = "UPDATE receipt_details SET quantity = ? WHERE id = ?";
+                String sqlUpdateDetail =
+                    "UPDATE receipt_details SET quantity = ?, batch_code = ?, barcode = ? " +
+                    "WHERE id = ? AND receipt_id = ?";
+
                 try (PreparedStatement psDetail = conn.prepareStatement(sqlUpdateDetail)) {
                     for (ReceiptDetail d : updatedDetails) {
+                        if (d.getQuantity() == null || d.getQuantity() < 0) {
+                            throw new SQLException("Số lượng thực nhận không hợp lệ cho chi tiết ID " + d.getId());
+                        }
+
+                        String batchCode = normalizeNullableCode(d.getBatchCode());
+                        String barcode = normalizeNullableCode(d.getBarcode());
+
+                        if ("RECEIVED".equals(newStatus)) {
+                            if (batchCode == null) {
+                                throw new SQLException("Batch Code không được để trống cho chi tiết ID " + d.getId());
+                            }
+                            if (barcode == null) {
+                                throw new SQLException("Barcode không được để trống cho chi tiết ID " + d.getId());
+                            }
+                        }
+
                         psDetail.setInt(1, d.getQuantity());
-                        psDetail.setLong(2, d.getId());
+                        if (batchCode == null) psDetail.setNull(2, Types.VARCHAR);
+                        else psDetail.setString(2, batchCode);
+
+                        if (barcode == null) psDetail.setNull(3, Types.VARCHAR);
+                        else psDetail.setString(3, barcode);
+
+                        psDetail.setLong(4, d.getId());
+                        psDetail.setLong(5, id);
                         psDetail.addBatch();
                     }
                     psDetail.executeBatch();
                 }
+            }
+
+            if ("RECEIVED".equals(newStatus)) {
+                validateReceivingDetails(conn, id);
             }
             
             // 2. Update status
@@ -361,15 +400,18 @@ public class ReceiptDAO {
             
             // 3. Update inventory if transitioning to COMPLETED from another status
             if ("COMPLETED".equals(newStatus) && !"COMPLETED".equals(currentStatus)) {
+                validateReceivingDetails(conn, id);
                 List<ReceiptDetail> details = getDetailsByReceiptId(conn, id);
                 String sqlCheckInv = "SELECT id, quantity_in_stock FROM inventories WHERE product_id = ? AND batch_code = ? AND barcode = ?";
                 String sqlInsertInv = "INSERT INTO inventories (product_id, batch_code, barcode, quantity_in_stock, min_stock_level, last_updated) VALUES (?, ?, ?, ?, 10, CURRENT_TIMESTAMP)";
                 String sqlUpdateInv = "UPDATE inventories SET quantity_in_stock = quantity_in_stock + ?, last_updated = CURRENT_TIMESTAMP WHERE id = ?";
                 
                 for (ReceiptDetail d : details) {
-                    int qty = d.getQuantity();
-                    for (int k = 1; k <= qty; k++) {
-                        String itemBarcode = d.getBarcode() + "-" + k;
+                    List<String> itemBarcodes = parseBarcodes(d.getBarcode());
+                    if (itemBarcodes.size() != d.getQuantity()) {
+                        throw new SQLException("Số Barcode không khớp số lượng của chi tiết ID " + d.getId());
+                    }
+                    for (String itemBarcode : itemBarcodes) {
                         long inventoryId = -1;
                         try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckInv)) {
                             psCheck.setLong(1, d.getProductId());
@@ -597,6 +639,56 @@ public class ReceiptDAO {
             ps.setLong(2, id);
             ps.executeUpdate();
         }
+    }
+
+
+    private String normalizeNullableCode(String value) {
+        if (value == null) return null;
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    private void validateReceivingDetails(Connection conn, long receiptId) throws SQLException {
+        String sql = "SELECT id, quantity, batch_code, barcode FROM receipt_details WHERE receipt_id = ?";
+        boolean hasDetail = false;
+        java.util.Set<String> receiptBarcodeSet = new java.util.HashSet<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, receiptId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    hasDetail = true;
+                    long detailId = rs.getLong("id");
+                    int quantity = rs.getInt("quantity");
+                    String batchCode = normalizeNullableCode(rs.getString("batch_code"));
+                    List<String> barcodes = parseBarcodes(rs.getString("barcode"));
+
+                    if (quantity <= 0) throw new SQLException("Số lượng thực nhận phải lớn hơn 0 cho chi tiết ID " + detailId);
+                    if (batchCode == null) throw new SQLException("Batch Code chưa được nhập cho chi tiết ID " + detailId);
+                    if (barcodes.size() != quantity) {
+                        throw new SQLException("Chi tiết ID " + detailId + " có số lượng " + quantity + " nhưng có " + barcodes.size() + " Barcode.");
+                    }
+
+                    java.util.Set<String> detailBarcodeSet = new java.util.HashSet<>();
+                    for (String barcode : barcodes) {
+                        String normalized = barcode.toUpperCase();
+                        if (!detailBarcodeSet.add(normalized)) throw new SQLException("Barcode " + barcode + " bị trùng trong chi tiết ID " + detailId);
+                        if (!receiptBarcodeSet.add(normalized)) throw new SQLException("Barcode " + barcode + " bị trùng trong phiếu nhập.");
+                    }
+                }
+            }
+        }
+        if (!hasDetail) throw new SQLException("Phiếu nhập không có sản phẩm để xác nhận.");
+    }
+
+    private List<String> parseBarcodes(String barcodeValue) {
+        List<String> barcodes = new ArrayList<>();
+        if (barcodeValue == null || barcodeValue.trim().isEmpty()) return barcodes;
+        for (String value : barcodeValue.split(",")) {
+            String barcode = normalizeNullableCode(value);
+            if (barcode != null) barcodes.add(barcode);
+        }
+        return barcodes;
     }
 
     public void deleteDraft(long id) throws SQLException {

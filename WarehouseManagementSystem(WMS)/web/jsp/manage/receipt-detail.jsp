@@ -241,49 +241,67 @@
       </div>
 
       <!-- Product List Table -->
-      <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0; text-transform: uppercase;">Chi tiết danh sách hàng thực nhận</h3>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px;">
-        <thead>
-          <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1; text-align: left;">
-            <th style="padding: 10px 12px; font-weight: 700; color: #475569;">#</th>
-            <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Mã sản phẩm</th>
-            <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Tên sản phẩm</th>
-            <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Số lô (Batch Code)</th>
-            <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Mã vạch (Barcode)</th>
-            <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right;">Đơn vị</th>
-            <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right; width: 150px;">Số lượng thực nhận</th>
-          </tr>
-        </thead>
-        <tbody>
-          <c:forEach var="detail" items="${receipt.details}" varStatus="status">
-            <tr style="border-bottom: 1px solid #e2e8f0;">
-              <td style="padding: 10px 12px; color: #64748b;">${status.index + 1}</td>
-              <td style="padding: 10px 12px; font-family: monospace; font-weight: 600; color: #0f172a;">${detail.product.sku}</td>
-              <td style="padding: 10px 12px; font-weight: 600; color: #334155;">${detail.product.name}</td>
-              <td style="padding: 10px 12px; font-family: monospace; color: #475569;">
-                <c:choose>
-                  <c:when test="${not empty detail.batchCode}">${detail.batchCode}</c:when>
-                  <c:otherwise><span style="color: #94a3b8; font-style: italic;">Chưa sinh</span></c:otherwise>
-                </c:choose>
-              </td>
-              <td style="padding: 10px 12px; font-family: monospace; color: #475569;">
-                <c:choose>
-                  <c:when test="${not empty detail.barcode}">
-                    <div style="max-height: 80px; overflow-y: auto; padding: 4px; border: 1px solid #e2e8f0; border-radius: 6px; background: #f8fafc; display: flex; flex-direction: column; gap: 4px; width: fit-content; min-width: 200px;">
-                      <c:forEach var="k" begin="1" end="${detail.quantity}">
-                        <span style="font-family: monospace; font-size: 11px; font-weight: 600; color: #475569;">${detail.barcode}-${k}</span>
-                      </c:forEach>
-                    </div>
-                  </c:when>
-                  <c:otherwise><span style="color: #94a3b8; font-style: italic;">Chưa sinh</span></c:otherwise>
-                </c:choose>
-              </td>
-              <td style="padding: 10px 12px; text-align: right; color: #64748b;">${detail.product.unit}</td>
-              <td style="padding: 10px 12px; text-align: right; font-weight: 800; color: #10b981; font-size: 14px;">+${detail.quantity}</td>
+      <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0; text-transform: uppercase;">
+        Chi tiết danh sách hàng thực nhận
+      </h3>
+
+      <div style="overflow-x: auto; margin-bottom: 30px;">
+        <table style="width: 100%; min-width: 1050px; border-collapse: collapse; font-size: 13px;">
+          <thead>
+            <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1; text-align: left;">
+              <th style="padding: 10px 12px; font-weight: 700; color: #475569;">#</th>
+              <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Mã sản phẩm</th>
+              <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Tên sản phẩm</th>
+              <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right;">Đơn vị</th>
+              <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right; width: 150px;">Số lượng thực nhận</th>
+              <th style="padding: 10px 12px; font-weight: 700; color: #475569; min-width: 190px;">Batch Code</th>
+              <th style="padding: 10px 12px; font-weight: 700; color: #475569; min-width: 280px;">Barcode từng sản phẩm</th>
             </tr>
-          </c:forEach>
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            <c:forEach var="detail" items="${receipt.details}" varStatus="status">
+              <tr style="border-bottom: 1px solid #e2e8f0; vertical-align: top;">
+                <td style="padding: 10px 12px; color: #64748b;">${status.index + 1}</td>
+                <td style="padding: 10px 12px; font-family: monospace; font-weight: 600; color: #0f172a;">${detail.product.sku}</td>
+                <td style="padding: 10px 12px; font-weight: 600; color: #334155;">${detail.product.name}</td>
+                <td style="padding: 10px 12px; text-align: right; color: #64748b;">${detail.product.unit}</td>
+                <td style="padding: 10px 12px; text-align: right; font-weight: 800; color: #10b981; font-size: 14px;">+${detail.quantity}</td>
+
+                <td style="padding: 10px 12px;">
+                  <c:choose>
+                    <c:when test="${not empty detail.batchCode}">
+                      <span style="display: inline-block; padding: 4px 7px; border-radius: 5px; background: #f5f3ff; color: #6d28d9; font-family: monospace; font-size: 12px; word-break: break-all;">
+                        ${detail.batchCode}
+                      </span>
+                    </c:when>
+                    <c:otherwise>
+                      <span style="color: #94a3b8; font-style: italic;">Chưa có</span>
+                    </c:otherwise>
+                  </c:choose>
+                </td>
+
+                <td style="padding: 10px 12px;">
+                  <c:choose>
+                    <c:when test="${not empty detail.barcode}">
+                      <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <c:forTokens var="itemBarcode" items="${detail.barcode}" delims=",">
+                          <span style="display: inline-block; width: fit-content; padding: 4px 7px; border-radius: 5px; background: #eff6ff; color: #1d4ed8; font-family: monospace; font-size: 12px; word-break: break-all;">
+                            ${itemBarcode}
+                          </span>
+                        </c:forTokens>
+                      </div>
+                    </c:when>
+                    <c:otherwise>
+                      <span style="color: #94a3b8; font-style: italic;">Chưa có</span>
+                    </c:otherwise>
+                  </c:choose>
+                </td>
+              </tr>
+            </c:forEach>
+          </tbody>
+        </table>
+      </div>
 
       <!-- Evidence Images (Inside Document) -->
       <c:if test="${not empty receipt.receivingImages}">
@@ -334,7 +352,7 @@
       <div style="margin-top: 30px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1.5px solid #cbd5e1; padding-top: 20px;" class="no-print">
         <c:if test="${receipt.status == 'RECEIVED' && (currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF'))}">
           <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='COMPLETED'" class="premium-btn-primary" style="height: 38px !important; padding: 0 16px; font-size: 13px; font-weight: 600; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: none; border-radius: 8px; color: white;">
-            Tạo phiếu nhập kho thành công
+            Hoàn Thành
           </button>
           <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="height: 38px !important; padding: 0 16px; font-size: 13px; font-weight: 600; color: #ef4444; border-color: #fecaca; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 8px; background: transparent;">
             Hủy phiếu
@@ -457,7 +475,7 @@
               <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
                 <div style="display: flex; gap: 8px;">
                   <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='COMPLETED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important;">
-                    Tạo phiếu nhập kho thành công
+                    Hoàn Thành
                   </button>
                   <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border-color: #fecaca; height: 36px !important; padding: 0 16px; font-size: 13px;">
                     Hủy phiếu
@@ -654,72 +672,81 @@
 
     <!-- Product list Section -->
     <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
       Danh sách sản phẩm nhập kho
     </h3>
-    
+
+    <c:set var="showTrackingCodes" value="${receipt.status == 'RECEIVING' || receipt.status == 'RECEIVED' || receipt.status == 'COMPLETED'}"/>
+    <c:set var="canEditReceiving" value="${receipt.status == 'RECEIVING' && (currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF'))}"/>
+
     <div style="overflow-x: auto;">
       <table style="width: 100%; border-collapse: collapse;">
         <thead>
           <tr>
-            <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">SKU</th>
-            <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Tên sản phẩm</th>
-            <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số lô (Batch Code)</th>
-            <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Mã vạch (Barcode)</th>
-            <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Đơn vị</th>
-            <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số lượng nhập</th>
+            <th style="text-align:left;padding:12px 16px;border-bottom:2px solid var(--card-border);font-size:13px;color:var(--text-secondary);">SKU</th>
+            <th style="text-align:left;padding:12px 16px;border-bottom:2px solid var(--card-border);font-size:13px;color:var(--text-secondary);">Tên sản phẩm</th>
+            <th style="text-align:right;padding:12px 16px;border-bottom:2px solid var(--card-border);font-size:13px;color:var(--text-secondary);">Đơn vị</th>
+            <th style="text-align:right;padding:12px 16px;border-bottom:2px solid var(--card-border);font-size:13px;color:var(--text-secondary);min-width:190px;">Số lượng nhập</th>
+            <c:if test="${showTrackingCodes}">
+              <th style="text-align:left;padding:12px 16px;border-bottom:2px solid var(--card-border);font-size:13px;color:var(--text-secondary);min-width:230px;">Batch Code</th>
+              <th style="text-align:left;padding:12px 16px;border-bottom:2px solid var(--card-border);font-size:13px;color:var(--text-secondary);min-width:340px;">Barcode từng sản phẩm</th>
+            </c:if>
           </tr>
         </thead>
         <tbody>
           <c:set var="totalItems" value="0"/>
           <c:forEach var="detail" items="${receipt.details}">
-            <tr style="transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">${detail.product.sku}</td>
-              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-weight: 600; color: var(--text-primary);">${detail.product.name}</td>
-              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">
+            <tr>
+              <td style="padding:12px 16px;border-bottom:1px solid var(--card-border);font-family:monospace;">${detail.product.sku}</td>
+              <td style="padding:12px 16px;border-bottom:1px solid var(--card-border);font-weight:600;">${detail.product.name}</td>
+              <td style="padding:12px 16px;border-bottom:1px solid var(--card-border);text-align:right;">${detail.product.unit}</td>
+              <td style="padding:12px 16px;border-bottom:1px solid var(--card-border);text-align:right;">
                 <c:choose>
-                  <c:when test="${not empty detail.batchCode}">${detail.batchCode}</c:when>
-                  <c:otherwise><span style="color: #94a3b8; font-style: italic;">Chưa sinh</span></c:otherwise>
-                </c:choose>
-              </td>
-              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">
-                <c:choose>
-                  <c:when test="${not empty detail.barcode}">
-                    <div style="max-height: 80px; overflow-y: auto; padding: 4px; border: 1px solid var(--card-border); border-radius: 6px; background: #f8fafc; display: flex; flex-direction: column; gap: 4px; width: fit-content; min-width: 200px;">
-                      <c:forEach var="k" begin="1" end="${detail.quantity}">
-                        <span style="font-family: monospace; font-size: 11px; font-weight: 600; color: var(--text-primary);">${detail.barcode}-${k}</span>
-                      </c:forEach>
+                  <c:when test="${canEditReceiving}">
+                    <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;">
+                      <span style="font-size:12px;">Yêu cầu: ${detail.quantity} → Thực nhận:</span>
+                      <input type="number" id="actualQuantity_${detail.id}" name="actualQuantity_${detail.id}" value="${detail.quantity}" min="1" required form="statusForm" class="receiving-quantity-input" data-detail-id="${detail.id}" style="width:80px;padding:6px 8px;border:1.5px solid var(--primary-color);border-radius:6px;">
                     </div>
                   </c:when>
-                  <c:otherwise><span style="color: #94a3b8; font-style: italic;">Chưa sinh</span></c:otherwise>
+                  <c:otherwise>+${detail.quantity}</c:otherwise>
                 </c:choose>
               </td>
-              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; color: var(--text-secondary);">${detail.product.unit}</td>
-              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; font-weight: 700; color: var(--primary-color);">
-                <c:choose>
-                  <c:when test="${receipt.status == 'RECEIVING' && (currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF'))}">
-                    <div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px;">
-                      <span style="font-size: 12px; color: var(--text-secondary); font-weight: normal;">Yêu cầu: ${detail.quantity} &rarr; Thực nhận:</span>
-                      <input type="number" name="actualQuantity_${detail.id}" value="${detail.quantity}" min="0" required 
-                             form="statusForm"
-                             style="width: 80px; text-align: right; padding: 4px 8px; border: 1.5px solid var(--primary-color); border-radius: 6px; font-size: 13px; font-weight: 700; color: var(--text-primary); outline: none;">
-                    </div>
-                  </c:when>
-                  <c:otherwise>
-                     +${detail.quantity}
-                  </c:otherwise>
-                </c:choose>
-              </td>
+
+              <c:if test="${showTrackingCodes}">
+                <td style="padding:12px 16px;border-bottom:1px solid var(--card-border);vertical-align:top;">
+                  <c:choose>
+                    <c:when test="${canEditReceiving}">
+                      <div style="display:flex;gap:6px;align-items:center;">
+                        <input type="text" id="batchCode_${detail.id}" name="batchCode_${detail.id}" value="${detail.batchCode}" form="statusForm" required maxlength="100" class="receiving-batch-input" placeholder="Nhập Batch Code" style="width:160px;padding:6px 8px;border:1.5px solid var(--card-border);border-radius:6px;font-family:monospace;">
+                        <button type="button" onclick="generateBatchCode('${detail.id}')" style="height:30px;padding:0 9px;border:1px solid #c4b5fd;background:#f5f3ff;color:#6d28d9;border-radius:6px;cursor:pointer;">Tạo</button>
+                      </div>
+                    </c:when>
+                    <c:otherwise><span style="font-family:monospace;">${detail.batchCode}</span></c:otherwise>
+                  </c:choose>
+                </td>
+                <td style="padding:12px 16px;border-bottom:1px solid var(--card-border);vertical-align:top;">
+                  <c:choose>
+                    <c:when test="${canEditReceiving}">
+                      <div id="barcodeContainer_${detail.id}" class="barcode-container" data-detail-id="${detail.id}" data-product-id="${detail.productId}" data-existing="${detail.barcode}" style="display:flex;flex-direction:column;gap:7px;"></div>
+                      <button type="button" onclick="generateAllBarcodes('${detail.id}', '${detail.productId}')" style="margin-top:8px;height:30px;padding:0 10px;border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;border-radius:6px;cursor:pointer;">Tạo tất cả Barcode</button>
+                    </c:when>
+                    <c:otherwise>
+                      <div style="display:flex;flex-direction:column;gap:5px;">
+                        <c:forTokens var="itemBarcode" items="${detail.barcode}" delims=",">
+                          <span style="display:inline-block;width:fit-content;padding:4px 7px;border-radius:5px;background:#eff6ff;color:#1d4ed8;font-family:monospace;">${itemBarcode}</span>
+                        </c:forTokens>
+                      </div>
+                    </c:otherwise>
+                  </c:choose>
+                </td>
+              </c:if>
             </tr>
             <c:set var="totalItems" value="${totalItems + detail.quantity}"/>
           </c:forEach>
         </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="5" style="text-align: right; padding: 16px 12px; font-weight: 700; color: var(--text-secondary);">Tổng số lượng nhập:</td>
-            <td style="text-align: right; padding: 16px 12px; font-weight: 800; font-size: 16px; color: var(--primary-color);">+${totalItems}</td>
-          </tr>
-        </tfoot>
+        <tfoot><tr>
+          <td colspan="${showTrackingCodes ? 5 : 3}" style="text-align:right;padding:16px 12px;font-weight:700;">Tổng số lượng nhập:</td>
+          <td style="text-align:right;padding:16px 12px;font-weight:800;color:var(--primary-color);">+${totalItems}</td>
+        </tr></tfoot>
       </table>
     </div>
   </div>
@@ -792,11 +819,118 @@ function openLightbox(src) {
     }
 }
 
+function sanitizeCodePart(value) {
+    return String(value == null ? "" : value)
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9_-]+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "");
+}
+
+function generateBatchCode(detailId) {
+    const input = document.getElementById("batchCode_" + detailId);
+    if (!input) return;
+
+    const receiptCode = sanitizeCodePart("${receipt.receiptCode}") || "RECEIPT";
+    input.value = "BAT-" + receiptCode + "-" + detailId;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.focus();
+}
+
+function splitExistingBarcodes(value) {
+    if (!value) return [];
+    return String(value).split(",").map(v => v.trim()).filter(v => v.length > 0);
+}
+
+function createBarcodeInput(detailId, index, value) {
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.alignItems = "center";
+    row.style.gap = "6px";
+
+    const label = document.createElement("span");
+    label.textContent = (index + 1) + ".";
+    label.style.width = "20px";
+    label.style.fontSize = "11px";
+    label.style.fontWeight = "700";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.name = "barcode_" + detailId;
+    input.value = value || "";
+    input.required = true;
+    input.maxLength = 150;
+    input.className = "receiving-barcode-input";
+    input.dataset.detailId = detailId;
+    input.dataset.barcodeIndex = index;
+    input.placeholder = "Barcode sản phẩm " + (index + 1);
+    input.style.width = "220px";
+    input.style.padding = "6px 8px";
+    input.style.border = "1.5px solid var(--card-border)";
+    input.style.borderRadius = "6px";
+    input.style.fontFamily = "monospace";
+    input.setAttribute("form", "statusForm");
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Tạo";
+    button.style.height = "30px";
+    button.style.padding = "0 9px";
+    button.style.border = "1px solid #bfdbfe";
+    button.style.background = "#eff6ff";
+    button.style.color = "#1d4ed8";
+    button.style.borderRadius = "6px";
+    button.style.cursor = "pointer";
+    button.onclick = function() { generateSingleBarcode(detailId, index); };
+
+    row.appendChild(label); row.appendChild(input); row.appendChild(button);
+    return row;
+}
+
+function renderBarcodeInputs(detailId) {
+    const container = document.getElementById("barcodeContainer_" + detailId);
+    const quantityInput = document.getElementById("actualQuantity_" + detailId);
+    if (!container || !quantityInput) return;
+    let quantity = parseInt(quantityInput.value, 10);
+    if (!Number.isInteger(quantity) || quantity < 1) quantity = 1;
+    const current = Array.from(container.querySelectorAll(".receiving-barcode-input")).map(i => i.value.trim());
+    const existing = splitExistingBarcodes(container.dataset.existing);
+    const values = current.length ? current : existing;
+    container.innerHTML = "";
+    for (let i = 0; i < quantity; i++) container.appendChild(createBarcodeInput(detailId, i, values[i] || ""));
+}
+
+function generateSingleBarcode(detailId, index) {
+    const container = document.getElementById("barcodeContainer_" + detailId);
+    if (!container) return;
+    const productId = container.dataset.productId;
+    const input = container.querySelector('[data-barcode-index="' + index + '"]');
+    if (!input) return;
+    input.value = "BC-${receipt.id}-" + productId + "-" + (index + 1);
+    input.focus();
+}
+
+function generateAllBarcodes(detailId, productId) {
+    const container = document.getElementById("barcodeContainer_" + detailId);
+    if (!container) return;
+    Array.from(container.querySelectorAll(".receiving-barcode-input")).forEach((input, index) => {
+        input.value = "BC-${receipt.id}-" + productId + "-" + (index + 1);
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     const statusForm = document.getElementById("statusForm");
     const nextStatus = document.getElementById("nextStatus");
     const fileInput = document.getElementById("receivingImagesInput");
     const previewContainer = document.getElementById("imagePreviewContainer");
+
+    document.querySelectorAll(".barcode-container").forEach(function(container) {
+        const detailId = container.dataset.detailId;
+        renderBarcodeInputs(detailId);
+        const quantityInput = document.getElementById("actualQuantity_" + detailId);
+        if (quantityInput) quantityInput.addEventListener("input", function() { renderBarcodeInputs(detailId); });
+    });
     
     if (fileInput) {
         fileInput.addEventListener("change", function() {
@@ -828,7 +962,34 @@ document.addEventListener("DOMContentLoaded", function() {
         statusForm.addEventListener("submit", function(e) {
             if (nextStatus.value === "RECEIVED") {
                 const hasExistingImages = ${not empty receipt.receivingImages};
-                if (!hasExistingImages && (!fileInput || fileInput.files.length === 0)) {
+                const quantityInputs = Array.from(document.querySelectorAll(".receiving-quantity-input"));
+                const batchInputs = Array.from(document.querySelectorAll(".receiving-batch-input"));
+                const barcodeInputs = Array.from(document.querySelectorAll(".receiving-barcode-input"));
+
+                const invalidQuantity = quantityInputs.find(input =>
+                    input.value.trim() === "" || Number.isNaN(Number(input.value)) || Number(input.value) <= 0
+                );
+                const emptyBatch = batchInputs.find(input => input.value.trim() === "");
+                const emptyBarcode = barcodeInputs.find(input => input.value.trim() === "");
+                const normalizedBarcodes = barcodeInputs.map(input => input.value.trim().toUpperCase()).filter(Boolean);
+                const duplicatedBarcode = new Set(normalizedBarcodes).size !== normalizedBarcodes.length;
+
+                if (invalidQuantity) {
+                    e.preventDefault();
+                    alert("Vui lòng nhập số lượng thực nhận lớn hơn 0 cho tất cả sản phẩm.");
+                    invalidQuantity.focus();
+                } else if (emptyBatch) {
+                    e.preventDefault();
+                    alert("Vui lòng nhập hoặc bấm Tạo Batch Code cho tất cả sản phẩm.");
+                    emptyBatch.focus();
+                } else if (emptyBarcode) {
+                    e.preventDefault();
+                    alert("Vui lòng nhập hoặc tạo đầy đủ Barcode cho từng sản phẩm.");
+                    emptyBarcode.focus();
+                } else if (duplicatedBarcode) {
+                    e.preventDefault();
+                    alert("Barcode không được trùng nhau trong cùng phiếu nhập.");
+                } else if (!hasExistingImages && (!fileInput || fileInput.files.length === 0)) {
                     e.preventDefault();
                     alert("Vui lòng chụp hoặc tải lên ít nhất 1 ảnh hàng hóa đã nhận để làm bằng chứng.");
                 } else if (fileInput && fileInput.files.length > 4) {
