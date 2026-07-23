@@ -96,18 +96,65 @@ public class ShipmentDAO {
                     sd.setProductId(rs.getLong("product_id"));
                     sd.setQuantity(rs.getInt("quantity"));
                     
+                    try { sd.setBatchCode(rs.getString("batch_code")); } catch (SQLException ignored) {}
+                    try { sd.setBarcode(rs.getString("barcode")); } catch (SQLException ignored) {}
+                    
                     Product p = new Product();
                     p.setId(rs.getLong("product_id"));
                     p.setSku(rs.getString("sku"));
                     p.setName(rs.getString("product_name"));
                     p.setUnit(rs.getString("unit"));
                     sd.setProduct(p);
+
+                    // Fallback FIFO allocation for this specific detail quantity if not stored yet
+                    if ((sd.getBatchCode() == null || sd.getBatchCode().trim().isEmpty()) ||
+                        (sd.getBarcode() == null || sd.getBarcode().trim().isEmpty())) {
+                        allocateFifoBatchesAndBarcodes(conn, sd.getProductId(), sd.getQuantity(), sd);
+                    }
                     
                     details.add(sd);
                 }
             }
         }
         return details;
+    }
+
+    private void allocateFifoBatchesAndBarcodes(Connection conn, long productId, int quantity, ShipmentDetail sd) {
+        if (sd == null || quantity <= 0) return;
+        List<String> batches = new ArrayList<>();
+        List<String> barcodes = new ArrayList<>();
+        int needed = quantity;
+        
+        String fifoSql = "SELECT batch_code, barcode, quantity_in_stock FROM inventories WHERE product_id = ? AND quantity_in_stock > 0 ORDER BY last_updated ASC, id ASC";
+        try (PreparedStatement psFifo = conn.prepareStatement(fifoSql)) {
+            psFifo.setLong(1, productId);
+            try (ResultSet rsFifo = psFifo.executeQuery()) {
+                while (rsFifo.next() && needed > 0) {
+                    String bCode = rsFifo.getString("batch_code");
+                    String bCodeTrim = (bCode != null) ? bCode.trim() : "";
+                    String bBc = rsFifo.getString("barcode");
+                    String bBcTrim = (bBc != null) ? bBc.trim() : "";
+                    int stock = rsFifo.getInt("quantity_in_stock");
+                    
+                    int take = Math.min(needed, stock);
+                    needed -= take;
+                    
+                    if (!bCodeTrim.isEmpty() && !batches.contains(bCodeTrim)) {
+                        batches.add(bCodeTrim);
+                    }
+                    if (!bBcTrim.isEmpty() && !barcodes.contains(bBcTrim)) {
+                        barcodes.add(bBcTrim);
+                    }
+                }
+            }
+        } catch (SQLException ignored) {}
+        
+        if ((sd.getBatchCode() == null || sd.getBatchCode().trim().isEmpty()) && !batches.isEmpty()) {
+            sd.setBatchCode(String.join(", ", batches));
+        }
+        if ((sd.getBarcode() == null || sd.getBarcode().trim().isEmpty()) && !barcodes.isEmpty()) {
+            sd.setBarcode(String.join(", ", barcodes));
+        }
     }
 
     private List<ShipmentHistory> getHistoryByShipmentId(long shipmentId) throws SQLException {
@@ -183,19 +230,28 @@ public class ShipmentDAO {
             }
 
             // 2. Insert Shipment Details and update Inventory if status is COMPLETED
-            String sqlDetail = "INSERT INTO shipment_details (shipment_id, product_id, quantity) VALUES (?, ?, ?)";
-            try (PreparedStatement psDetail = conn.prepareStatement(sqlDetail)) {
+            String sqlDetail = "INSERT INTO shipment_details (shipment_id, product_id, quantity, batch_code, barcode) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement psDetail = conn.prepareStatement(sqlDetail, Statement.RETURN_GENERATED_KEYS)) {
                 for (ShipmentDetail detail : shipment.getDetails()) {
+                    allocateFifoBatchesAndBarcodes(conn, detail.getProductId(), detail.getQuantity(), detail);
+                    
                     psDetail.setLong(1, shipment.getId());
                     psDetail.setLong(2, detail.getProductId());
                     psDetail.setInt(3, detail.getQuantity());
-                    psDetail.addBatch();
+                    psDetail.setString(4, detail.getBatchCode() == null ? "" : detail.getBatchCode());
+                    psDetail.setString(5, detail.getBarcode() == null ? "" : detail.getBarcode());
+                    psDetail.executeUpdate();
+
+                    try (ResultSet rsDetailKey = psDetail.getGeneratedKeys()) {
+                        if (rsDetailKey.next()) {
+                            detail.setId(rsDetailKey.getLong(1));
+                        }
+                    }
                     
                     if ("COMPLETED".equals(shipment.getStatus())) {
-                        deductInventory(conn, detail.getProductId(), detail.getQuantity());
+                        deductInventory(conn, detail.getProductId(), detail.getQuantity(), detail.getId());
                     }
                 }
-                psDetail.executeBatch();
             }
 
             conn.commit();
@@ -326,12 +382,8 @@ public class ShipmentDAO {
         }
         
         if (statusVal != null && !statusVal.trim().isEmpty() && !"ALL".equals(statusVal)) {
-            if ("APPROVED".equals(statusVal)) {
-                sql.append("AND (s.status = 'APPROVED' OR s.status = 'PENDING') ");
-            } else {
-                sql.append("AND s.status = ? ");
-                params.add(statusVal);
-            }
+            sql.append("AND s.status = ? ");
+            params.add(statusVal);
         }
 
         if (creatorId != null) {
@@ -402,12 +454,8 @@ public class ShipmentDAO {
         }
         
         if (statusVal != null && !statusVal.trim().isEmpty() && !"ALL".equals(statusVal)) {
-            if ("APPROVED".equals(statusVal)) {
-                sql.append("AND (s.status = 'APPROVED' OR s.status = 'PENDING') ");
-            } else {
-                sql.append("AND s.status = ? ");
-                params.add(statusVal);
-            }
+            sql.append("AND s.status = ? ");
+            params.add(statusVal);
         }
 
         if (creatorId != null) {
@@ -512,6 +560,10 @@ public class ShipmentDAO {
     }
 
     private void deductInventory(Connection conn, long productId, int quantity) throws SQLException {
+        deductInventory(conn, productId, quantity, 0L);
+    }
+
+    private void deductInventory(Connection conn, long productId, int quantity, long shipmentDetailId) throws SQLException {
         // 1. Check total inventory sum
         String sqlSum = "SELECT SUM(quantity_in_stock) FROM inventories WHERE product_id = ?";
         try (PreparedStatement psSum = conn.prepareStatement(sqlSum)) {
@@ -529,9 +581,12 @@ public class ShipmentDAO {
         }
 
         // 2. Select rows to deduct (FIFO)
-        String sqlSelect = "SELECT id, quantity_in_stock FROM inventories WHERE product_id = ? AND quantity_in_stock > 0 ORDER BY last_updated ASC, id ASC FOR UPDATE";
+        String sqlSelect = "SELECT id, quantity_in_stock, batch_code, barcode FROM inventories WHERE product_id = ? AND quantity_in_stock > 0 ORDER BY last_updated ASC, id ASC FOR UPDATE";
         String sqlUpdate = "UPDATE inventories SET quantity_in_stock = ? WHERE id = ?";
         
+        List<String> deductedBatches = new ArrayList<>();
+        List<String> deductedBarcodes = new ArrayList<>();
+
         int remaining = quantity;
         try (PreparedStatement psSel = conn.prepareStatement(sqlSelect);
              PreparedStatement psUpd = conn.prepareStatement(sqlUpdate)) {
@@ -540,11 +595,21 @@ public class ShipmentDAO {
                 while (rs.next() && remaining > 0) {
                     long invId = rs.getLong("id");
                     int stock = rs.getInt("quantity_in_stock");
+                    String bCode = rs.getString("batch_code");
+                    String bBarcode = rs.getString("barcode");
+                    
                     int deduct = Math.min(remaining, stock);
                     
                     psUpd.setInt(1, stock - deduct);
                     psUpd.setLong(2, invId);
                     psUpd.executeUpdate();
+                    
+                    if (bCode != null && !bCode.trim().isEmpty() && !deductedBatches.contains(bCode.trim())) {
+                        deductedBatches.add(bCode.trim());
+                    }
+                    if (bBarcode != null && !bBarcode.trim().isEmpty() && !deductedBarcodes.contains(bBarcode.trim())) {
+                        deductedBarcodes.add(bBarcode.trim());
+                    }
                     
                     remaining -= deduct;
                 }
@@ -553,6 +618,16 @@ public class ShipmentDAO {
         
         if (remaining > 0) {
             throw new SQLException("Lỗi trừ tồn kho cho sản phẩm ID " + productId + ": không đủ dòng tồn kho hoạt động.");
+        }
+
+        if (shipmentDetailId > 0 && (!deductedBatches.isEmpty() || !deductedBarcodes.isEmpty())) {
+            String sqlUpdateDetail = "UPDATE shipment_details SET batch_code = ?, barcode = ? WHERE id = ?";
+            try (PreparedStatement psUpdDetail = conn.prepareStatement(sqlUpdateDetail)) {
+                psUpdDetail.setString(1, String.join(", ", deductedBatches));
+                psUpdDetail.setString(2, String.join(", ", deductedBarcodes));
+                psUpdDetail.setLong(3, shipmentDetailId);
+                psUpdDetail.executeUpdate();
+            }
         }
     }
 

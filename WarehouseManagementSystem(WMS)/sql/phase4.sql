@@ -68,7 +68,7 @@ INSERT IGNORE INTO permissions (code, name, description) VALUES
 ('RECEIPT_READ', 'Xem Phiếu Nhập', 'Quyền xem danh sách và chi tiết phiếu nhập kho'),
 ('RECEIPT_WRITE', 'Tạo Phiếu Nhập', 'Quyền tạo mới phiếu nhập kho'),
 ('SHIPMENT_READ', 'Xem Phiếu Xuất', 'Quyền xem danh sách và chi tiết phiếu xuất kho'),
-('SHIPMENT_WRITE', 'Tạo Phiếu Xuất', 'Quyền tạo mới phiếu xuất kho');
+('SHIPMENT_WRITE', 'Tạo Yêu Cầu Xuất Kho', 'Quyền tạo mới phiếu xuất kho');
 
 -- Cấp quyền cho ADMIN
 INSERT IGNORE INTO role_permissions (role_id, permission_id)

@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<c:set var="pageTitle" value="Tạo Phiếu Xuất Kho"/>
+<c:set var="pageTitle" value="Yêu Cầu Xuất Kho"/>
 <c:set var="activePage" value="shipments" scope="request"/>
 <jsp:include page="../includes/dashboard-layout-start.jsp"/>
 
@@ -17,7 +17,7 @@
 
   <div class="subpage-header" style="margin-bottom: 24px;">
     <div class="subpage-header__title" style="text-align: left !important;">
-      <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0; text-align: left !important;">Tạo Phiếu Xuất Kho</h2>
+      <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0; text-align: left !important;">Yêu Cầu Xuất Kho</h2>
       <p style="font-size: 14px; color: var(--text-secondary); margin: 0; text-align: left !important;">Xuất hàng hóa. Hệ thống sẽ kiểm tra số lượng tồn kho trước khi cho phép xuất.</p>
     </div>
   </div>
@@ -83,13 +83,13 @@
         <textarea id="notes" name="notes" rows="3" placeholder="Nhập ghi chú cho phiếu xuất kho này..." style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary); resize: vertical;"></textarea>
       </div>
 
-      <input type="hidden" id="statusField" name="status" value="APPROVED"/>
+      <input type="hidden" id="statusField" name="status" value="PENDING"/>
       <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; border-top: 1px solid var(--card-border); padding-top: 24px;">
         <a href="${pageContext.request.contextPath}/manage/shipments" class="premium-btn-outline" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: 44px; padding: 0 24px; box-sizing: border-box;">
           Hủy bỏ
         </a>
-        <button type="submit" onclick="document.getElementById('statusField').value='APPROVED'" class="premium-btn-primary" style="height: 44px; padding: 0 24px; cursor: pointer;">
-          Tạo Phiếu Xuất
+        <button type="submit" onclick="document.getElementById('statusField').value='PENDING'" class="premium-btn-primary" style="height: 44px; padding: 0 24px; cursor: pointer;">
+          Gửi Yêu Cầu Xuất Kho
         </button>
       </div>
     </form>

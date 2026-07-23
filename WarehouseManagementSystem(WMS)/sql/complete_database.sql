@@ -243,6 +243,8 @@ CREATE TABLE `shipment_details` (
   `shipment_id` BIGINT NOT NULL,
   `product_id` BIGINT NOT NULL,
   `quantity` INT NOT NULL,
+  `batch_code` TEXT,
+  `barcode` TEXT,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_wms_sd_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_wms_sd_shipment` FOREIGN KEY (`shipment_id`) REFERENCES `shipments` (`id`) ON DELETE CASCADE
@@ -287,7 +289,7 @@ INSERT INTO `permissions` (`code`, `name`, `description`) VALUES
 ('RECEIPT_READ', 'Xem Phiếu Nhập', 'Quyền xem danh sách và chi tiết phiếu nhập kho'),
 ('RECEIPT_WRITE', 'Tạo Phiếu Nhập', 'Quyền tạo mới và cập nhật trạng thái phiếu nhập kho'),
 ('SHIPMENT_READ', 'Xem Phiếu Xuất', 'Quyền xem danh sách và chi tiết phiếu xuất kho'),
-('SHIPMENT_WRITE', 'Tạo Phiếu Xuất', 'Quyền tạo mới và cập nhật trạng thái phiếu xuất kho'),
+('SHIPMENT_WRITE', 'Tạo Yêu Cầu Xuất Kho', 'Quyền tạo mới và cập nhật trạng thái phiếu xuất kho'),
 ('REPORT_READ', 'Xem Báo cáo', 'Quyền xem thống kê báo cáo kho hàng');
 
 -- Seed Vai trò (Roles)

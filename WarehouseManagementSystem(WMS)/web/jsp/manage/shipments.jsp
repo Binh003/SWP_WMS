@@ -18,72 +18,88 @@
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        Tạo Phiếu Xuất
+        Tạo Yêu Cầu Xuất Kho
       </a>
     </div>
     </c:if>
   </div>
 
   <!-- Stats/Summary Cards -->
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 28px;">
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 28px;">
     
-    <!-- Card 1: Pending Pick -->
-    <div class="premium-card stats-card" onclick="filterByCard('APPROVED')" style="padding: 24px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #f59e0b; background: linear-gradient(135deg, #ffffff, #fefaf0); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
+    <!-- Card 1: Pending Request -->
+    <div class="premium-card stats-card" onclick="filterByCard('PENDING')" style="padding: 20px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #f59e0b; background: linear-gradient(135deg, #ffffff, #fefaf0); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
       <div>
-        <span style="font-size: 13px; font-weight: 600; color: #78350f; text-transform: uppercase; letter-spacing: 0.05em;">Chờ lấy hàng</span>
-        <h3 style="font-size: 32px; font-weight: 800; color: #d97706; margin: 8px 0 4px 0; font-family: system-ui, -apple-system, sans-serif;">${pendingCount}</h3>
-        <p style="font-size: 13px; color: #92400e; margin: 0; display: flex; align-items: center; gap: 4px;">
+        <span style="font-size: 12px; font-weight: 600; color: #78350f; text-transform: uppercase; letter-spacing: 0.05em;">Yêu cầu xuất kho</span>
+        <h3 style="font-size: 28px; font-weight: 800; color: #d97706; margin: 6px 0 4px 0; font-family: system-ui, -apple-system, sans-serif;">${pendingCount}</h3>
+        <p style="font-size: 12px; color: #92400e; margin: 0; display: flex; align-items: center; gap: 4px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-          Phiếu xuất kho chờ lấy hàng
+          Chờ tạo phiếu xuất
         </p>
       </div>
-      <div style="width: 56px; height: 56px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); display: flex; align-items: center; justify-content: center; color: #d97706;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); display: flex; align-items: center; justify-content: center; color: #d97706;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
           <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="12" y1="18" x2="12" y2="12"></line>
           <line x1="9" y1="15" x2="15" y2="15"></line>
-          <line x1="12" y1="12" x2="12" y2="18"></line>
         </svg>
       </div>
-      <div style="position: absolute; right: -20px; bottom: -20px; width: 100px; height: 100px; border-radius: 50%; background: rgba(245, 158, 11, 0.03); z-index: 0;"></div>
     </div>
 
-    <!-- Card 2: In Progress -->
-    <div class="premium-card stats-card" onclick="filterByCard('PICKING')" style="padding: 24px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #3b82f6; background: linear-gradient(135deg, #ffffff, #eff6ff); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
+    <!-- Card 2: Note Created / Approved -->
+    <div class="premium-card stats-card" onclick="filterByCard('APPROVED')" style="padding: 20px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #0284c7; background: linear-gradient(135deg, #ffffff, #f0f9ff); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
       <div>
-        <span style="font-size: 13px; font-weight: 600; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.05em;">Đang xử lý</span>
-        <h3 style="font-size: 32px; font-weight: 800; color: #2563eb; margin: 8px 0 4px 0; font-family: system-ui, -apple-system, sans-serif;">${shippingCount}</h3>
-        <p style="font-size: 13px; color: #1e40af; margin: 0; display: flex; align-items: center; gap: 4px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          Đang thực hiện lấy hàng & đóng gói
+        <span style="font-size: 12px; font-weight: 600; color: #0c4a6e; text-transform: uppercase; letter-spacing: 0.05em;">Đã tạo phiếu xuất</span>
+        <h3 style="font-size: 28px; font-weight: 800; color: #0284c7; margin: 6px 0 4px 0; font-family: system-ui, -apple-system, sans-serif;">${approvedCount}</h3>
+        <p style="font-size: 12px; color: #0369a1; margin: 0; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Chờ lấy hàng & đóng gói
         </p>
       </div>
-      <div style="width: 56px; height: 56px; border-radius: 12px; background: rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: center; color: #2563eb;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(2, 132, 199, 0.1); display: flex; align-items: center; justify-content: center; color: #0284c7;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <path d="M9 15l2 2 4-4"></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Card 3: Picking -->
+    <div class="premium-card stats-card" onclick="filterByCard('PICKING')" style="padding: 20px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #a855f7; background: linear-gradient(135deg, #ffffff, #faf5ff); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
+      <div>
+        <span style="font-size: 12px; font-weight: 600; color: #581c87; text-transform: uppercase; letter-spacing: 0.05em;">Lấy & Đóng gói</span>
+        <h3 style="font-size: 28px; font-weight: 800; color: #9333ea; margin: 6px 0 4px 0; font-family: system-ui, -apple-system, sans-serif;">${shippingCount}</h3>
+        <p style="font-size: 12px; color: #7e22ce; margin: 0; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Đang thực hiện lấy hàng
+        </p>
+      </div>
+      <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(168, 85, 247, 0.1); display: flex; align-items: center; justify-content: center; color: #9333ea;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
           <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
         </svg>
       </div>
-      <div style="position: absolute; right: -20px; bottom: -20px; width: 100px; height: 100px; border-radius: 50%; background: rgba(59, 130, 246, 0.03); z-index: 0;"></div>
     </div>
 
-    <!-- Card 3: Completed -->
-    <div class="premium-card stats-card" onclick="filterByCard('COMPLETED')" style="padding: 24px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #10b981; background: linear-gradient(135deg, #ffffff, #f0fdf4); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
+    <!-- Card 4: Completed -->
+    <div class="premium-card stats-card" onclick="filterByCard('COMPLETED')" style="padding: 20px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #10b981; background: linear-gradient(135deg, #ffffff, #f0fdf4); position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); cursor: pointer;">
       <div>
-        <span style="font-size: 13px; font-weight: 600; color: #064e3b; text-transform: uppercase; letter-spacing: 0.05em;">Hoàn thành</span>
-        <h3 style="font-size: 32px; font-weight: 800; color: #059669; margin: 8px 0 4px 0; font-family: system-ui, -apple-system, sans-serif;">${completedCount}</h3>
-        <p style="font-size: 13px; color: #065f46; margin: 0; display: flex; align-items: center; gap: 4px;">
+        <span style="font-size: 12px; font-weight: 600; color: #064e3b; text-transform: uppercase; letter-spacing: 0.05em;">Hoàn thành</span>
+        <h3 style="font-size: 28px; font-weight: 800; color: #059669; margin: 6px 0 4px 0; font-family: system-ui, -apple-system, sans-serif;">${completedCount}</h3>
+        <p style="font-size: 12px; color: #065f46; margin: 0; display: flex; align-items: center; gap: 4px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Đã xuất kho và giao nhận thành công
+          Đã hoàn thành xuất kho
         </p>
       </div>
-      <div style="width: 56px; height: 56px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; color: #059669;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; color: #059669;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
           <polyline points="22 4 12 14.01 9 11.01"></polyline>
         </svg>
       </div>
-      <div style="position: absolute; right: -20px; bottom: -20px; width: 100px; height: 100px; border-radius: 50%; background: rgba(16, 185, 129, 0.03); z-index: 0;"></div>
     </div>
 
   </div>
@@ -110,7 +126,8 @@
                  onfocus="this.style.borderColor='var(--primary-color)';" 
                  onblur="this.style.borderColor='var(--card-border)';">
           <option value="ALL" ${selectedStatus == 'ALL' || empty selectedStatus ? 'selected' : ''}>Tất cả trạng thái</option>
-          <option value="APPROVED" ${selectedStatus == 'APPROVED' ? 'selected' : ''}>Chờ lấy hàng</option>
+          <option value="PENDING" ${selectedStatus == 'PENDING' ? 'selected' : ''}>Yêu cầu xuất kho</option>
+          <option value="APPROVED" ${selectedStatus == 'APPROVED' ? 'selected' : ''}>Đã tạo phiếu xuất kho</option>
           <option value="PICKING" ${selectedStatus == 'PICKING' ? 'selected' : ''}>Lấy & Đóng gói (Picking)</option>
           <option value="COMPLETED" ${selectedStatus == 'COMPLETED' ? 'selected' : ''}>Đã hoàn thành</option>
           <option value="CANCELLED" ${selectedStatus == 'CANCELLED' ? 'selected' : ''}>Đã hủy</option>
@@ -192,10 +209,10 @@
                     <span class="premium-tag" style="background: rgba(100, 116, 139, 0.1); color: #64748b;">Nháp</span>
                   </c:when>
                   <c:when test="${s.status == 'PENDING'}">
-                    <span class="premium-tag" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">Chờ lấy hàng</span>
+                    <span class="premium-tag" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">Yêu cầu xuất kho</span>
                   </c:when>
                   <c:when test="${s.status == 'APPROVED'}">
-                    <span class="premium-tag" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">Chờ lấy hàng</span>
+                    <span class="premium-tag" style="background: rgba(2, 132, 199, 0.1); color: #0284c7;">Đã tạo phiếu xuất</span>
                   </c:when>
                   <c:when test="${s.status == 'PICKING'}">
                     <span class="premium-tag" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">Lấy & Đóng gói</span>

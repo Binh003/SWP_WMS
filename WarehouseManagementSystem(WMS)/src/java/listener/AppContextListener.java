@@ -66,11 +66,15 @@ public class AppContextListener implements ServletContextListener {
                 stmt.execute("UPDATE users SET status = 'LOCKED' WHERE enabled = 0");
             }
             try {
-                stmt.execute("SELECT invoice_image FROM receipts LIMIT 1");
+                stmt.execute("ALTER TABLE shipment_details ADD COLUMN batch_code TEXT");
             } catch (SQLException e) {
-                stmt.execute("ALTER TABLE receipts ADD COLUMN invoice_image VARCHAR(255) NULL");
+                try { stmt.execute("ALTER TABLE shipment_details MODIFY COLUMN batch_code TEXT"); } catch (SQLException ignored) {}
             }
-            // No longer drop batch_code and barcode columns on startup as they are now part of core inventory tracking
+            try {
+                stmt.execute("ALTER TABLE shipment_details ADD COLUMN barcode TEXT");
+            } catch (SQLException e) {
+                try { stmt.execute("ALTER TABLE shipment_details MODIFY COLUMN barcode TEXT"); } catch (SQLException ignored) {}
+            }
         }
 
         PermissionDAO permissionDAO = new PermissionDAO();
@@ -98,7 +102,7 @@ public class AppContextListener implements ServletContextListener {
         long receiptRead = permissionDAO.ensurePermission("RECEIPT_READ", "Xem Phiếu Nhập");
         long receiptWrite = permissionDAO.ensurePermission("RECEIPT_WRITE", "Tạo Phiếu Nhập");
         long shipmentRead = permissionDAO.ensurePermission("SHIPMENT_READ", "Xem Phiếu Xuất");
-        long shipmentWrite = permissionDAO.ensurePermission("SHIPMENT_WRITE", "Tạo Phiếu Xuất");
+        long shipmentWrite = permissionDAO.ensurePermission("SHIPMENT_WRITE", "Tạo Yêu Cầu Xuất Kho");
         long reportRead = permissionDAO.ensurePermission("REPORT_READ", "Xem Báo cáo");
 
         // 1. ADMIN

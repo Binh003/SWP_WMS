@@ -70,7 +70,28 @@
               </button>
             </div>
           </c:when>
-          <c:when test="${shipment.status == 'PENDING' || shipment.status == 'APPROVED'}">
+
+          <c:when test="${shipment.status == 'PENDING'}">
+            <c:choose>
+              <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF') || currentUser.hasPermission('SHIPMENT_WRITE')}">
+                <div style="display: flex; gap: 8px;">
+                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='APPROVED'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1) !important; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.2) !important; color: white;">
+                    Tạo Phiếu Xuất Kho
+                  </button>
+                  <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                    Hủy yêu cầu
+                  </button>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid #fde68a; border-radius: 8px; padding: 10px 16px; font-size: 12px; color: #d97706; font-weight: 600;">
+                  Chờ duyệt & Tạo phiếu xuất kho...
+                </div>
+              </c:otherwise>
+            </c:choose>
+          </c:when>
+
+          <c:when test="${shipment.status == 'APPROVED'}">
             <c:choose>
               <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
                 <div style="display: flex; gap: 8px;">
@@ -112,10 +133,13 @@
         </c:choose>
       </c:if>
 
-      <c:if test="${shipment.status == 'COMPLETED'}">
+      <c:if test="${shipment.status == 'APPROVED' || shipment.status == 'COMPLETED'}">
         <button type="button" onclick="window.print()" class="premium-btn-outline" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1.5px solid var(--card-border); border-radius: 8px; background: transparent; color: var(--text-primary);">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-          In Phiếu Xuất Kho
+          <c:choose>
+            <c:when test="${shipment.status == 'COMPLETED'}">In Bản Xác Nhận Xuất Kho</c:when>
+            <c:otherwise>In Phiếu Xuất Kho</c:otherwise>
+          </c:choose>
         </button>
       </c:if>
 
@@ -130,59 +154,75 @@
   <c:if test="${shipment.status != 'CANCELLED'}">
     <div class="premium-card" style="padding: 24px 32px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden;">
       <!-- Connector Line Container -->
-      <div style="position: absolute; left: 107px; right: 107px; top: 50%; height: 4px; transform: translateY(-50%); z-index: 1;">
+      <div style="position: absolute; left: 85px; right: 85px; top: 50%; height: 4px; transform: translateY(-50%); z-index: 1;">
         <!-- Background line -->
         <div style="width: 100%; height: 100%; background: #e2e8f0;"></div>
         <!-- Active line -->
         <div style="position: absolute; top: 0; left: 0; height: 100%; background: var(--primary-color); z-index: 2; transition: width 0.5s ease; width: <c:choose>
-          <c:when test="${shipment.status == 'DRAFT' || shipment.status == 'PENDING' || shipment.status == 'APPROVED'}">0%</c:when>
-          <c:when test="${shipment.status == 'PICKING'}">50%</c:when>
+          <c:when test="${shipment.status == 'DRAFT'}">0%</c:when>
+          <c:when test="${shipment.status == 'PENDING'}">33%</c:when>
+          <c:when test="${shipment.status == 'APPROVED'}">66%</c:when>
+          <c:when test="${shipment.status == 'PICKING'}">66%</c:when>
           <c:when test="${shipment.status == 'COMPLETED'}">100%</c:when>
+          <c:otherwise>0%</c:otherwise>
         </c:choose>;"></div>
       </div>
       
       <!-- Steps -->
-      <!-- Step 1: APPROVED -->
-      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 150px; text-align: center; flex-shrink: 0;">
+      <!-- Step 1: Request Created -->
+      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 110px; text-align: center; flex-shrink: 0;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; background: #10b981; color: #ffffff;">
+          ✓
+        </div>
+        <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Yêu cầu xuất kho</span>
+      </div>
+
+      <!-- Step 2: Create Export Note (PENDING -> APPROVED) -->
+      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 110px; text-align: center; flex-shrink: 0;">
         <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
           <c:choose>
-            <c:when test="${shipment.status == 'PENDING' || shipment.status == 'DRAFT' || shipment.status == 'APPROVED'}">background: #d97706; color: #ffffff;</c:when>
-            <c:otherwise>background: #10b981; color: #ffffff;</c:otherwise>
+            <c:when test="${shipment.status == 'PENDING'}">background: #0284c7; color: #ffffff;</c:when>
+            <c:when test="${shipment.status == 'APPROVED' || shipment.status == 'PICKING' || shipment.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
+            <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
           </c:choose>">
           <c:choose>
-            <c:when test="${shipment.status == 'PENDING' || shipment.status == 'DRAFT' || shipment.status == 'APPROVED'}">1</c:when>
-            <c:otherwise>✓</c:otherwise>
+            <c:when test="${shipment.status == 'APPROVED' || shipment.status == 'PICKING' || shipment.status == 'COMPLETED'}">✓</c:when>
+            <c:otherwise>2</c:otherwise>
           </c:choose>
         </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'PENDING' || shipment.status == 'DRAFT' || shipment.status == 'APPROVED' ? '#d97706' : 'var(--text-secondary)'};">Tạo phiếu xuất</span>
+        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'PENDING' ? '#0284c7' : (shipment.status == 'APPROVED' || shipment.status == 'PICKING' || shipment.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)')};">Tạo phiếu xuất</span>
       </div>
       
-      <!-- Step 2: PICKING -->
-      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 150px; text-align: center; flex-shrink: 0;">
+      <!-- Step 3: Picking & Packing (APPROVED -> PICKING) -->
+      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 110px; text-align: center; flex-shrink: 0;">
         <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
           <c:choose>
-            <c:when test="${shipment.status == 'PICKING'}">background: #a855f7; color: #ffffff;</c:when>
+            <c:when test="${shipment.status == 'APPROVED'}">background: #a855f7; color: #ffffff;</c:when>
+            <c:when test="${shipment.status == 'PICKING' || shipment.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
+            <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
+          </c:choose>">
+          <c:choose>
+            <c:when test="${shipment.status == 'PICKING' || shipment.status == 'COMPLETED'}">✓</c:when>
+            <c:otherwise>3</c:otherwise>
+          </c:choose>
+        </div>
+        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'APPROVED' ? '#a855f7' : (shipment.status == 'PICKING' || shipment.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)')};">Lấy & Đóng gói</span>
+      </div>
+      
+      <!-- Step 4: Confirm Issue (PICKING -> COMPLETED) -->
+      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 110px; text-align: center; flex-shrink: 0;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
+          <c:choose>
+            <c:when test="${shipment.status == 'PICKING'}">background: #d97706; color: #ffffff;</c:when>
             <c:when test="${shipment.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
             <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
           </c:choose>">
           <c:choose>
             <c:when test="${shipment.status == 'COMPLETED'}">✓</c:when>
-            <c:otherwise>2</c:otherwise>
+            <c:otherwise>4</c:otherwise>
           </c:choose>
         </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'PICKING' ? '#a855f7' : 'var(--text-secondary)'};">Lấy & Đóng gói</span>
-      </div>
-      
-      <!-- Step 3: COMPLETED -->
-      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 150px; text-align: center; flex-shrink: 0;">
-        <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
-          <c:choose>
-            <c:when test="${shipment.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
-            <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
-          </c:choose>">
-          3
-        </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)'};">Xác nhận xuất kho</span>
+        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'PICKING' ? '#d97706' : (shipment.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)')};">Xác nhận xuất kho</span>
       </div>
     </div>
   </c:if>
@@ -210,14 +250,19 @@
     </form>
   </c:if>
 
-  <c:if test="${shipment.status == 'COMPLETED'}">
+  <c:if test="${shipment.status == 'APPROVED' || shipment.status == 'COMPLETED'}">
     <!-- Beautiful Print-Ready Goods Shipment Note Document -->
     <div class="premium-card print-section" style="padding: 40px; margin-bottom: 24px; background: #ffffff; border: 2px solid #cbd5e1; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative; overflow: hidden;">
       
       <!-- Header: Title and Company Info -->
       <div style="border-bottom: 2px solid #cbd5e1; padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start;">
         <div>
-          <h2 style="font-size: 26px; font-weight: 800; color: #1e293b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">PHIẾU XUẤT KHO THÀNH CÔNG</h2>
+          <h2 style="font-size: 24px; font-weight: 800; color: #1e293b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+            <c:choose>
+              <c:when test="${shipment.status == 'COMPLETED'}">BẢN XÁC NHẬN XUẤT KHO HOÀN TẤT</c:when>
+              <c:otherwise>PHIẾU XUẤT KHO</c:otherwise>
+            </c:choose>
+          </h2>
           <p style="font-size: 13px; color: #64748b; margin: 4px 0 0 0; font-weight: 600;">Số phiếu: <span style="font-family: monospace; font-size: 14px; color: #0f172a; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${shipment.shipmentCode}</span></p>
         </div>
         <div style="text-align: right;">
@@ -273,6 +318,8 @@
             <th style="padding: 10px 12px; font-weight: 700; color: #475569;">#</th>
             <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Mã sản phẩm</th>
             <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Tên sản phẩm</th>
+            <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Batch Code</th>
+            <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Barcode đã xuất</th>
             <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right;">Đơn vị</th>
             <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right; width: 150px;">Số lượng thực xuất</th>
           </tr>
@@ -280,10 +327,46 @@
         <tbody>
           <c:set var="totalItemsDoc" value="0"/>
           <c:forEach var="detail" items="${shipment.details}" varStatus="status">
-            <tr style="border-bottom: 1px solid #e2e8f0;">
+            <tr style="border-bottom: 1px solid #e2e8f0; vertical-align: top;">
               <td style="padding: 10px 12px; color: #64748b;">${status.index + 1}</td>
               <td style="padding: 10px 12px; font-family: monospace; font-weight: 600; color: #0f172a;">${detail.product.sku}</td>
               <td style="padding: 10px 12px; font-weight: 600; color: #334155;">${detail.product.name}</td>
+              <td style="padding: 10px 12px;">
+                <c:choose>
+                  <c:when test="${not empty detail.batchCode}">
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                      <c:forTokens var="bCode" items="${detail.batchCode}" delims=",">
+                        <span style="display: inline-block; padding: 3px 8px; border-radius: 6px; background: #f5f3ff; color: #6d28d9; font-family: monospace; font-size: 12px; font-weight: 700; border: 1px solid #ddd6fe;">
+                          ${bCode.trim()}
+                        </span>
+                      </c:forTokens>
+                    </div>
+                  </c:when>
+                  <c:otherwise>
+                    <span style="color: #94a3b8; font-style: italic;">Chưa gán lô</span>
+                  </c:otherwise>
+                </c:choose>
+              </td>
+              <td style="padding: 10px 12px;">
+                <c:choose>
+                  <c:when test="${not empty detail.barcode}">
+                    <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+                      <c:forTokens var="itemBarcode" items="${detail.barcode}" delims=",">
+                        <c:set var="tb" value="${itemBarcode.trim()}"/>
+                        <c:if test="${not empty tb}">
+                          <div style="display: inline-flex; flex-direction: column; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                            <img src="${pageContext.request.contextPath}/manage/barcode?code=${tb}&height=36" alt="Barcode ${tb}" style="height: 32px; max-width: 150px; object-fit: contain; display: block;" />
+                            <span style="font-family: monospace; font-size: 10px; font-weight: 700; color: #1e293b; margin-top: 2px; letter-spacing: 0.5px;">${tb}</span>
+                          </div>
+                        </c:if>
+                      </c:forTokens>
+                    </div>
+                  </c:when>
+                  <c:otherwise>
+                    <span style="color: #94a3b8; font-style: italic;">Chưa gán Barcode</span>
+                  </c:otherwise>
+                </c:choose>
+              </td>
               <td style="padding: 10px 12px; text-align: right; color: #64748b;">${detail.product.unit}</td>
               <td style="padding: 10px 12px; text-align: right; font-weight: 800; color: #ef4444; font-size: 14px;">-${detail.quantity}</td>
             </tr>
@@ -292,7 +375,7 @@
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="4" style="text-align: right; padding: 12px; font-weight: 700; color: #475569;">Tổng số lượng xuất:</td>
+            <td colspan="6" style="text-align: right; padding: 12px; font-weight: 700; color: #475569;">Tổng số lượng xuất:</td>
             <td style="text-align: right; padding: 12px; font-weight: 800; font-size: 15px; color: #ef4444;">${totalItemsDoc}</td>
           </tr>
         </tfoot>
@@ -470,10 +553,10 @@
                 <span class="premium-tag" style="background: rgba(100, 116, 139, 0.1); color: #64748b; font-weight: 600;">Nháp</span>
               </c:when>
               <c:when test="${shipment.status == 'PENDING'}">
-                <span class="premium-tag" style="background: rgba(245, 158, 11, 0.1); color: #d97706; font-weight: 600;">Chờ lấy hàng</span>
+                <span class="premium-tag" style="background: rgba(245, 158, 11, 0.1); color: #d97706; font-weight: 600;">Yêu cầu xuất kho</span>
               </c:when>
               <c:when test="${shipment.status == 'APPROVED'}">
-                <span class="premium-tag" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; font-weight: 600;">Chờ lấy hàng</span>
+                <span class="premium-tag" style="background: rgba(2, 132, 199, 0.1); color: #0284c7; font-weight: 600;">Đã tạo phiếu xuất</span>
               </c:when>
               <c:when test="${shipment.status == 'PICKING'}">
                 <span class="premium-tag" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; font-weight: 600;">Lấy & Đóng gói</span>
@@ -506,32 +589,100 @@
     
     <div style="overflow-x: auto;">
       <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-          <tr>
-            <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">SKU</th>
-            <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Tên sản phẩm</th>
-            <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Đơn vị</th>
-            <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số lượng xuất</th>
-          </tr>
-        </thead>
-        <tbody>
-          <c:set var="totalItems" value="0"/>
-          <c:forEach var="detail" items="${shipment.details}">
-            <tr style="transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">${detail.product.sku}</td>
-              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-weight: 600; color: var(--text-primary);">${detail.product.name}</td>
-              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; color: var(--text-secondary);">${detail.product.unit}</td>
-              <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; font-weight: 700; color: #ef4444;">-${detail.quantity}</td>
-            </tr>
-            <c:set var="totalItems" value="${totalItems + detail.quantity}"/>
-          </c:forEach>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="3" style="text-align: right; padding: 16px 12px; font-weight: 700; color: var(--text-secondary);">Tổng số lượng xuất:</td>
-            <td style="text-align: right; padding: 16px 12px; font-weight: 800; font-size: 16px; color: var(--primary-color);">${totalItems}</td>
-          </tr>
-        </tfoot>
+        <c:choose>
+          <c:when test="${shipment.status == 'PENDING'}">
+            <thead>
+              <tr>
+                <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">SKU</th>
+                <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Tên sản phẩm</th>
+                <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Đơn vị</th>
+                <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số lượng thực xuất</th>
+              </tr>
+            </thead>
+            <tbody>
+              <c:set var="totalItems" value="0"/>
+              <c:forEach var="detail" items="${shipment.details}">
+                <tr style="transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">${detail.product.sku}</td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-weight: 600; color: var(--text-primary);">${detail.product.name}</td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; color: var(--text-secondary);">${detail.product.unit}</td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; font-weight: 700; color: #ef4444;">-${detail.quantity}</td>
+                </tr>
+                <c:set var="totalItems" value="${totalItems + detail.quantity}"/>
+              </c:forEach>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" style="text-align: right; padding: 16px 12px; font-weight: 700; color: var(--text-secondary);">Tổng số lượng xuất:</td>
+                <td style="text-align: right; padding: 16px 12px; font-weight: 800; font-size: 16px; color: var(--primary-color);">${totalItems}</td>
+              </tr>
+            </tfoot>
+          </c:when>
+          <c:otherwise>
+            <thead>
+              <tr>
+                <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">SKU</th>
+                <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Tên sản phẩm</th>
+                <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Batch Code</th>
+                <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Barcode</th>
+                <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Đơn vị</th>
+                <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số lượng thực xuất</th>
+              </tr>
+            </thead>
+            <tbody>
+              <c:set var="totalItems" value="0"/>
+              <c:forEach var="detail" items="${shipment.details}">
+                <tr style="transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">${detail.product.sku}</td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-weight: 600; color: var(--text-primary);">${detail.product.name}</td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border);">
+                    <c:choose>
+                      <c:when test="${not empty detail.batchCode}">
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                          <c:forTokens var="bCode" items="${detail.batchCode}" delims=",">
+                            <span style="display: inline-block; padding: 3px 8px; border-radius: 6px; background: #f5f3ff; color: #6d28d9; font-family: monospace; font-size: 12px; font-weight: 700; border: 1px solid #ddd6fe;">${bCode.trim()}</span>
+                          </c:forTokens>
+                        </div>
+                      </c:when>
+                      <c:otherwise>
+                        <span style="color: #94a3b8; font-style: italic; font-size: 12px;">Chưa gán lô</span>
+                      </c:otherwise>
+                    </c:choose>
+                  </td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border);">
+                    <c:choose>
+                      <c:when test="${not empty detail.barcode}">
+                        <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+                          <c:forTokens var="itemBarcode" items="${detail.barcode}" delims=",">
+                            <c:set var="tb" value="${itemBarcode.trim()}"/>
+                            <c:if test="${not empty tb}">
+                              <div style="display: inline-flex; flex-direction: column; align-items: center; background: #ffffff; border: 1px solid var(--card-border); border-radius: 6px; padding: 4px 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                <img src="${pageContext.request.contextPath}/manage/barcode?code=${tb}&height=36" alt="Barcode ${tb}" style="height: 28px; max-width: 130px; object-fit: contain; display: block;" />
+                                <span style="font-family: monospace; font-size: 10px; font-weight: 700; color: var(--text-primary); margin-top: 2px;">${tb}</span>
+                              </div>
+                            </c:if>
+                          </c:forTokens>
+                        </div>
+                      </c:when>
+                      <c:otherwise>
+                        <span style="color: #94a3b8; font-style: italic; font-size: 12px;">Chưa gán Barcode</span>
+                      </c:otherwise>
+                    </c:choose>
+                  </td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; color: var(--text-secondary);">${detail.product.unit}</td>
+                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; font-weight: 700; color: #ef4444;">-${detail.quantity}</td>
+                </tr>
+                <c:set var="totalItems" value="${totalItems + detail.quantity}"/>
+              </c:forEach>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="5" style="text-align: right; padding: 16px 12px; font-weight: 700; color: var(--text-secondary);">Tổng số lượng xuất:</td>
+                <td style="text-align: right; padding: 16px 12px; font-weight: 800; font-size: 16px; color: var(--primary-color);">${totalItems}</td>
+              </tr>
+            </tfoot>
+          </c:otherwise>
+        </c:choose>
       </table>
     </div>
   </div>

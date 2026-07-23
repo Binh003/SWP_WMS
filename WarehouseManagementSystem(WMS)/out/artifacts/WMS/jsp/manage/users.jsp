@@ -586,7 +586,7 @@
     "RECEIPT_READ": "Xem Phiếu Nhập kho",
     "RECEIPT_WRITE": "Tạo Phiếu Nhập kho",
     "SHIPMENT_READ": "Xem Phiếu Xuất kho",
-    "SHIPMENT_WRITE": "Tạo Phiếu Xuất kho"
+    "SHIPMENT_WRITE": "Tạo Yêu Cầu Xuất Kho"
   };
 
   function toggleDropdown(button) {

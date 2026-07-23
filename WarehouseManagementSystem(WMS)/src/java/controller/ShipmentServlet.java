@@ -54,12 +54,15 @@ public class ShipmentServlet extends HttpServlet {
         
         // 1. Calculate stats counts
         List<Shipment> allShipments = shipmentDAO.getAll();
-        int pendingCount = 0; // Represents "Chờ lấy hàng" (APPROVED + PENDING)
-        int shippingCount = 0; // Represents "Đang xử lý" (PICKING)
+        int pendingCount = 0;   // Represents "Yêu cầu xuất kho" (PENDING)
+        int approvedCount = 0;  // Represents "Đã tạo phiếu xuất" (APPROVED)
+        int shippingCount = 0;  // Represents "Đang xử lý" (PICKING)
         int completedCount = 0; // Represents "Hoàn thành" (COMPLETED)
         for (Shipment s : allShipments) {
-            if ("PENDING".equals(s.getStatus()) || "APPROVED".equals(s.getStatus())) {
+            if ("PENDING".equals(s.getStatus())) {
                 pendingCount++;
+            } else if ("APPROVED".equals(s.getStatus())) {
+                approvedCount++;
             } else if ("PICKING".equals(s.getStatus())) {
                 shippingCount++;
             } else if ("COMPLETED".equals(s.getStatus())) {
@@ -67,6 +70,7 @@ public class ShipmentServlet extends HttpServlet {
             }
         }
         request.setAttribute("pendingCount", pendingCount);
+        request.setAttribute("approvedCount", approvedCount);
         request.setAttribute("shippingCount", shippingCount);
         request.setAttribute("completedCount", completedCount);
 
@@ -194,7 +198,7 @@ public class ShipmentServlet extends HttpServlet {
         
         String status = WebUtil.param(request, "status");
         if (status == null || status.trim().isEmpty()) {
-            status = "APPROVED";
+            status = "PENDING";
         }
         s.setStatus(status);
 
@@ -234,11 +238,11 @@ public class ShipmentServlet extends HttpServlet {
 
         try {
             shipmentDAO.insertWithDetails(s);
-            String msg = "Đã tạo phiếu xuất kho thành công";
+            String msg = "Đã tạo yêu cầu xuất kho thành công";
             WebUtil.setFlashSuccess(request, msg);
             WebUtil.redirect(request, response, "/manage/shipments");
         } catch (SQLException ex) {
-            WebUtil.setFlashError(request, "Lỗi tạo phiếu xuất: " + ex.getMessage());
+            WebUtil.setFlashError(request, "Lỗi tạo yêu cầu xuất kho: " + ex.getMessage());
             WebUtil.redirect(request, response, "/manage/shipments?action=create");
         }
     }
@@ -276,10 +280,10 @@ public class ShipmentServlet extends HttpServlet {
             try {
                 shipmentDAO.updateStatus(id, status, userId);
                 String msg = "Đã cập nhật trạng thái phiếu xuất";
-                if ("PENDING".equals(status)) msg = "Đã gửi yêu cầu phê duyệt phiếu xuất";
-                else if ("APPROVED".equals(status)) msg = "Đã phê duyệt phiếu xuất";
+                if ("PENDING".equals(status)) msg = "Đã gửi yêu cầu xuất kho";
+                else if ("APPROVED".equals(status)) msg = "Đã tạo phiếu xuất kho thành công";
                 else if ("PICKING".equals(status)) msg = "Bắt đầu lấy hàng & đóng gói";
-                else if ("CANCELLED".equals(status)) msg = "Đã hủy phiếu xuất và hoàn trả tồn kho (nếu có)";
+                else if ("CANCELLED".equals(status)) msg = "Đã hủy phiếu xuất kho và hoàn trả tồn kho (nếu có)";
                 WebUtil.setFlashSuccess(request, msg);
             } catch (SQLException ex) {
                 WebUtil.setFlashError(request, "Lỗi cập nhật trạng thái: " + ex.getMessage());

@@ -489,32 +489,28 @@
     const container = document.getElementById('productRows');
     const firstRow = container.querySelector('.product-row');
     const newRow = firstRow.cloneNode(true);
-    
-    // If the cloned row contains an initialized searchable-select-wrapper, unwrap it
+
     const wrapper = newRow.querySelector('.searchable-select-wrapper');
     if (wrapper) {
-      const select = wrapper.querySelector('select');
-      select.style.display = 'block';
-      wrapper.parentNode.replaceChild(select, wrapper);
+        const select = wrapper.querySelector('select');
+        select.style.display = 'block';
+        wrapper.parentNode.replaceChild(select, wrapper);
     }
 
-    // Reset values
     const selectElem = newRow.querySelector('select');
     selectElem.value = '';
+
     newRow.querySelector('input[type="number"]').value = '1';
-    newRow.querySelector('input[name="batchCode[]"]').value = '';
-    
-    // Show delete button
+
+    // KHÔNG reset batchCode ở trang tạo phiếu
+
     newRow.querySelector('button').style.display = 'inline-flex';
-    
-    // Make sure first row delete button is also visible if there are > 1 rows
     firstRow.querySelector('button').style.display = 'inline-flex';
-    
+
     container.appendChild(newRow);
 
-    // Make the new select searchable
     makeSelectSearchable(selectElem);
-  }
+}
 
   function removeRow(btn) {
     const container = document.getElementById('productRows');

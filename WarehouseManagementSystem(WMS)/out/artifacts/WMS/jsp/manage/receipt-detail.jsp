@@ -241,20 +241,24 @@
       </div>
 
       <!-- Product List Table -->
-      <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0; text-transform: uppercase;">Chi tiết danh sách hàng thực nhận</h3>
+      <h3 style="font-size: 15px; font-weight: 700; color: #1e293b; margin: 0 0 12px 0; text-transform: uppercase;">
+        Chi tiết danh sách hàng thực nhận
+      </h3>
+
       <div style="overflow-x: auto; margin-bottom: 30px;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1050px;">
+        <table style="width: 100%; min-width: 1050px; border-collapse: collapse; font-size: 13px;">
           <thead>
             <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1; text-align: left;">
               <th style="padding: 10px 12px; font-weight: 700; color: #475569;">#</th>
               <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Mã sản phẩm</th>
               <th style="padding: 10px 12px; font-weight: 700; color: #475569;">Tên sản phẩm</th>
               <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right;">Đơn vị</th>
-              <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right; width: 130px;">Số lượng thực nhận</th>
+              <th style="padding: 10px 12px; font-weight: 700; color: #475569; text-align: right; width: 150px;">Số lượng thực nhận</th>
               <th style="padding: 10px 12px; font-weight: 700; color: #475569; min-width: 190px;">Batch Code</th>
-              <th style="padding: 10px 12px; font-weight: 700; color: #475569; min-width: 260px;">Barcode từng sản phẩm</th>
+              <th style="padding: 10px 12px; font-weight: 700; color: #475569; min-width: 280px;">Barcode từng sản phẩm</th>
             </tr>
           </thead>
+
           <tbody>
             <c:forEach var="detail" items="${receipt.details}" varStatus="status">
               <tr style="border-bottom: 1px solid #e2e8f0; vertical-align: top;">
@@ -348,7 +352,7 @@
       <div style="margin-top: 30px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1.5px solid #cbd5e1; padding-top: 20px;" class="no-print">
         <c:if test="${receipt.status == 'RECEIVED' && (currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF'))}">
           <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='COMPLETED'" class="premium-btn-primary" style="height: 38px !important; padding: 0 16px; font-size: 13px; font-weight: 600; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: none; border-radius: 8px; color: white;">
-            Tạo phiếu nhập kho thành công
+            Hoàn Thành
           </button>
           <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="height: 38px !important; padding: 0 16px; font-size: 13px; font-weight: 600; color: #ef4444; border-color: #fecaca; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border-radius: 8px; background: transparent;">
             Hủy phiếu
@@ -471,7 +475,7 @@
               <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
                 <div style="display: flex; gap: 8px;">
                   <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='COMPLETED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important;">
-                    Tạo phiếu nhập kho thành công
+                    Hoàn Thành
                   </button>
                   <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value='CANCELLED'" class="premium-btn-outline" style="color: #ef4444; border-color: #fecaca; height: 36px !important; padding: 0 16px; font-size: 13px;">
                     Hủy phiếu
