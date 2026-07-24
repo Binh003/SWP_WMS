@@ -917,7 +917,7 @@ function toggleBarcodes(containerId, btn) {
 // Manual Batch Modal Controls with Multi-Batch Checkboxes & Combined Barcode Checkboxes
 window.productBatchesStore = {};
 
-window.openManualBatchModal = function() {
+function openManualBatchModal() {
   const modal = document.getElementById('manualBatchModal');
   if (!modal) return;
   modal.style.display = 'flex';
@@ -928,21 +928,27 @@ window.openManualBatchModal = function() {
       .then(res => res.json())
       .then(batches => {
         window.productBatchesStore[${detail.id}] = batches;
-        renderBatchCheckboxes(${detail.id}, ${detail.quantity}, '${detail.batchCode}', '${detail.barcode}');
+        const bInput = document.getElementById('inputBatch_${detail.id}');
+        const bcInput = document.getElementById('inputBarcode_${detail.id}');
+        const bVal = bInput ? bInput.value : '';
+        const bcVal = bcInput ? bcInput.value : '';
+        renderBatchCheckboxes(${detail.id}, ${detail.quantity}, bVal, bcVal);
       })
       .catch(err => console.error(err));
   </c:forEach>
-};
+}
+window.openManualBatchModal = openManualBatchModal;
 
-window.closeManualBatchModal = function() {
+function closeManualBatchModal() {
   const modal = document.getElementById('manualBatchModal');
   if (modal) {
     modal.style.display = 'none';
     document.body.style.overflow = 'auto';
   }
-};
+}
+window.closeManualBatchModal = closeManualBatchModal;
 
-window.renderBatchCheckboxes = function(detailId, requiredQty, existingBatchCodeStr, existingBarcodeStr) {
+function renderBatchCheckboxes(detailId, requiredQty, existingBatchCodeStr, existingBarcodeStr) {
   const batchListElem = document.getElementById('batchList_' + detailId);
   if (!batchListElem) return;
 
@@ -990,9 +996,10 @@ window.renderBatchCheckboxes = function(detailId, requiredQty, existingBatchCode
   });
 
   onBatchSelectionChange(detailId, requiredQty, existingBarcodeStr);
-};
+}
+window.renderBatchCheckboxes = renderBatchCheckboxes;
 
-window.onBatchSelectionChange = function(detailId, requiredQty, prefilledBarcodeStr) {
+function onBatchSelectionChange(detailId, requiredQty, prefilledBarcodeStr) {
   const checkedBatchCBs = document.querySelectorAll('.cb-batch-' + detailId + ':checked');
   const selectedBatchCodes = Array.from(checkedBatchCBs).map(cb => cb.value);
 
@@ -1068,9 +1075,10 @@ window.onBatchSelectionChange = function(detailId, requiredQty, prefilledBarcode
   });
 
   onBarcodeCheckChange(detailId, requiredQty);
-};
+}
+window.onBatchSelectionChange = onBatchSelectionChange;
 
-window.onBarcodeCheckChange = function(detailId, requiredQty) {
+function onBarcodeCheckChange(detailId, requiredQty) {
   const checkboxes = document.querySelectorAll('.cb-barcode-' + detailId + ':checked');
   const checkedValues = Array.from(checkboxes).map(cb => cb.value);
 
@@ -1080,17 +1088,19 @@ window.onBarcodeCheckChange = function(detailId, requiredQty) {
   }
 
   updateBadgeCounter(detailId, checkedValues.length, requiredQty, false);
-};
+}
+window.onBarcodeCheckChange = onBarcodeCheckChange;
 
-window.autoSelectBarcodes = function(detailId, requiredQty) {
+function autoSelectBarcodes(detailId, requiredQty) {
   const checkboxes = document.querySelectorAll('.cb-barcode-' + detailId);
   checkboxes.forEach((cb, idx) => {
     cb.checked = idx < requiredQty;
   });
   onBarcodeCheckChange(detailId, requiredQty);
-};
+}
+window.autoSelectBarcodes = autoSelectBarcodes;
 
-window.updateBadgeCounter = function(detailId, count, requiredQty, isFifo) {
+function updateBadgeCounter(detailId, count, requiredQty, isFifo) {
   const badge = document.getElementById('badgeCount_' + detailId);
   if (!badge) return;
 
@@ -1118,7 +1128,10 @@ window.updateBadgeCounter = function(detailId, count, requiredQty, isFifo) {
     badge.style.color = '#b91c1c';
     badge.innerHTML = '❌ Đã chọn ' + count + '/' + requiredQty + ' Barcode (Vượt ' + (count - requiredQty) + ')';
   }
-window.validateManualBatchForm = function() {
+}
+window.updateBadgeCounter = updateBadgeCounter;
+
+function validateManualBatchForm() {
   <c:forEach var="detail" items="${shipment.details}">
     const checkedBatches_${detail.id} = document.querySelectorAll('.cb-batch-${detail.id}:checked');
     if (checkedBatches_${detail.id}.length > 0) {
@@ -1136,7 +1149,8 @@ window.validateManualBatchForm = function() {
     }
   </c:forEach>
   return true;
-};
+}
+window.validateManualBatchForm = validateManualBatchForm;
 </script>
 
 <!-- Modal Chọn Lô & Barcode Thủ Công -->
