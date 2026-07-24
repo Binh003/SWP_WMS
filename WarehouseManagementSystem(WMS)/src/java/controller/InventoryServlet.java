@@ -207,14 +207,9 @@ public class InventoryServlet extends HttpServlet {
                     WebUtil.redirect(request, response, "/manage/inventories?action=edit&id=" + i.getId());
                     return;
                 }
-                String batchCode = WebUtil.param(request, "batchCode");
-                String barcode = WebUtil.param(request, "barcode");
-                
                 long productId = i.getProductId();
                 String oldBatchCode = i.getBatchCode();
                 
-                i.setBatchCode(batchCode != null ? batchCode.trim() : "");
-                i.setBarcode(barcode != null ? barcode.trim() : "");
                 i.setMinStockLevel(minStockLevel);
                 
                 inventoryDAO.update(i);

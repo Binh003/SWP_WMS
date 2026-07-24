@@ -99,7 +99,7 @@ public class ReceiptDAO {
 
     private List<ReceiptDetail> getDetailsByReceiptId(Connection conn, long receiptId) throws SQLException {
         List<ReceiptDetail> details = new ArrayList<>();
-        String sql = "SELECT rd.*, p.sku, p.name as product_name, p.unit " +
+        String sql = "SELECT rd.*, p.sku, p.name as product_name, p.unit, p.price " +
                      "FROM receipt_details rd " +
                      "INNER JOIN products p ON rd.product_id = p.id " +
                      "WHERE rd.receipt_id = ?";
@@ -120,6 +120,7 @@ public class ReceiptDAO {
                     p.setSku(rs.getString("sku"));
                     p.setName(rs.getString("product_name"));
                     p.setUnit(rs.getString("unit"));
+                    p.setPrice(rs.getDouble("price"));
                     rd.setProduct(p);
                     
                     details.add(rd);

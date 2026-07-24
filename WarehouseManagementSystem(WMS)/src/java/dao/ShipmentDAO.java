@@ -81,7 +81,7 @@ public class ShipmentDAO {
 
     private List<ShipmentDetail> getDetailsByShipmentId(long shipmentId) throws SQLException {
         List<ShipmentDetail> details = new ArrayList<>();
-        String sql = "SELECT sd.*, p.sku, p.name as product_name, p.unit " +
+        String sql = "SELECT sd.*, p.sku, p.name as product_name, p.unit, p.price " +
                      "FROM shipment_details sd " +
                      "INNER JOIN products p ON sd.product_id = p.id " +
                      "WHERE sd.shipment_id = ?";
@@ -104,6 +104,7 @@ public class ShipmentDAO {
                     p.setSku(rs.getString("sku"));
                     p.setName(rs.getString("product_name"));
                     p.setUnit(rs.getString("unit"));
+                    p.setPrice(rs.getDouble("price"));
                     sd.setProduct(p);
 
                     // Fallback FIFO allocation for this specific detail quantity if not stored yet

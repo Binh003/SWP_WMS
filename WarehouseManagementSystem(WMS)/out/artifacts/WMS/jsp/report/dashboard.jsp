@@ -607,6 +607,7 @@
                 <th>Trạng thái</th>
                 <th style="text-align: right;">Tổng số lượng</th>
                 <th style="text-align: right;">Tổng giá trị nhập</th>
+                <th style="text-align: center;">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -625,12 +626,18 @@
                       </td>
                       <td style="text-align: right; font-weight: 600;"><fmt:formatNumber value="${item.totalQty}" pattern="#,##0"/></td>
                       <td style="text-align: right; font-weight: 700; color: #1e293b;"><fmt:formatNumber value="${item.totalVal}" type="currency" currencyCode="VND"/></td>
+                      <td style="text-align: center;">
+                        <button type="button" onclick="openReceiptDetailModal('${item.id}')" title="Xem chi tiết phiếu nhập kho" style="padding: 6px 14px; background: rgba(59, 130, 246, 0.08); color: #2563eb; border: 1.5px solid rgba(59, 130, 246, 0.25); border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='#2563eb'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(59, 130, 246, 0.08)'; this.style.color='#2563eb';">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                          Xem chi tiết
+                        </button>
+                      </td>
                     </tr>
                   </c:forEach>
                 </c:when>
                 <c:otherwise>
                   <tr>
-                    <td colspan="7" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy lịch sử nhập kho nào phù hợp với bộ lọc ngày đã chọn.</td>
+                    <td colspan="8" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy lịch sử nhập kho nào phù hợp với bộ lọc ngày đã chọn.</td>
                   </tr>
                 </c:otherwise>
               </c:choose>
@@ -741,6 +748,7 @@
                 <th>Trạng thái</th>
                 <th style="text-align: right;">Tổng số lượng</th>
                 <th style="text-align: right;">Tổng giá trị xuất</th>
+                <th style="text-align: center;">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -759,12 +767,18 @@
                       </td>
                       <td style="text-align: right; font-weight: 600;"><fmt:formatNumber value="${item.totalQty}" pattern="#,##0"/></td>
                       <td style="text-align: right; font-weight: 700; color: #1e293b;"><fmt:formatNumber value="${item.totalVal}" type="currency" currencyCode="VND"/></td>
+                      <td style="text-align: center;">
+                        <button type="button" onclick="openShipmentDetailModal('${item.id}')" title="Xem chi tiết phiếu xuất kho" style="padding: 6px 14px; background: rgba(16, 185, 129, 0.08); color: #059669; border: 1.5px solid rgba(16, 185, 129, 0.25); border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='#059669'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#059669';">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                          Xem chi tiết
+                        </button>
+                      </td>
                     </tr>
                   </c:forEach>
                 </c:when>
                 <c:otherwise>
                   <tr>
-                    <td colspan="7" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy lịch sử xuất kho nào phù hợp với bộ lọc ngày đã chọn.</td>
+                    <td colspan="8" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy lịch sử xuất kho nào phù hợp với bộ lọc ngày đã chọn.</td>
                   </tr>
                 </c:otherwise>
               </c:choose>
@@ -875,6 +889,7 @@
                 <th style="text-align: right;">Lượng tồn kho</th>
                 <th style="text-align: right;">Định mức tối thiểu</th>
                 <th>Trạng thái</th>
+                <th style="text-align: center;">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -901,12 +916,18 @@
                           </c:otherwise>
                         </c:choose>
                       </td>
+                      <td style="text-align: center;">
+                        <button type="button" onclick="openInventoryDetailModal('${item.productId}', '${item.batchCode}')" title="Xem chi tiết tồn kho sản phẩm" style="padding: 6px 14px; background: rgba(109, 40, 217, 0.08); color: #6d28d9; border: 1.5px solid rgba(109, 40, 217, 0.25); border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='#6d28d9'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(109, 40, 217, 0.08)'; this.style.color='#6d28d9';">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                          Xem chi tiết
+                        </button>
+                      </td>
                     </tr>
                   </c:forEach>
                 </c:when>
                 <c:otherwise>
                   <tr>
-                    <td colspan="7" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy thông tin tồn kho.</td>
+                    <td colspan="8" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy thông tin tồn kho.</td>
                   </tr>
                 </c:otherwise>
               </c:choose>
@@ -1032,6 +1053,7 @@
                 <th style="text-align: right; background-color: #fef2f2;">Xuất kho</th>
                 <th style="text-align: right; background-color: #faf5ff;">Tồn cuối</th>
                 <th style="text-align: right;">Giá trị tồn cuối</th>
+                <th style="text-align: center;">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -1053,12 +1075,18 @@
                       <td style="text-align: right; font-weight: 700; color: #4f46e5;">
                         <fmt:formatNumber value="${item.endingQty * item.price}" type="currency" currencyCode="VND"/>
                       </td>
+                      <td style="text-align: center;">
+                        <button type="button" onclick="openNXTDetailModal('${item.productId}')" title="Xem lịch sử nhập xuất tồn của sản phẩm" style="padding: 6px 14px; background: rgba(79, 70, 229, 0.08); color: #4f46e5; border: 1.5px solid rgba(79, 70, 229, 0.25); border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='#4f46e5'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(79, 70, 229, 0.08)'; this.style.color='#4f46e5';">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                          Xem chi tiết
+                        </button>
+                      </td>
                     </tr>
                   </c:forEach>
                 </c:when>
                 <c:otherwise>
                   <tr>
-                    <td colspan="10" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy dữ liệu nào phù hợp với bộ lọc đã chọn.</td>
+                    <td colspan="11" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy dữ liệu nào phù hợp với bộ lọc đã chọn.</td>
                   </tr>
                 </c:otherwise>
               </c:choose>
@@ -1354,6 +1382,838 @@
       window.location.search = urlParams.toString();
     }
   });
+
+  // Modal Chi tiết Phiếu Nhập & Phiếu Xuất kho
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+  }
+
+  function formatBatchCode(batchText) {
+    if (!batchText || batchText.trim() === '') return '-';
+    const batches = batchText.split(',').map(b => b.trim()).filter(b => b.length > 0);
+    if (batches.length === 0) return '-';
+    return '<div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">' +
+           batches.map(b => '<span style="color: #6d28d9; font-weight: 700; font-family: monospace; background: rgba(109, 40, 217, 0.08); padding: 2px 8px; border-radius: 4px; display: inline-block; white-space: nowrap;">' + b + '</span>').join('') +
+           '</div>';
+  }
+
+  function generateBarcodeSvg(barcodeText, idx) {
+    if (!barcodeText || barcodeText.trim() === '') return '<span style="color: #94a3b8; font-size: 11px;">-</span>';
+    const codes = barcodeText.split(',').map(c => c.trim()).filter(c => c.length > 0);
+    if (codes.length === 0) return '<span style="color: #94a3b8; font-size: 11px;">-</span>';
+
+    const renderBox = (code) => {
+      return '<div style="display: inline-flex; flex-direction: column; align-items: center; padding: 4px 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.04); white-space: nowrap;">' +
+             '  <svg width="64" height="20" viewBox="0 0 64 20">' +
+             '    <rect x="2" y="2" width="2" height="16" fill="#1e293b"/>' +
+             '    <rect x="6" y="2" width="1" height="16" fill="#1e293b"/>' +
+             '    <rect x="9" y="2" width="3" height="16" fill="#1e293b"/>' +
+             '    <rect x="14" y="2" width="1" height="16" fill="#1e293b"/>' +
+             '    <rect x="17" y="2" width="2" height="16" fill="#1e293b"/>' +
+             '    <rect x="21" y="2" width="4" height="16" fill="#1e293b"/>' +
+             '    <rect x="27" y="2" width="1" height="16" fill="#1e293b"/>' +
+             '    <rect x="30" y="2" width="2" height="16" fill="#1e293b"/>' +
+             '    <rect x="34" y="2" width="3" height="16" fill="#1e293b"/>' +
+             '    <rect x="39" y="2" width="1" height="16" fill="#1e293b"/>' +
+             '    <rect x="42" y="2" width="2" height="16" fill="#1e293b"/>' +
+             '    <rect x="46" y="2" width="4" height="16" fill="#1e293b"/>' +
+             '    <rect x="52" y="2" width="1" height="16" fill="#1e293b"/>' +
+             '    <rect x="55" y="2" width="2" height="16" fill="#1e293b"/>' +
+             '  </svg>' +
+             '  <span style="font-size: 10px; font-family: monospace; color: #475569; font-weight: 700; margin-top: 2px;">' + code + '</span>' +
+             '</div>';
+    };
+
+    if (codes.length <= 2) {
+      return '<div style="display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; padding: 4px 0;">' +
+             codes.map(renderBox).join('') +
+             '</div>';
+    }
+
+    const visibleCodes = codes.slice(0, 2);
+    const hiddenCodes = codes.slice(2);
+    const hiddenCount = hiddenCodes.length;
+    const totalCount = codes.length;
+    const randomSuffix = Math.floor(Math.random() * 100000);
+    const containerId = 'extraBarcodes_' + (idx !== undefined ? idx : randomSuffix);
+    const btnId = 'btnToggleBarcode_' + (idx !== undefined ? idx : randomSuffix);
+
+    return '<div style="display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; padding: 4px 0;">' +
+           visibleCodes.map(renderBox).join('') +
+           '  <div id="' + containerId + '" style="display: none; flex-direction: column; gap: 6px; align-items: center;">' +
+           hiddenCodes.map(renderBox).join('') +
+           '  </div>' +
+           '  <button type="button" id="' + btnId + '" onclick="toggleBarcodeExpand(\'' + containerId + '\', \'' + btnId + '\', ' + hiddenCount + ', ' + totalCount + ')" style="padding: 4px 10px; border: 1.5px solid #bfdbfe; background: #eff6ff; color: #2563eb; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background=\'#dbeafe\';" onmouseout="this.style.background=\'#eff6ff\';">' +
+           '    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>' +
+           '    +' + hiddenCount + ' mã khác (Xem tất cả ' + totalCount + ' mã)' +
+           '  </button>' +
+           '</div>';
+  }
+
+  window.toggleBarcodeExpand = function(containerId, btnId, hiddenCount, totalCount) {
+    const container = document.getElementById(containerId);
+    const btn = document.getElementById(btnId);
+    if (!container || !btn) return;
+
+    if (container.style.display === 'none' || container.style.display === '') {
+      container.style.display = 'flex';
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg> Thu gọn';
+      btn.style.background = '#f1f5f9';
+      btn.style.color = '#475569';
+      btn.style.borderColor = '#cbd5e1';
+    } else {
+      container.style.display = 'none';
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg> +' + hiddenCount + ' mã khác (Xem tất cả ' + totalCount + ' mã)';
+      btn.style.background = '#eff6ff';
+      btn.style.color = '#2563eb';
+      btn.style.borderColor = '#bfdbfe';
+    }
+  };
+
+  // 1. Modal Chi tiết Phiếu Nhập kho
+  window.openReceiptDetailModal = function(receiptId) {
+    const modal = document.getElementById('receiptDetailModal');
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.style.opacity = '1';
+      const card = modal.querySelector('.receipt-modal-card');
+      if (card) card.style.transform = 'scale(1)';
+    }, 10);
+
+    fetch('${pageContext.request.contextPath}/manage/reports?action=apiReceiptDetail&id=' + receiptId)
+      .then(response => {
+        if (!response.ok) throw new Error('HTTP error ' + response.status);
+        return response.json();
+      })
+      .then(data => {
+        if (data.error) {
+          alert('Lỗi: ' + data.error);
+          closeReceiptDetailModal();
+          return;
+        }
+
+        document.getElementById('modalReceiptCodeHeader').innerText = '#' + data.code;
+        document.getElementById('modalReceiptCode').innerText = '#' + data.code;
+        document.getElementById('modalCreatedAt').innerText = data.createdAt || '-';
+        document.getElementById('modalSupplierName').innerText = data.supplierName || '-';
+        document.getElementById('modalCreatorName').innerText = data.creatorName || '-';
+        document.getElementById('modalTotalVal').innerText = formatCurrency(data.totalVal);
+
+        const statusContainer = document.getElementById('modalStatusContainer');
+        let badgeClass = 'rgba(59, 130, 246, 0.12)';
+        let badgeColor = '#2563eb';
+        if (data.status === 'COMPLETED') {
+          badgeClass = 'rgba(16, 185, 129, 0.12)';
+          badgeColor = '#10b981';
+        } else if (data.status === 'CANCELLED') {
+          badgeClass = 'rgba(239, 68, 68, 0.12)';
+          badgeColor = '#ef4444';
+        }
+        statusContainer.innerHTML = '<span class="report-badge" style="background: ' + badgeClass + '; color: ' + badgeColor + '; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 12px; display: inline-block;">' + (data.status || '') + '</span>';
+
+        const details = data.details || [];
+        document.getElementById('modalProductCountSummary').innerText = details.length + ' mặt hàng, tổng ' + (data.totalQty || 0) + ' cái';
+
+        const tbody = document.getElementById('modalDetailsTableBody');
+        tbody.innerHTML = '';
+        if (details.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #94a3b8; padding: 20px;">Không có chi tiết sản phẩm nào.</td></tr>';
+        } else {
+          details.forEach((d, idx) => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #f1f5f9';
+            tr.innerHTML = 
+              '<td style="padding: 12px 14px; text-align: center; color: #64748b; font-weight: 600;">' + (idx + 1) + '</td>' +
+              '<td style="padding: 12px 14px; font-weight: 600; color: #475569;">' + (d.sku || '-') + '</td>' +
+              '<td style="padding: 12px 14px; font-weight: 700; color: #0f172a;">' + (d.productName || '-') + '</td>' +
+              '<td style="padding: 12px 14px; color: #475569;">' + (d.unit || '-') + '</td>' +
+              '<td style="padding: 12px 14px;">' + formatBatchCode(d.batchCode) + '</td>' +
+              '<td style="padding: 12px 14px; text-align: center;">' + generateBarcodeSvg(d.barcode, 'rcpt_' + idx) + '</td>' +
+              '<td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #0f172a;">' + d.quantity + '</td>' +
+              '<td style="padding: 12px 14px; text-align: right; color: #334155;">' + formatCurrency(d.price) + '</td>' +
+              '<td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #0f172a;">' + formatCurrency(d.totalVal) + '</td>';
+            tbody.appendChild(tr);
+          });
+        }
+
+        const imgContainer = document.getElementById('modalInvoiceImageContainer');
+        if (data.invoiceImage && data.invoiceImage.trim() !== '') {
+          imgContainer.innerHTML = '<a href="${pageContext.request.contextPath}/uploads/' + data.invoiceImage + '" target="_blank">' +
+                                   '  <img src="${pageContext.request.contextPath}/uploads/' + data.invoiceImage + '" style="max-width: 220px; max-height: 160px; border-radius: 8px; border: 1px solid #cbd5e1; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" alt="Ảnh hóa đơn"/>' +
+                                   '</a>';
+        } else {
+          imgContainer.innerHTML = '<div style="color: #94a3b8; font-size: 13px; font-style: italic;">Không có ảnh hóa đơn đính kèm</div>';
+        }
+
+        const btnGo = document.getElementById('btnGoToOriginalPage');
+        btnGo.href = '${pageContext.request.contextPath}/manage/receipts?action=view&id=' + receiptId;
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Đã xảy ra lỗi khi tải thông tin chi tiết phiếu nhập kho.');
+        closeReceiptDetailModal();
+      });
+  };
+
+  window.closeReceiptDetailModal = function() {
+    const modal = document.getElementById('receiptDetailModal');
+    if (!modal) return;
+    modal.style.opacity = '0';
+    const card = modal.querySelector('.receipt-modal-card');
+    if (card) card.style.transform = 'scale(0.95)';
+    setTimeout(() => { modal.style.display = 'none'; }, 250);
+  };
+
+  window.printReceiptDetailModal = function() {
+    const printContent = document.getElementById('receiptModalBody').innerHTML;
+    const codeHeader = document.getElementById('modalReceiptCodeHeader').innerText;
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    printWindow.document.write('<html><head><title>Chi tiết Phiếu Nhập kho ' + codeHeader + '</title>');
+    printWindow.document.write('<style>body { font-family: system-ui, sans-serif; padding: 24px; color: #0f172a; } table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; } th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; } th { background: #f8fafc; font-weight: bold; }</style></head><body>');
+    printWindow.document.write('<h2 style="margin-bottom: 20px; border-bottom: 2px solid #2563eb; padding-bottom: 8px;">Chi tiết Phiếu Nhập kho ' + codeHeader + '</h2>');
+    printWindow.document.write(printContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 250);
+  };
+
+  // 2. Modal Chi tiết Phiếu Xuất kho
+  window.openShipmentDetailModal = function(shipmentId) {
+    const modal = document.getElementById('shipmentDetailModal');
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.style.opacity = '1';
+      const card = modal.querySelector('.shipment-modal-card');
+      if (card) card.style.transform = 'scale(1)';
+    }, 10);
+
+    fetch('${pageContext.request.contextPath}/manage/reports?action=apiShipmentDetail&id=' + shipmentId)
+      .then(response => {
+        if (!response.ok) throw new Error('HTTP error ' + response.status);
+        return response.json();
+      })
+      .then(data => {
+        if (data.error) {
+          alert('Lỗi: ' + data.error);
+          closeShipmentDetailModal();
+          return;
+        }
+
+        document.getElementById('modalShipmentCodeHeader').innerText = '#' + data.code;
+        document.getElementById('modalShipmentCode').innerText = '#' + data.code;
+        document.getElementById('modalShipmentCreatedAt').innerText = data.createdAt || '-';
+        document.getElementById('modalDestination').innerText = data.destination || '-';
+        document.getElementById('modalShipmentCreatorName').innerText = data.creatorName || '-';
+        document.getElementById('modalShipmentTotalVal').innerText = formatCurrency(data.totalVal);
+
+        const statusContainer = document.getElementById('modalShipmentStatusContainer');
+        let badgeClass = 'rgba(16, 185, 129, 0.12)';
+        let badgeColor = '#10b981';
+        if (data.status === 'CANCELLED') {
+          badgeClass = 'rgba(239, 68, 68, 0.12)';
+          badgeColor = '#ef4444';
+        } else if (data.status === 'DRAFT' || data.status === 'PENDING') {
+          badgeClass = 'rgba(245, 158, 11, 0.12)';
+          badgeColor = '#d97706';
+        }
+        statusContainer.innerHTML = '<span class="report-badge" style="background: ' + badgeClass + '; color: ' + badgeColor + '; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 12px; display: inline-block;">' + (data.status || '') + '</span>';
+
+        const details = data.details || [];
+        document.getElementById('modalShipmentProductCountSummary').innerText = details.length + ' mặt hàng, tổng ' + (data.totalQty || 0) + ' cái';
+
+        const tbody = document.getElementById('modalShipmentDetailsTableBody');
+        tbody.innerHTML = '';
+        if (details.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #94a3b8; padding: 20px;">Không có chi tiết sản phẩm nào.</td></tr>';
+        } else {
+          details.forEach((d, idx) => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #f1f5f9';
+            tr.innerHTML = 
+              '<td style="padding: 12px 14px; text-align: center; color: #64748b; font-weight: 600;">' + (idx + 1) + '</td>' +
+              '<td style="padding: 12px 14px; font-weight: 600; color: #475569;">' + (d.sku || '-') + '</td>' +
+              '<td style="padding: 12px 14px; font-weight: 700; color: #0f172a;">' + (d.productName || '-') + '</td>' +
+              '<td style="padding: 12px 14px; color: #475569;">' + (d.unit || '-') + '</td>' +
+              '<td style="padding: 12px 14px;">' + formatBatchCode(d.batchCode) + '</td>' +
+              '<td style="padding: 12px 14px; text-align: center;">' + generateBarcodeSvg(d.barcode, 'shpm_' + idx) + '</td>' +
+              '<td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #0f172a;">' + d.quantity + '</td>' +
+              '<td style="padding: 12px 14px; text-align: right; color: #334155;">' + formatCurrency(d.price) + '</td>' +
+              '<td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #0f172a;">' + formatCurrency(d.totalVal) + '</td>';
+            tbody.appendChild(tr);
+          });
+        }
+
+        const notesElem = document.getElementById('modalShipmentNotes');
+        notesElem.innerText = data.notes && data.notes.trim() !== '' ? data.notes : 'Không có ghi chú';
+
+        const btnGo = document.getElementById('btnGoToOriginalShipmentPage');
+        btnGo.href = '${pageContext.request.contextPath}/manage/shipments?action=view&id=' + shipmentId;
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Đã xảy ra lỗi khi tải thông tin chi tiết phiếu xuất kho.');
+        closeShipmentDetailModal();
+      });
+  };
+
+  window.closeShipmentDetailModal = function() {
+    const modal = document.getElementById('shipmentDetailModal');
+    if (!modal) return;
+    modal.style.opacity = '0';
+    const card = modal.querySelector('.shipment-modal-card');
+    if (card) card.style.transform = 'scale(0.95)';
+    setTimeout(() => { modal.style.display = 'none'; }, 250);
+  };
+
+  window.printShipmentDetailModal = function() {
+    const printContent = document.getElementById('shipmentModalBody').innerHTML;
+    const codeHeader = document.getElementById('modalShipmentCodeHeader').innerText;
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    printWindow.document.write('<html><head><title>Chi tiết Phiếu Xuất kho ' + codeHeader + '</title>');
+    printWindow.document.write('<style>body { font-family: system-ui, sans-serif; padding: 24px; color: #0f172a; } table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; } th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; } th { background: #f8fafc; font-weight: bold; }</style></head><body>');
+    printWindow.document.write('<h2 style="margin-bottom: 20px; border-bottom: 2px solid #10b981; padding-bottom: 8px;">Chi tiết Phiếu Xuất kho ' + codeHeader + '</h2>');
+    printWindow.document.write(printContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 250);
+  };
+
+  document.addEventListener('click', function(e) {
+    const rcptModal = document.getElementById('receiptDetailModal');
+    if (rcptModal && e.target === rcptModal) closeReceiptDetailModal();
+
+    const shpmModal = document.getElementById('shipmentDetailModal');
+    if (shpmModal && e.target === shpmModal) closeShipmentDetailModal();
+
+    const invModal = document.getElementById('inventoryDetailModal');
+    if (invModal && e.target === invModal) closeInventoryDetailModal();
+
+    const nxtModal = document.getElementById('nxtDetailModal');
+    if (nxtModal && e.target === nxtModal) closeNXTDetailModal();
+  });
+
+  // 3. Modal Chi tiết Tồn kho
+  window.openInventoryDetailModal = function(productId, batchCode) {
+    const modal = document.getElementById('inventoryDetailModal');
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.style.opacity = '1';
+      const card = modal.querySelector('.inventory-modal-card');
+      if (card) card.style.transform = 'scale(1)';
+    }, 10);
+
+    let url = '${pageContext.request.contextPath}/manage/reports?action=apiInventoryDetail&productId=' + productId;
+    if (batchCode && batchCode !== 'null') {
+      url += '&batchCode=' + encodeURIComponent(batchCode);
+    }
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error('HTTP error ' + response.status);
+        return response.json();
+      })
+      .then(data => {
+        if (data.error) {
+          alert('Lỗi: ' + data.error);
+          closeInventoryDetailModal();
+          return;
+        }
+
+        document.getElementById('modalInvProductNameHeader').innerText = data.productName || '-';
+        document.getElementById('modalInvSKU').innerText = data.sku || '-';
+        document.getElementById('modalInvProductName').innerText = data.productName || '-';
+        document.getElementById('modalInvBrandLine').innerText = (data.brandName || '-') + ' / ' + (data.productLineName || '-');
+        document.getElementById('modalInvUnit').innerText = data.unit || '-';
+        document.getElementById('modalInvPrice').innerText = formatCurrency(data.price);
+        document.getElementById('modalInvBatchCode').innerText = data.batchCode || '-';
+        document.getElementById('modalInvQtyInStock').innerText = (data.quantityInStock || 0).toLocaleString();
+        document.getElementById('modalInvMinStock').innerText = (data.minStockLevel || 0).toLocaleString();
+        document.getElementById('modalInvTotalVal').innerText = formatCurrency(data.totalVal);
+
+        const statusContainer = document.getElementById('modalInvStatusContainer');
+        let isLow = (data.status === 'Tồn kho thấp');
+        statusContainer.innerHTML = '<span class="report-badge" style="background: ' + (isLow ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.12)') + '; color: ' + (isLow ? '#ef4444' : '#10b981') + '; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 12px; display: inline-block;">' + (data.status || '') + '</span>';
+
+        const barcodeContainer = document.getElementById('modalInvBarcodeContainer');
+        barcodeContainer.innerHTML = generateBarcodeSvg(data.barcode, 'inv_detail_mod');
+
+        const btnGo = document.getElementById('btnGoToOriginalInvPage');
+        btnGo.href = '${pageContext.request.contextPath}/manage/inventories?action=list&sku=' + encodeURIComponent(data.sku || '');
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Đã xảy ra lỗi khi tải thông tin chi tiết tồn kho.');
+        closeInventoryDetailModal();
+      });
+  };
+
+  window.closeInventoryDetailModal = function() {
+    const modal = document.getElementById('inventoryDetailModal');
+    if (!modal) return;
+    modal.style.opacity = '0';
+    const card = modal.querySelector('.inventory-modal-card');
+    if (card) card.style.transform = 'scale(0.95)';
+    setTimeout(() => { modal.style.display = 'none'; }, 250);
+  };
+
+  window.printInventoryDetailModal = function() {
+    const printContent = document.getElementById('inventoryModalBody').innerHTML;
+    const nameHeader = document.getElementById('modalInvProductNameHeader').innerText;
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    printWindow.document.write('<html><head><title>Chi tiết Tồn Kho - ' + nameHeader + '</title>');
+    printWindow.document.write('<style>body { font-family: system-ui, sans-serif; padding: 24px; color: #0f172a; } table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; } th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; } th { background: #f8fafc; font-weight: bold; }</style></head><body>');
+    printWindow.document.write('<h2 style="margin-bottom: 20px; border-bottom: 2px solid #6d28d9; padding-bottom: 8px;">Chi tiết Tồn Kho - ' + nameHeader + '</h2>');
+    printWindow.document.write(printContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 250);
+  };
+
+  // 4. Modal Chi tiết Nhập Xuất Tồn (NXT)
+  window.openNXTDetailModal = function(productId) {
+    const modal = document.getElementById('nxtDetailModal');
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.style.opacity = '1';
+      const card = modal.querySelector('.nxt-modal-card');
+      if (card) card.style.transform = 'scale(1)';
+    }, 10);
+
+    const startDate = document.getElementById('startDate') ? document.getElementById('startDate').value : '';
+    const endDate = document.getElementById('endDate') ? document.getElementById('endDate').value : '';
+    let url = '${pageContext.request.contextPath}/manage/reports?action=apiNXTDetail&productId=' + productId +
+              '&startDate=' + encodeURIComponent(startDate) + '&endDate=' + encodeURIComponent(endDate);
+
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error('HTTP error ' + response.status);
+        return response.json();
+      })
+      .then(data => {
+        if (data.error) {
+          alert('Lỗi: ' + data.error);
+          closeNXTDetailModal();
+          return;
+        }
+
+        document.getElementById('modalNXTProductNameHeader').innerText = data.productName || '-';
+        document.getElementById('modalNXTSKU').innerText = data.sku || '-';
+        document.getElementById('modalNXTProductName').innerText = data.productName || '-';
+        document.getElementById('modalNXTBrandLine').innerText = (data.brandName || '-') + ' / ' + (data.productLineName || '-');
+        document.getElementById('modalNXTUnit').innerText = data.unit || '-';
+        document.getElementById('modalNXTPrice').innerText = formatCurrency(data.price);
+        document.getElementById('modalNXTDateRange').innerText = (data.startDate || '-') + '  ➔  ' + (data.endDate || '-');
+
+        document.getElementById('modalNXTBeginningQty').innerText = (data.beginningQty || 0).toLocaleString();
+        document.getElementById('modalNXTInboundQty').innerText = '+' + (data.inboundQty || 0).toLocaleString();
+        document.getElementById('modalNXTOutboundQty').innerText = '-' + (data.outboundQty || 0).toLocaleString();
+        document.getElementById('modalNXTEndingQty').innerText = (data.endingQty || 0).toLocaleString();
+        document.getElementById('modalNXTEndingVal').innerText = formatCurrency(data.endingVal);
+
+        const txs = data.transactions || [];
+        document.getElementById('modalNXTTransactionCountSummary').innerText = txs.length + ' giao dịch trong kỳ';
+
+        const tbody = document.getElementById('modalNXTTransactionsTableBody');
+        tbody.innerHTML = '';
+        if (txs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 20px;">Không có giao dịch nhập/xuất kho nào trong kỳ báo cáo này.</td></tr>';
+        } else {
+          txs.forEach((tx, idx) => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #f1f5f9';
+            const isInbound = (tx.type === 'NHẬP KHO');
+            const typeBadge = isInbound ?
+              '<span class="report-badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 11px;">+ NHẬP KHO</span>' :
+              '<span class="report-badge" style="background: rgba(239, 68, 68, 0.12); color: #ef4444; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 11px;">- XUẤT KHO</span>';
+
+            tr.innerHTML = 
+              '<td style="padding: 12px 14px; text-align: center; color: #64748b; font-weight: 600;">' + (idx + 1) + '</td>' +
+              '<td style="padding: 12px 14px;">' + typeBadge + '</td>' +
+              '<td style="padding: 12px 14px; font-weight: 800; font-family: monospace; color: #0f172a;">#' + (tx.code || '-') + '</td>' +
+              '<td style="padding: 12px 14px; color: #475569;">' + (tx.createdAt || '-') + '</td>' +
+              '<td style="padding: 12px 14px; font-weight: 600; color: #334155;">' + (tx.partnerName || '-') + '</td>' +
+              '<td style="padding: 12px 14px; text-align: right; font-weight: 800; color: ' + (isInbound ? '#16a34a' : '#dc2626') + ';">' + (isInbound ? '+' : '-') + tx.quantity + '</td>' +
+              '<td style="padding: 12px 14px; text-align: center; color: #64748b; font-weight: 600;">' + (tx.status || '-') + '</td>';
+            tbody.appendChild(tr);
+          });
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Đã xảy ra lỗi khi tải chi tiết nhập xuất tồn.');
+        closeNXTDetailModal();
+      });
+  };
+
+  window.closeNXTDetailModal = function() {
+    const modal = document.getElementById('nxtDetailModal');
+    if (!modal) return;
+    modal.style.opacity = '0';
+    const card = modal.querySelector('.nxt-modal-card');
+    if (card) card.style.transform = 'scale(0.95)';
+    setTimeout(() => { modal.style.display = 'none'; }, 250);
+  };
+
+  window.printNXTDetailModal = function() {
+    const printContent = document.getElementById('nxtModalBody').innerHTML;
+    const nameHeader = document.getElementById('modalNXTProductNameHeader').innerText;
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    printWindow.document.write('<html><head><title>Chi tiết Nhập Xuất Tồn - ' + nameHeader + '</title>');
+    printWindow.document.write('<style>body { font-family: system-ui, sans-serif; padding: 24px; color: #0f172a; } table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; } th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; } th { background: #f8fafc; font-weight: bold; }</style></head><body>');
+    printWindow.document.write('<h2 style="margin-bottom: 20px; border-bottom: 2px solid #4f46e5; padding-bottom: 8px;">Chi tiết Nhập Xuất Tồn - ' + nameHeader + '</h2>');
+    printWindow.document.write(printContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 250);
+  };
 </script>
+
+<!-- Modal Chi tiết Phiếu Nhập kho HTML -->
+<div id="receiptDetailModal" class="receipt-modal-backdrop" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease;">
+  <div class="receipt-modal-card" style="background: #ffffff; width: 95%; max-width: 920px; max-height: 90vh; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); transition: transform 0.25s ease;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--card-border, #e2e8f0); background: #ffffff;">
+      <div style="display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: #0f172a;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <polyline points="19 12 12 19 5 12"></polyline>
+        </svg>
+        <span>Chi tiết Phiếu Nhập kho: <span id="modalReceiptCodeHeader" style="color: #2563eb; font-family: monospace;">#PN-00000000</span></span>
+      </div>
+      <button type="button" onclick="closeReceiptDetailModal()" style="border: none; background: #f1f5f9; color: #64748b; width: 32px; height: 32px; border-radius: 8px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a';" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b';">✕</button>
+    </div>
+    <div id="receiptModalBody" style="padding: 24px; overflow-y: auto; flex: 1;">
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px 24px;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">MÃ PHIẾU</div>
+            <div id="modalReceiptCode" style="font-size: 14px; font-weight: 800; color: #0f172a; font-family: monospace;">#PN-00000000</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">NGÀY NHẬP</div>
+            <div id="modalCreatedAt" style="font-size: 14px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">NHÀ CUNG CẤP</div>
+            <div id="modalSupplierName" style="font-size: 14px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">NGƯỜI LẬP</div>
+            <div id="modalCreatorName" style="font-size: 14px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">TRẠNG THÁI</div>
+            <div id="modalStatusContainer">
+              <span class="report-badge" style="background: rgba(59, 130, 246, 0.12); color: #2563eb; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 12px; display: inline-block;">-</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">TỔNG GIÁ TRỊ NHẬP</div>
+            <div id="modalTotalVal" style="font-size: 17px; font-weight: 800; color: #2563eb;">0 đ</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 14px 0;">Danh sách sản phẩm nhập (<span id="modalProductCountSummary">0 mặt hàng</span>)</h4>
+        <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 10px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700;">
+                <th style="padding: 12px 14px; text-align: center; width: 45px;">STT</th>
+                <th style="padding: 12px 14px;">SKU</th>
+                <th style="padding: 12px 14px;">Tên sản phẩm</th>
+                <th style="padding: 12px 14px;">Đơn vị</th>
+                <th style="padding: 12px 14px;">Mã lô (Batch)</th>
+                <th style="padding: 12px 14px; text-align: center;">Mã vạch (Barcode)</th>
+                <th style="padding: 12px 14px; text-align: right;">Số lượng</th>
+                <th style="padding: 12px 14px; text-align: right;">Đơn giá</th>
+                <th style="padding: 12px 14px; text-align: right;">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody id="modalDetailsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
+        <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 10px 0;">Ảnh hóa đơn yêu cầu:</h4>
+        <div id="modalInvoiceImageContainer"></div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e2e8f0; background: #ffffff;">
+      <button type="button" onclick="printReceiptDetailModal()" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        In chi tiết
+      </button>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button type="button" onclick="closeReceiptDetailModal()" style="padding: 10px 20px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">Đóng</button>
+        <a id="btnGoToOriginalPage" href="#" class="premium-btn-primary" style="display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 20px; background: #2563eb; color: #ffffff; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 700; transition: all 0.2s;">Đến trang quản lý gốc</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Chi tiết Phiếu Xuất kho HTML -->
+<div id="shipmentDetailModal" class="shipment-modal-backdrop" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease;">
+  <div class="shipment-modal-card" style="background: #ffffff; width: 95%; max-width: 920px; max-height: 90vh; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); transition: transform 0.25s ease;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--card-border, #e2e8f0); background: #ffffff;">
+      <div style="display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: #0f172a;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="19" x2="12" y2="5"></line>
+          <polyline points="5 12 12 5 19 12"></polyline>
+        </svg>
+        <span>Chi tiết Phiếu Xuất kho: <span id="modalShipmentCodeHeader" style="color: #10b981; font-family: monospace;">#PX-00000000</span></span>
+      </div>
+      <button type="button" onclick="closeShipmentDetailModal()" style="border: none; background: #f1f5f9; color: #64748b; width: 32px; height: 32px; border-radius: 8px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a';" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b';">✕</button>
+    </div>
+    <div id="shipmentModalBody" style="padding: 24px; overflow-y: auto; flex: 1;">
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px 24px;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">MÃ PHIẾU</div>
+            <div id="modalShipmentCode" style="font-size: 14px; font-weight: 800; color: #0f172a; font-family: monospace;">#PX-00000000</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">NGÀY XUẤT</div>
+            <div id="modalShipmentCreatedAt" style="font-size: 14px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">ĐỊA ĐIỂM NHẬN</div>
+            <div id="modalDestination" style="font-size: 14px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">NGƯỜI LẬP</div>
+            <div id="modalShipmentCreatorName" style="font-size: 14px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">TRẠNG THÁI</div>
+            <div id="modalShipmentStatusContainer">
+              <span class="report-badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 12px; display: inline-block;">-</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">TỔNG GIÁ TRỊ XUẤT</div>
+            <div id="modalShipmentTotalVal" style="font-size: 17px; font-weight: 800; color: #10b981;">0 đ</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 14px 0;">Danh sách sản phẩm xuất (<span id="modalShipmentProductCountSummary">0 mặt hàng</span>)</h4>
+        <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 10px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700;">
+                <th style="padding: 12px 14px; text-align: center; width: 45px;">STT</th>
+                <th style="padding: 12px 14px;">SKU</th>
+                <th style="padding: 12px 14px;">Tên sản phẩm</th>
+                <th style="padding: 12px 14px;">Đơn vị</th>
+                <th style="padding: 12px 14px;">Mã lô (Batch)</th>
+                <th style="padding: 12px 14px; text-align: center;">Mã vạch (Barcode)</th>
+                <th style="padding: 12px 14px; text-align: right;">Số lượng</th>
+                <th style="padding: 12px 14px; text-align: right;">Đơn giá</th>
+                <th style="padding: 12px 14px; text-align: right;">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody id="modalShipmentDetailsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
+        <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0;">Ghi chú xuất kho:</h4>
+        <div id="modalShipmentNotes" style="font-size: 13px; color: #475569; font-style: italic;">Không có ghi chú</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e2e8f0; background: #ffffff;">
+      <button type="button" onclick="printShipmentDetailModal()" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        In chi tiết
+      </button>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button type="button" onclick="closeShipmentDetailModal()" style="padding: 10px 20px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">Đóng</button>
+        <a id="btnGoToOriginalShipmentPage" href="#" class="premium-btn-primary" style="display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 20px; background: #10b981; color: #ffffff; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 700; transition: all 0.2s;">Đến trang quản lý gốc</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Chi tiết Tồn kho HTML -->
+<div id="inventoryDetailModal" class="inventory-modal-backdrop" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease;">
+  <div class="inventory-modal-card" style="background: #ffffff; width: 95%; max-width: 900px; max-height: 90vh; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); transition: transform 0.25s ease;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--card-border, #e2e8f0); background: #ffffff;">
+      <div style="display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: #0f172a;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6d28d9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        </svg>
+        <span>Chi tiết Tồn kho: <span id="modalInvProductNameHeader" style="color: #6d28d9;">-</span></span>
+      </div>
+      <button type="button" onclick="closeInventoryDetailModal()" style="border: none; background: #f1f5f9; color: #64748b; width: 32px; height: 32px; border-radius: 8px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a';" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b';">✕</button>
+    </div>
+    <div id="inventoryModalBody" style="padding: 24px; overflow-y: auto; flex: 1;">
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px 24px;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">MÃ SKU</div>
+            <div id="modalInvSKU" style="font-size: 14px; font-weight: 800; color: #0f172a; font-family: monospace;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">TÊN SẢN PHẨM</div>
+            <div id="modalInvProductName" style="font-size: 14px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">HÃNG / DÒNG SP</div>
+            <div id="modalInvBrandLine" style="font-size: 14px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">ĐƠN VỊ TÍNH</div>
+            <div id="modalInvUnit" style="font-size: 14px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">ĐƠN GIÁ</div>
+            <div id="modalInvPrice" style="font-size: 14px; font-weight: 700; color: #0f172a;">0 đ</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">MÃ LÔ (BATCH CODE)</div>
+            <div id="modalInvBatchCode" style="font-size: 14px; font-weight: 800; color: #6d28d9; font-family: monospace;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">LƯỢNG TỒN THỰC TẾ</div>
+            <div id="modalInvQtyInStock" style="font-size: 18px; font-weight: 800; color: #0f172a;">0</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">ĐỊNH MỨC TỐI THIỂU</div>
+            <div id="modalInvMinStock" style="font-size: 14px; font-weight: 700; color: #64748b;">0</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">TRẠNG THÁI CẢNH BÁO</div>
+            <div id="modalInvStatusContainer">
+              <span class="report-badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 12px; display: inline-block;">-</span>
+            </div>
+          </div>
+          <div style="grid-column: span 3; border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 4px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">TỔNG GIÁ TRỊ TỒN KHO:</div>
+            <div id="modalInvTotalVal" style="font-size: 18px; font-weight: 800; color: #6d28d9;">0 đ</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 12px 0;">Danh sách mã vạch sản phẩm (Barcodes) đang lưu trong kho:</h4>
+        <div id="modalInvBarcodeContainer" style="padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; justify-content: center;"></div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e2e8f0; background: #ffffff;">
+      <button type="button" onclick="printInventoryDetailModal()" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        In chi tiết
+      </button>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button type="button" onclick="closeInventoryDetailModal()" style="padding: 10px 20px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">Đóng</button>
+        <a id="btnGoToOriginalInvPage" href="#" class="premium-btn-primary" style="display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 20px; background: #6d28d9; color: #ffffff; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 700; transition: all 0.2s;">Đến trang quản lý tồn kho</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Chi tiết Nhập Xuất Tồn HTML -->
+<div id="nxtDetailModal" class="nxt-modal-backdrop" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease;">
+  <div class="nxt-modal-card" style="background: #ffffff; width: 95%; max-width: 950px; max-height: 90vh; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); transition: transform 0.25s ease;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--card-border, #e2e8f0); background: #ffffff;">
+      <div style="display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: #0f172a;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        <span>Chi tiết Nhập Xuất Tồn: <span id="modalNXTProductNameHeader" style="color: #4f46e5;">-</span></span>
+      </div>
+      <button type="button" onclick="closeNXTDetailModal()" style="border: none; background: #f1f5f9; color: #64748b; width: 32px; height: 32px; border-radius: 8px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a';" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b';">✕</button>
+    </div>
+    <div id="nxtModalBody" style="padding: 24px; overflow-y: auto; flex: 1;">
+      <!-- Product header bar -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
+        <div>
+          <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">SKU</div>
+          <div id="modalNXTSKU" style="font-size: 13px; font-weight: 800; color: #0f172a; font-family: monospace;">-</div>
+        </div>
+        <div>
+          <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">TÊN SẢN PHẨM</div>
+          <div id="modalNXTProductName" style="font-size: 13px; font-weight: 700; color: #0f172a;">-</div>
+        </div>
+        <div>
+          <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">HÃNG / DÒNG</div>
+          <div id="modalNXTBrandLine" style="font-size: 13px; font-weight: 700; color: #0f172a;">-</div>
+        </div>
+        <div>
+          <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">ĐƠN GIÁ</div>
+          <div id="modalNXTPrice" style="font-size: 13px; font-weight: 700; color: #0f172a;">0 đ</div>
+        </div>
+        <div>
+          <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">KỲ BÁO CÁO</div>
+          <div id="modalNXTDateRange" style="font-size: 12px; font-weight: 700; color: #4f46e5;">-</div>
+        </div>
+      </div>
+
+      <!-- NXT summary cards -->
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px;">
+        <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 10px; padding: 14px; text-align: center;">
+          <div style="font-size: 11px; font-weight: 700; color: #2563eb; text-transform: uppercase;">TỒN ĐẦU KỲ</div>
+          <div id="modalNXTBeginningQty" style="font-size: 20px; font-weight: 800; color: #1e40af; margin-top: 4px;">0</div>
+        </div>
+        <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 10px; padding: 14px; text-align: center;">
+          <div style="font-size: 11px; font-weight: 700; color: #16a34a; text-transform: uppercase;">NHẬP TRONG KỲ</div>
+          <div id="modalNXTInboundQty" style="font-size: 20px; font-weight: 800; color: #15803d; margin-top: 4px;">+0</div>
+        </div>
+        <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; padding: 14px; text-align: center;">
+          <div style="font-size: 11px; font-weight: 700; color: #dc2626; text-transform: uppercase;">XUẤT TRONG KỲ</div>
+          <div id="modalNXTOutboundQty" style="font-size: 20px; font-weight: 800; color: #b91c1c; margin-top: 4px;">-0</div>
+        </div>
+        <div style="background: #faf5ff; border: 1.5px solid #e9d5ff; border-radius: 10px; padding: 14px; text-align: center;">
+          <div style="font-size: 11px; font-weight: 700; color: #7c3aed; text-transform: uppercase;">TỒN CUỐI KỲ</div>
+          <div id="modalNXTEndingQty" style="font-size: 20px; font-weight: 800; color: #6d28d9; margin-top: 4px;">0</div>
+        </div>
+        <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 14px; text-align: center;">
+          <div style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">TRỊ GIÁ TỒN CUỐI</div>
+          <div id="modalNXTEndingVal" style="font-size: 15px; font-weight: 800; color: #4f46e5; margin-top: 6px;">0 đ</div>
+        </div>
+      </div>
+
+      <!-- Transaction history table -->
+      <div>
+        <h4 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 14px 0;">Lịch sử phát sinh Nhập / Xuất kho (<span id="modalNXTTransactionCountSummary">0 giao dịch</span>)</h4>
+        <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 10px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700;">
+                <th style="padding: 12px 14px; text-align: center; width: 45px;">STT</th>
+                <th style="padding: 12px 14px;">Loại giao dịch</th>
+                <th style="padding: 12px 14px;">Mã phiếu</th>
+                <th style="padding: 12px 14px;">Ngày phát sinh</th>
+                <th style="padding: 12px 14px;">Đối tác (NCC / Điểm nhận)</th>
+                <th style="padding: 12px 14px; text-align: right;">Số lượng phát sinh</th>
+                <th style="padding: 12px 14px; text-align: center;">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody id="modalNXTTransactionsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e2e8f0; background: #ffffff;">
+      <button type="button" onclick="printNXTDetailModal()" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        In chi tiết
+      </button>
+      <button type="button" onclick="closeNXTDetailModal()" style="padding: 10px 24px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">Đóng</button>
+    </div>
+  </div>
+</div>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>
