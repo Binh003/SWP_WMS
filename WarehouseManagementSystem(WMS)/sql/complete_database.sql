@@ -200,8 +200,8 @@ CREATE TABLE `receipt_details` (
   `receipt_id` BIGINT NOT NULL,
   `product_id` BIGINT NOT NULL,
   `quantity` INT NOT NULL,
-  `batch_code` VARCHAR(100) NOT NULL DEFAULT '',
-  `barcode` VARCHAR(100) NOT NULL DEFAULT '',
+  `batch_code` TEXT,
+  `barcode` TEXT,
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_wms_rd_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_wms_rd_receipt` FOREIGN KEY (`receipt_id`) REFERENCES `receipts` (`id`) ON DELETE CASCADE

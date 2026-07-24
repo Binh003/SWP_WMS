@@ -28,10 +28,25 @@ public final class DBConfig {
         }
     }
 
+    private static volatile boolean schemaChecked = false;
+
     private DBConfig() {}
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        if (!schemaChecked) {
+            synchronized (DBConfig.class) {
+                if (!schemaChecked) {
+                    try (java.sql.Statement stmt = conn.createStatement()) {
+                        stmt.executeUpdate("ALTER TABLE receipt_details MODIFY COLUMN barcode TEXT");
+                        stmt.executeUpdate("ALTER TABLE receipt_details MODIFY COLUMN batch_code TEXT");
+                    } catch (Exception ignored) {
+                    }
+                    schemaChecked = true;
+                }
+            }
+        }
+        return conn;
     }
 
     public static String get(String key) {

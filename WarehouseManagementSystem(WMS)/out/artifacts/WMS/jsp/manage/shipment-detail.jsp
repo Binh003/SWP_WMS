@@ -7,6 +7,10 @@
 
 <style>
 @media print {
+  @page {
+    size: auto;
+    margin: 0;
+  }
   .home-topbar, .home-sidebar, #openHistoryBtn, .subpage-header, .no-print, [style*="margin-bottom: 16px;"] {
     display: none !important;
   }
@@ -25,7 +29,7 @@
   .print-section {
     border: none !important;
     box-shadow: none !important;
-    padding: 0 !important;
+    padding: 15mm !important;
     margin: 0 !important;
     background: #ffffff !important;
   }
@@ -156,7 +160,7 @@
 
   <!-- Stepper -->
   <c:if test="${shipment.status != 'CANCELLED'}">
-    <div class="premium-card" style="padding: 24px 32px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden;">
+    <div class="premium-card no-print" style="padding: 24px 32px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden;">
       <!-- Connector Line Container -->
       <div style="position: absolute; left: 85px; right: 85px; top: 50%; height: 4px; transform: translateY(-50%); z-index: 1;">
         <!-- Background line -->
@@ -257,6 +261,25 @@
       <input type="hidden" name="id" value="${shipment.id}"/>
       <input type="hidden" name="status" id="nextStatus" value=""/>
     </form>
+  </c:if>
+
+  <!-- Option Banner for Batch & Barcode Allocation (Only in Step 2: APPROVED) -->
+  <c:if test="${shipment.status == 'APPROVED'}">
+    <div class="premium-card no-print" style="padding: 20px 24px; margin-bottom: 24px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          Tùy chọn Phân bổ Lô xuất kho (Batch Code & Barcode)
+        </h4>
+        <p style="margin: 0; font-size: 13px; color: #64748b;">
+          Mặc định hệ thống tự động phân bổ theo FIFO (Lô nhập trước xuất trước). Bạn có thể chọn thủ công từng Lô hàng & Mã vạch cho bước xuất kho.
+        </p>
+      </div>
+      <button type="button" onclick="openManualBatchModal()" class="premium-btn-primary" style="height: 38px !important; padding: 0 18px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1) !important; color: white; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        Tự chọn Lô & Barcode Thủ Công
+      </button>
+    </div>
   </c:if>
 
   <c:if test="${shipment.status == 'APPROVED' || shipment.status == 'COMPLETED'}">
@@ -372,8 +395,8 @@
                           </div>
                           <c:if test="${bStatus.last && bStatus.count > 2}">
                             </div>
-                            <button type="button" class="no-print" onclick="toggleBarcodes('moreBarcodes_doc_${status.index}', this, ${bStatus.count - 2})" style="background: rgba(2, 132, 199, 0.08); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
-                              + Xem thêm ${bStatus.count - 2} barcode còn lại
+                            <button type="button" class="no-print" onclick="toggleBarcodes('moreBarcodes_doc_${status.index}', this)" style="background: rgba(2, 132, 199, 0.08); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                              + Xem tất cả Barcode
                             </button>
                           </c:if>
                         </c:if>
@@ -670,8 +693,8 @@
                                 </div>
                                 <c:if test="${bStatus.last && bStatus.count > 2}">
                                   </div>
-                                  <button type="button" class="no-print" onclick="toggleBarcodes('moreBarcodes_bottom_${detail.id}', this, ${bStatus.count - 2})" style="background: rgba(2, 132, 199, 0.08); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
-                                    + Xem thêm ${bStatus.count - 2} barcode còn lại
+                                  <button type="button" class="no-print" onclick="toggleBarcodes('moreBarcodes_bottom_${detail.id}', this)" style="background: rgba(2, 132, 199, 0.08); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                                    + Xem tất cả Barcode
                                   </button>
                                 </c:if>
                               </c:if>
@@ -746,7 +769,7 @@
 </div>
 
 <!-- Custom Alert Modal -->
-<div id="customAlertModal" style="display: none; position: fixed; z-index: 2500; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); transition: all 0.3s ease; justify-content: center; align-items: center;">
+<div id="customAlertModal" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); transition: all 0.3s ease; justify-content: center; align-items: center;">
   <div style="background-color: #ffffff; padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); width: 90%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position: relative; animation: modalFadeIn 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;">
     <div style="width: 50px; height: 50px; border-radius: 50%; background: #fffbeb; border: 2px solid #f59e0b; color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
       ⚠️
@@ -879,7 +902,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-function toggleBarcodes(containerId, btn, count) {
+function toggleBarcodes(containerId, btn) {
   var container = document.getElementById(containerId);
   if (!container) return;
   if (container.style.display === 'none' || container.style.display === '') {
@@ -887,9 +910,309 @@ function toggleBarcodes(containerId, btn, count) {
     btn.innerHTML = '- Thu gọn';
   } else {
     container.style.display = 'none';
-    btn.innerHTML = '+ Xem thêm ' + count + ' barcode còn lại';
+    btn.innerHTML = '+ Xem tất cả Barcode';
   }
 }
+
+// Manual Batch Modal Controls with Multi-Batch Checkboxes & Combined Barcode Checkboxes
+window.productBatchesStore = {};
+
+window.openManualBatchModal = function() {
+  const modal = document.getElementById('manualBatchModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  <c:forEach var="detail" items="${shipment.details}">
+    fetch('${pageContext.request.contextPath}/manage/shipments?action=apiProductBatches&productId=${detail.productId}')
+      .then(res => res.json())
+      .then(batches => {
+        window.productBatchesStore[${detail.id}] = batches;
+        renderBatchCheckboxes(${detail.id}, ${detail.quantity}, '${detail.batchCode}', '${detail.barcode}');
+      })
+      .catch(err => console.error(err));
+  </c:forEach>
+};
+
+window.closeManualBatchModal = function() {
+  const modal = document.getElementById('manualBatchModal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+};
+
+window.renderBatchCheckboxes = function(detailId, requiredQty, existingBatchCodeStr, existingBarcodeStr) {
+  const batchListElem = document.getElementById('batchList_' + detailId);
+  if (!batchListElem) return;
+
+  const rawList = window.productBatchesStore[detailId] || [];
+  batchListElem.innerHTML = '';
+
+  const batchGroup = {};
+  rawList.forEach(item => {
+    const bCode = item.batchCode ? item.batchCode.trim() : 'Lô khác';
+    if (!batchGroup[bCode]) {
+      batchGroup[bCode] = { batchCode: bCode, totalStock: 0, items: [] };
+    }
+    batchGroup[bCode].totalStock += item.quantityInStock;
+    batchGroup[bCode].items.push(item);
+  });
+
+  const existingBatches = [];
+  if (existingBatchCodeStr) {
+    existingBatchCodeStr.split(',').forEach(b => {
+      const tb = b.trim();
+      if (tb) existingBatches.push(tb);
+    });
+  }
+
+  const batchCodes = Object.keys(batchGroup);
+  if (batchCodes.length === 0) {
+    batchListElem.innerHTML = '<div style="font-size:12px; color:#94a3b8; font-style:italic; grid-column:1/-1;">Không có tồn kho khả dụng</div>';
+    onBatchSelectionChange(detailId, requiredQty, existingBarcodeStr);
+    return;
+  }
+
+  batchCodes.forEach(bCode => {
+    const group = batchGroup[bCode];
+    const label = document.createElement('label');
+    label.style.cssText = 'display: inline-flex; align-items: center; gap: 8px; background: #ffffff; padding: 8px 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-family: monospace; font-size: 12px; cursor: pointer; user-select: none; font-weight: 600; color: #1e293b; transition: all 0.15s;';
+
+    const isChecked = existingBatches.includes(bCode) || (existingBatches.length === 0 && batchCodes.length === 1);
+
+    label.innerHTML = `
+      <input type="checkbox" class="cb-batch-\${detailId}" value="\${bCode}" \${isChecked ? 'checked' : ''} onchange="onBatchSelectionChange(\${detailId}, \${requiredQty})">
+      <span>Lô: <strong>\${bCode}</strong> (Tồn: \${group.totalStock})</span>
+    `;
+
+    batchListElem.appendChild(label);
+  });
+
+  onBatchSelectionChange(detailId, requiredQty, existingBarcodeStr);
+};
+
+window.onBatchSelectionChange = function(detailId, requiredQty, prefilledBarcodeStr) {
+  const checkedBatchCBs = document.querySelectorAll('.cb-batch-' + detailId + ':checked');
+  const selectedBatchCodes = Array.from(checkedBatchCBs).map(cb => cb.value);
+
+  const container = document.getElementById('barcodeContainer_' + detailId);
+  const listElem = document.getElementById('barcodeList_' + detailId);
+  const selectedBatchesSpan = document.getElementById('selectedBatchesSpan_' + detailId);
+  const inputBatch = document.getElementById('inputBatch_' + detailId);
+  const inputBarcode = document.getElementById('inputBarcode_' + detailId);
+
+  if (selectedBatchCodes.length === 0) {
+    if (container) container.style.display = 'none';
+    if (inputBatch) inputBatch.value = '';
+    if (inputBarcode) inputBarcode.value = '';
+    updateBadgeCounter(detailId, 0, requiredQty, true);
+    return;
+  }
+
+  if (inputBatch) inputBatch.value = selectedBatchCodes.join(', ');
+  if (selectedBatchesSpan) selectedBatchesSpan.innerText = selectedBatchCodes.join(', ');
+  if (container) container.style.display = 'flex';
+  if (listElem) listElem.innerHTML = '';
+
+  const rawList = window.productBatchesStore[detailId] || [];
+  const matchingItems = rawList.filter(item => {
+    const bCode = item.batchCode ? item.batchCode.trim() : 'Lô khác';
+    return selectedBatchCodes.includes(bCode);
+  });
+
+  const existingBarcodes = [];
+  if (prefilledBarcodeStr) {
+    prefilledBarcodeStr.split(',').forEach(b => {
+      const tb = b.trim();
+      if (tb) existingBarcodes.push(tb);
+    });
+  }
+
+  if (matchingItems.length === 0) {
+    listElem.innerHTML = '<div style="font-size:12px; color:#94a3b8; font-style:italic; grid-column: 1/-1;">Không tìm thấy barcode khả dụng cho các lô đã chọn</div>';
+    updateBadgeCounter(detailId, 0, requiredQty, false);
+    return;
+  }
+
+  const itemsByBatch = {};
+  matchingItems.forEach(item => {
+    const bCode = item.batchCode ? item.batchCode.trim() : 'Lô khác';
+    if (!itemsByBatch[bCode]) itemsByBatch[bCode] = [];
+    itemsByBatch[bCode].push(item);
+  });
+
+  Object.keys(itemsByBatch).forEach(bCode => {
+    const items = itemsByBatch[bCode];
+
+    const batchHeader = document.createElement('div');
+    batchHeader.style.cssText = 'grid-column: 1/-1; font-size: 12px; font-weight: 700; color: #6d28d9; margin-top: 6px; padding-bottom: 2px; border-bottom: 1px dashed #ddd6fe; display: flex; justify-content: space-between;';
+    batchHeader.innerHTML = `<span>📍 Lô hàng: \${bCode} (\${items.length} Barcode khả dụng)</span>`;
+    listElem.appendChild(batchHeader);
+
+    items.forEach(item => {
+      const bc = item.barcode ? item.barcode.trim() : '';
+      if (!bc) return;
+
+      const label = document.createElement('label');
+      label.style.cssText = 'display: inline-flex; align-items: center; gap: 8px; background: #ffffff; padding: 6px 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-family: monospace; font-size: 12px; cursor: pointer; user-select: none; transition: all 0.15s; font-weight: 600; color: #1e293b;';
+
+      const isChecked = existingBarcodes.includes(bc);
+
+      label.innerHTML = `
+        <input type="checkbox" class="cb-barcode-\${detailId}" value="\${bc}" \${isChecked ? 'checked' : ''} onchange="onBarcodeCheckChange(\${detailId}, \${requiredQty})">
+        <span>\${bc}</span>
+      `;
+      listElem.appendChild(label);
+    });
+  });
+
+  onBarcodeCheckChange(detailId, requiredQty);
+};
+
+window.onBarcodeCheckChange = function(detailId, requiredQty) {
+  const checkboxes = document.querySelectorAll('.cb-barcode-' + detailId + ':checked');
+  const checkedValues = Array.from(checkboxes).map(cb => cb.value);
+
+  const inputBarcode = document.getElementById('inputBarcode_' + detailId);
+  if (inputBarcode) {
+    inputBarcode.value = checkedValues.join(', ');
+  }
+
+  updateBadgeCounter(detailId, checkedValues.length, requiredQty, false);
+};
+
+window.autoSelectBarcodes = function(detailId, requiredQty) {
+  const checkboxes = document.querySelectorAll('.cb-barcode-' + detailId);
+  checkboxes.forEach((cb, idx) => {
+    cb.checked = idx < requiredQty;
+  });
+  onBarcodeCheckChange(detailId, requiredQty);
+};
+
+window.updateBadgeCounter = function(detailId, count, requiredQty, isFifo) {
+  const badge = document.getElementById('badgeCount_' + detailId);
+  if (!badge) return;
+
+  if (isFifo) {
+    badge.style.background = '#f0f9ff';
+    badge.style.borderColor = '#bae6fd';
+    badge.style.color = '#0284c7';
+    badge.innerHTML = '⚡ Tự động FIFO';
+    return;
+  }
+
+  if (count === requiredQty) {
+    badge.style.background = '#f0fdf4';
+    badge.style.borderColor = '#bbf7d0';
+    badge.style.color = '#15803d';
+    badge.innerHTML = '✓ Đã chọn đủ ' + count + '/' + requiredQty + ' Barcode';
+  } else if (count < requiredQty) {
+    badge.style.background = '#fffbeb';
+    badge.style.borderColor = '#fef08a';
+    badge.style.color = '#b45309';
+    badge.innerHTML = '⚠️ Đã chọn ' + count + '/' + requiredQty + ' Barcode (Thiếu ' + (requiredQty - count) + ')';
+  } else {
+    badge.style.background = '#fef2f2';
+    badge.style.borderColor = '#fecaca';
+    badge.style.color = '#b91c1c';
+    badge.innerHTML = '❌ Đã chọn ' + count + '/' + requiredQty + ' Barcode (Vượt ' + (count - requiredQty) + ')';
+  }
+window.validateManualBatchForm = function() {
+  <c:forEach var="detail" items="${shipment.details}">
+    const checkedBatches_${detail.id} = document.querySelectorAll('.cb-batch-${detail.id}:checked');
+    if (checkedBatches_${detail.id}.length > 0) {
+      const checkedBarcodes = document.querySelectorAll('.cb-barcode-${detail.id}:checked');
+      const reqQty = ${detail.quantity};
+      const count = checkedBarcodes.length;
+      if (count < reqQty) {
+        showCustomAlert("Sản phẩm [${detail.product.sku}] ${detail.product.name} chưa tích đủ Barcode! (Đã tích " + count + "/" + reqQty + "). Vui lòng chọn đủ " + reqQty + " Barcode trước khi lưu!");
+        return false;
+      }
+      if (count > reqQty) {
+        showCustomAlert("Sản phẩm [${detail.product.sku}] ${detail.product.name} đang tích thừa Barcode! (Đã tích " + count + "/" + reqQty + "). Vui lòng bỏ chọn bớt!");
+        return false;
+      }
+    }
+  </c:forEach>
+  return true;
+};
 </script>
+
+<!-- Modal Chọn Lô & Barcode Thủ Công -->
+<div id="manualBatchModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 10000; align-items: center; justify-content: center;">
+  <div class="shipment-modal-card" style="background: #ffffff; border-radius: 16px; width: 92%; max-width: 840px; max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; border: 1px solid #cbd5e1;">
+    <!-- Modal Header -->
+    <div style="padding: 20px 24px; border-bottom: 1.5px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+      <div>
+        <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Chọn Lô hàng & Tích Barcode Thủ Công
+        </h3>
+        <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">Phiếu xuất: <strong style="color: #0f172a;">${shipment.shipmentCode}</strong></p>
+      </div>
+      <button type="button" onclick="closeManualBatchModal()" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+    </div>
+
+    <!-- Modal Body -->
+    <form action="${pageContext.request.contextPath}/manage/shipments" method="post" id="manualBatchForm" onsubmit="return validateManualBatchForm()" style="display: flex; flex-direction: column; flex: 1; overflow: hidden; margin: 0;">
+      <input type="hidden" name="action" value="updateManualBatches"/>
+      <input type="hidden" name="id" value="${shipment.id}"/>
+
+      <div style="padding: 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 20px;">
+        <c:forEach var="detail" items="${shipment.details}" varStatus="st">
+          <div style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+            <!-- Item Header & Badge -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
+              <div>
+                <span style="font-size: 15px; font-weight: 700; color: #0f172a;">${st.index + 1}. [${detail.product.sku}] ${detail.product.name}</span>
+                <span style="font-size: 13px; color: #64748b; margin-left: 8px;">(Cần xuất: <strong style="color: #ef4444;">${detail.quantity} ${detail.product.unit}</strong>)</span>
+              </div>
+              <div id="badgeCount_${detail.id}" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 700;">
+                ⚡ Tự động FIFO
+              </div>
+            </div>
+
+            <input type="hidden" name="detailId[]" value="${detail.id}"/>
+            <input type="hidden" id="inputBatch_${detail.id}" name="batchCode[]" value="${detail.batchCode}"/>
+            <input type="hidden" id="inputBarcode_${detail.id}" name="barcode[]" value="${detail.barcode}"/>
+
+            <!-- Step 1: Checkbox selection for multiple Batch Codes -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <label style="font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
+                <span style="background: #0284c7; color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">1</span>
+                Bước 1: Tích chọn các Lô hàng (Batch Code) muốn lấy sản phẩm
+              </label>
+              <div id="batchList_${detail.id}" style="display: flex; flex-wrap: wrap; gap: 8px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 12px;">
+              </div>
+            </div>
+
+            <!-- Step 2: Select Barcodes with Checkboxes -->
+            <div id="barcodeContainer_${detail.id}" style="display: none; flex-direction: column; gap: 10px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+                <label style="font-size: 13px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 6px;">
+                  <span style="background: #a855f7; color: white; border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">2</span>
+                  Bước 2: Tích chọn đủ ${detail.quantity} Barcode từ các Lô đã chọn
+                </label>
+                <button type="button" onclick="autoSelectBarcodes(${detail.id}, ${detail.quantity})" style="background: rgba(2, 132, 199, 0.08); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(2,132,199,0.15)'" onmouseout="this.style.background='rgba(2,132,199,0.08)'">
+                  ⚡ Tích nhanh ${detail.quantity} Barcode đầu
+                </button>
+              </div>
+
+              <div id="barcodeList_${detail.id}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; max-height: 220px; overflow-y: auto; padding: 4px;">
+              </div>
+            </div>
+          </div>
+        </c:forEach>
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="padding: 16px 24px; border-top: 1.5px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px; background: #f8fafc;">
+        <button type="button" onclick="closeManualBatchModal()" style="padding: 10px 20px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;">Hủy bỏ</button>
+        <button type="submit" class="premium-btn-primary" style="height: 40px !important; padding: 0 24px; font-size: 14px; font-weight: 700; cursor: pointer; border-radius: 10px; border: none; background: linear-gradient(135deg, #0284c7, #0369a1) !important; color: white;">Lưu phân bổ thủ công</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>

@@ -7,6 +7,10 @@
 
 <style>
     @media print {
+        @page {
+            size: auto;
+            margin: 0;
+        }
         .home-topbar, .home-sidebar, #openHistoryBtn, .subpage-header, .no-print, [style*="margin-bottom: 16px;"] {
             display: none !important;
         }
@@ -21,7 +25,7 @@
         .print-section {
             border: none !important;
             box-shadow: none !important;
-            padding: 0 !important;
+            padding: 15mm !important;
             margin: 0 !important;
             background: #ffffff !important;
         }
@@ -45,7 +49,131 @@
             <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0;">Chi tiết Phiếu Nhập: <span style="font-family: monospace; color: var(--primary-color);">${receipt.receiptCode}</span></h2>
             <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">Thông tin chi tiết về các sản phẩm đã nhập kho.</p>
         </div>
-        <div style="display: flex; gap: 12px; align-items: center;">
+        <div style="display: flex; gap: 12px; align-items: center;" class="no-print">
+            
+            <!-- Right-aligned receipt action buttons -->
+            <c:if test="${receipt.status != 'COMPLETED' && receipt.status != 'CANCELLED'}">
+                <c:choose>
+                    <c:when test="${receipt.status == 'DRAFT'}">
+                        <div style="display: flex; gap: 8px;">
+                            <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'PENDING_APPROVAL'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; color: white;">
+                                Gửi yêu cầu duyệt
+                            </button>
+                            <c:if test="${currentUser.hasPermission('RECEIPT_WRITE')}">
+                                <a href="${pageContext.request.contextPath}/manage/receipts?action=delete&id=${receipt.id}" 
+                                   class="premium-btn-outline" 
+                                   onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu nhập nháp này không? Hành động này không thể hoàn tác.');"
+                                   style="display: inline-flex; align-items: center; justify-content: center; height: 40px !important; padding: 0 16px; font-size: 13px; text-decoration: none; color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.4); font-weight: 600; border-radius: 8px; transition: all 0.2s;"
+                                   onmouseover="this.style.background = 'rgba(239, 68, 68, 0.05)'; this.style.borderColor = '#ef4444';"
+                                   onmouseout="this.style.background = 'transparent'; this.style.borderColor = 'rgba(239, 68, 68, 0.4)';">
+                                    Xóa phiếu nháp
+                                </a>
+                            </c:if>
+                            <button type="button"
+                                    onclick="cancelReceipt()"
+                                    class="premium-btn-outline"
+                                    style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                                Hủy phiếu
+                            </button>
+                        </div>
+                    </c:when>
+
+                    <c:when test="${receipt.status == 'PENDING_APPROVAL'}">
+                        <c:choose>
+                            <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('DIRECTOR')}">
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'APPROVED'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important; color: white;">
+                                        Phê duyệt phiếu
+                                    </button>
+                                    <button type="button"
+                                            onclick="cancelReceipt()"
+                                            class="premium-btn-outline"
+                                            style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                                        Từ chối & Hủy
+                                    </button>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid #fde68a; border-radius: 8px; padding: 10px 16px; font-size: 12px; color: #d97706; font-weight: 600;">
+                                    Đang chờ Giám đốc hoặc Admin phê duyệt...
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:when>
+
+                    <c:when test="${receipt.status == 'APPROVED'}">
+                        <c:choose>
+                            <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'RECEIVING'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.2) !important; color: white;">
+                                        Bắt đầu nhận hàng
+                                    </button>
+                                    <button type="button"
+                                            onclick="cancelReceipt()"
+                                            class="premium-btn-outline"
+                                            style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                                        Hủy phiếu
+                                    </button>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 16px; font-size: 12px; color: #1d4ed8; font-weight: 600;">
+                                    Chờ Nhân viên kho thực hiện nhận hàng...
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:when>
+
+                    <c:when test="${receipt.status == 'RECEIVING'}">
+                        <c:choose>
+                            <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'RECEIVED'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #4f46e5, #4338ca) !important; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.2) !important; color: white;">
+                                        Tạo đơn nhận hàng thành công (Xác nhận)
+                                    </button>
+                                    <button type="button"
+                                            onclick="cancelReceipt()"
+                                            class="premium-btn-outline"
+                                            style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                                        Hủy phiếu
+                                    </button>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid #ddd6fe; border-radius: 8px; padding: 10px 16px; font-size: 12px; color: #6d28d9; font-weight: 600;">
+                                    Nhân viên kho đang thực hiện kiểm tra và nhận hàng...
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:when>
+
+                    <c:when test="${receipt.status == 'RECEIVED'}">
+                        <c:choose>
+                            <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'COMPLETED'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important; color: white;">
+                                        Hoàn Thành
+                                    </button>
+                                    <button type="button"
+                                            onclick="cancelReceipt()"
+                                            class="premium-btn-outline"
+                                            style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                                        Hủy phiếu
+                                    </button>
+                                </div>
+                            </c:when>
+                        </c:choose>
+                    </c:when>
+                </c:choose>
+            </c:if>
+
+            <c:if test="${receipt.status == 'RECEIVED' || receipt.status == 'COMPLETED'}">
+                <button type="button" onclick="window.print()" class="premium-btn-outline" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1.5px solid var(--card-border); border-radius: 8px; background: transparent; color: var(--text-primary);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    In Phiếu Nhập Kho
+                </button>
+            </c:if>
+
             <button type="button" id="openHistoryBtn" class="premium-btn-secondary" style="display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 16px; font-weight: 600; cursor: pointer; gap: 6px; border: 1.5px solid var(--card-border); background: #ffffff; border-radius: 8px; font-size: 13px; color: var(--text-primary); transition: all 0.2s;" onmouseover="this.style.background = '#f8fafc'; this.style.borderColor = 'var(--primary-color)';" onmouseout="this.style.background = '#ffffff'; this.style.borderColor = 'var(--card-border)';">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                 Lịch sử cập nhật
@@ -163,36 +291,48 @@
         </div>
     </c:if>
 
-    <!-- Form cập nhật trạng thái: dùng cho nhận hàng, hoàn thành... -->
-    <c:if test="${receipt.status != 'COMPLETED' && receipt.status != 'CANCELLED'}">
+    <!-- Các form cập nhật trạng thái -->
+    <c:if test="${receipt.status != 'COMPLETED'
+                  && receipt.status != 'CANCELLED'}">
 
-        <form action="${pageContext.request.contextPath}/manage/receipts"
-              method="post"
-              id="statusForm"
-              enctype="multipart/form-data"
-              style="display:none;">
+          <!-- Form nhận hàng, duyệt và hoàn thành -->
+          <form action="${pageContext.request.contextPath}/manage/receipts"
+                method="post"
+                id="statusForm"
+                enctype="multipart/form-data"
+                style="display:none;">
 
-            <input type="hidden" name="action" value="updateStatus"/>
-            <input type="hidden" name="id" value="${receipt.id}"/>
-            <input type="hidden" name="status" id="nextStatus" value=""/>
-        </form>
+              <input type="hidden"
+                     name="action"
+                     value="updateStatus"/>
 
-        <!-- Form hủy riêng: chỉ gửi action và ID -->
-        <form action="${pageContext.request.contextPath}/manage/receipts"
-              method="post"
-              id="cancelReceiptForm"
-              style="display:none;">
+              <input type="hidden"
+                     name="id"
+                     value="${receipt.id}"/>
 
-            <input type="hidden"
-                   name="action"
-                   value="cancelReceipt"/>
+              <input type="hidden"
+                     name="status"
+                     id="nextStatus"
+                     value=""/>
+          </form>
 
-            <input type="hidden"
-                   name="id"
-                   value="${receipt.id}"/>
-        </form>
+          <!-- Form hủy riêng, không chứa barcode -->
+          <form action="${pageContext.request.contextPath}/manage/receipts"
+                method="post"
+                id="cancelReceiptForm"
+                style="display:none;">
+
+              <input type="hidden"
+                     name="action"
+                     value="cancelReceipt"/>
+
+              <input type="hidden"
+                     name="id"
+                     value="${receipt.id}"/>
+          </form>
 
     </c:if>
+
     <c:if test="${receipt.status == 'RECEIVED' || receipt.status == 'COMPLETED'}">
         <!-- Beautiful Print-Ready Goods Receipt Note Document -->
         <div class="premium-card print-section" style="padding: 40px; margin-bottom: 24px; background: #ffffff; border: 2px solid #cbd5e1; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative; overflow: hidden;">
@@ -369,38 +509,14 @@
                 </div>
             </div>
 
-            <!-- Action Panel on the bottom right of document card (non-printing) -->
-            <div style="margin-top: 30px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1.5px solid #cbd5e1; padding-top: 20px;" class="no-print">
-                <c:if test="${receipt.status == 'RECEIVED' && (currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF'))}">
-                    <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'COMPLETED'" class="premium-btn-primary" style="height: 38px !important; padding: 0 16px; font-size: 13px; font-weight: 600; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: none; border-radius: 8px; color: white;">
-                        Hoàn Thành
-                    </button>
-                    <button type="button"
-                            onclick="cancelReceipt()"
-                            class="premium-btn-outline"
-                            style="color: #ef4444;
-                            border-color: #fecaca;
-                            height: 36px !important;
-                            padding: 0 16px;
-                            font-size: 13px;">
-                        Hủy phiếu
-                    </button>
-                </c:if>
-                <button type="button" onclick="window.print()" class="premium-btn-outline" style="height: 38px !important; padding: 0 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid var(--card-border); border-radius: 8px; background: transparent; color: var(--text-primary);">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                    In Phiếu Nhập Kho
-                </button>
-            </div>
-
         </div>
     </c:if>
 
     <c:if test="${receipt.status != 'RECEIVED' && receipt.status != 'COMPLETED'}">
         <!-- Actions & Evidence Images Panel -->
-        <!-- Actions & Evidence Images Panel -->
         <div class="premium-card no-print" style="padding: 24px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 20px;">
 
-            <!-- Header Section (Title + Align Right Buttons) -->
+            <!-- Header Section (Title) -->
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--card-border); padding-bottom: 12px; margin-bottom: 4px; flex-wrap: wrap; gap: 12px;">
                 <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -413,123 +529,6 @@
                         </c:otherwise>
                     </c:choose>
                 </h3>
-
-                <!-- Right-aligned action buttons -->
-                <c:if test="${receipt.status != 'COMPLETED' && receipt.status != 'CANCELLED'}">
-                    <c:choose>
-                        <c:when test="${receipt.status == 'DRAFT'}">
-                            <div style="display: flex; gap: 8px;">
-                                <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'PENDING_APPROVAL'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; font-weight: 600;">
-                                    Gửi yêu cầu duyệt
-                                </button>
-                                <c:if test="${currentUser.hasPermission('RECEIPT_WRITE')}">
-                                    <a href="${pageContext.request.contextPath}/manage/receipts?action=delete&id=${receipt.id}" 
-                                       class="premium-btn-outline" 
-                                       onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu nhập nháp này không? Hành động này không thể hoàn tác.');"
-                                       style="display: inline-flex; align-items: center; justify-content: center; height: 36px !important; padding: 0 16px; font-size: 13px; text-decoration: none; color: #ef4444; border-color: rgba(239, 68, 68, 0.4); font-weight: 600; border-radius: 8px; transition: all 0.2s;"
-                                       onmouseover="this.style.background = 'rgba(239, 68, 68, 0.05)'; this.style.borderColor = '#ef4444';"
-                                       onmouseout="this.style.background = 'transparent'; this.style.borderColor = 'rgba(239, 68, 68, 0.4)';">
-                                        Xóa phiếu nháp
-                                    </a>
-                                </c:if>
-                                <button type="button"
-                                        onclick="cancelReceipt()">
-                                    Hủy phiếu
-                                </button>
-                            </div>
-                        </c:when>
-
-                        <c:when test="${receipt.status == 'PENDING_APPROVAL'}">
-                            <c:choose>
-                                <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('DIRECTOR')}">
-                                    <div style="display: flex; gap: 8px;">
-                                        <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'APPROVED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important;">
-                                            Phê duyệt phiếu
-                                        </button>
-                                        <button type="button"
-                                                onclick="cancelReceipt()"
-                                                class="premium-btn-outline"
-                                                style="color: #ef4444;
-                                                border-color: #fecaca;
-                                                height: 36px !important;
-                                                padding: 0 16px;
-                                                font-size: 13px;">
-                                            Từ chối & Hủy
-                                        </button>
-                                    </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid #fde68a; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #d97706; font-weight: 600;">
-                                        Đang chờ Giám đốc hoặc Admin phê duyệt...
-                                    </div>
-                                </c:otherwise>
-                            </c:choose>
-                        </c:when>
-
-                        <c:when test="${receipt.status == 'APPROVED'}">
-                            <c:choose>
-                                <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
-                                    <div style="display: flex; gap: 8px;">
-                                        <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'RECEIVING'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.2) !important;">
-                                            Bắt đầu nhận hàng
-                                        </button>
-                                        <button type="button"
-                                                onclick="cancelReceipt()">
-                                            Hủy phiếu
-                                        </button>
-                                    </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid #bfdbfe; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #1d4ed8; font-weight: 600;">
-                                        Chờ Nhân viên kho (Warehouse Staff) thực hiện nhận hàng...
-                                    </div>
-                                </c:otherwise>
-                            </c:choose>
-                        </c:when>
-
-                        <c:when test="${receipt.status == 'RECEIVING'}">
-                            <c:choose>
-                                <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
-                                    <div style="display: flex; gap: 8px;">
-                                        <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'RECEIVED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #4f46e5, #4338ca) !important; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.2) !important;">
-                                            Tạo đơn nhận hàng thành công (Xác nhận)
-                                        </button>
-                                        <button type="button"
-                                                onclick="cancelReceipt()">
-                                            Hủy phiếu
-                                        </button>
-                                    </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid #ddd6fe; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #6d28d9; font-weight: 600;">
-                                        Nhân viên kho (Warehouse Staff) đang thực hiện kiểm tra và nhận hàng...
-                                    </div>
-                                </c:otherwise>
-                            </c:choose>
-                        </c:when>
-
-                        <c:when test="${receipt.status == 'RECEIVED'}">
-                            <c:choose>
-                                <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
-                                    <div style="display: flex; gap: 8px;">
-                                        <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'COMPLETED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important;">
-                                            Hoàn Thành
-                                        </button>
-                                        <button type="button"
-                                                onclick="cancelReceipt()">
-                                            Hủy phiếu
-                                        </button>
-                                    </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div style="background: rgba(79, 70, 229, 0.05); border: 1px solid #c7d2fe; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #4338ca; font-weight: 600;">
-                                        Chờ Nhân viên kho thực hiện cất hàng và hoàn thành nhập kho...
-                                    </div>
-                                </c:otherwise>
-                            </c:choose>
-                        </c:when>
-                    </c:choose>
-                </c:if>
             </div>
 
             <!-- Images Grid -->
@@ -974,13 +973,28 @@
     }
 
     function generateAllBarcodes(detailId, productId) {
-        const container = document.getElementById("barcodeContainer_" + detailId);
-        if (!container)
+        const container =
+                document.getElementById(
+                        "barcodeContainer_" + detailId
+                        );
+
+        if (!container) {
             return;
-        Array.from(container.querySelectorAll(".receiving-barcode-input")).forEach((input, index) => {
-            input.value = "BC-${receipt.id}-" + productId + "-" + (index + 1);
+        }
+
+        Array.from(
+                container.querySelectorAll(
+                        ".receiving-barcode-input"
+                        )
+                ).forEach((input, index) => {
+            input.value =
+                    "BC-${receipt.id}-"
+                    + productId
+                    + "-"
+                    + (index + 1);
         });
     }
+
     function cancelReceipt() {
         const confirmed = confirm(
                 "Bạn có chắc chắn muốn hủy phiếu nhập này không?"
@@ -990,7 +1004,8 @@
             return;
         }
 
-        const cancelForm = document.getElementById("cancelReceiptForm");
+        const cancelForm =
+                document.getElementById("cancelReceiptForm");
 
         if (!cancelForm) {
             alert("Không tìm thấy form hủy phiếu.");
@@ -1000,156 +1015,149 @@
         cancelForm.submit();
     }
     document.addEventListener("DOMContentLoaded", function () {
-        const statusForm = document.getElementById("statusForm");
-        const nextStatus = document.getElementById("nextStatus");
-        const fileInput = document.getElementById("receivingImagesInput");
-        const previewContainer = document.getElementById("imagePreviewContainer");
-
-        document.querySelectorAll(".barcode-container").forEach(function (container) {
-            const detailId = container.dataset.detailId;
+    const statusForm = document.getElementById("statusForm");
+            const nextStatus = document.getElementById("nextStatus");
+            const fileInput = document.getElementById("receivingImagesInput");
+            const previewContainer = document.getElementById("imagePreviewContainer");
+            document.querySelectorAll(".barcode-container").forEach(function (container) {
+    const detailId = container.dataset.detailId;
             renderBarcodeInputs(detailId);
             const quantityInput = document.getElementById("actualQuantity_" + detailId);
             if (quantityInput)
-                quantityInput.addEventListener("input", function () {
-                    renderBarcodeInputs(detailId);
-                });
-        });
-
-        if (fileInput) {
-            fileInput.addEventListener("change", function () {
-                previewContainer.innerHTML = "";
-                const files = Array.from(fileInput.files);
-                if (files.length > 4) {
-                    alert("Bạn chỉ được phép tải lên tối đa 4 ảnh hàng hóa.");
-                    fileInput.value = "";
-                    return;
-                }
-                files.forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        const img = document.createElement("img");
-                        img.src = e.target.result;
-                        img.style.width = "60px";
-                        img.style.height = "60px";
-                        img.style.objectFit = "cover";
-                        img.style.borderRadius = "4px";
-                        img.style.border = "1px solid var(--card-border)";
-                        previewContainer.appendChild(img);
-                    };
-                    reader.readAsDataURL(file);
-                });
+            quantityInput.addEventListener("input", function () {
+            renderBarcodeInputs(detailId);
             });
-        }
+    });
+            if (fileInput) {
+    fileInput.addEventListener("change", function () {
+    previewContainer.innerHTML = "";
+            const files = Array.from(fileInput.files);
+            if (files.length > 4) {
+    alert("Bạn chỉ được phép tải lên tối đa 4 ảnh hàng hóa.");
+            fileInput.value = "";
+            return;
+    }
+    files.forEach(file => {
+    const reader = new FileReader();
+            reader.onload = function (e) {
+            const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.style.width = "60px";
+                    img.style.height = "60px";
+                    img.style.objectFit = "cover";
+                    img.style.borderRadius = "4px";
+                    img.style.border = "1px solid var(--card-border)";
+                    previewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+    });
+    });
+    }
 
-        if (statusForm) {
-            statusForm.addEventListener("submit", function (e) {
-                if (nextStatus.value === "RECEIVED") {
-                    const hasExistingImages = ${not empty receipt.receivingImages};
-                    const quantityInputs = Array.from(document.querySelectorAll(".receiving-quantity-input"));
-                    const batchInputs = Array.from(document.querySelectorAll(".receiving-batch-input"));
-                    const barcodeInputs = Array.from(document.querySelectorAll(".receiving-barcode-input"));
-
-                    const invalidQuantity = quantityInputs.find(input =>
-                        input.value.trim() === "" || Number.isNaN(Number(input.value)) || Number(input.value) <= 0
+    if (statusForm) {
+    statusForm.addEventListener("submit", function (e) {
+    if (nextStatus.value === "RECEIVED") {
+    const hasExistingImages = ${not empty receipt.receivingImages};
+            const quantityInputs = Array.from(document.querySelectorAll(".receiving-quantity-input"));
+            const batchInputs = Array.from(document.querySelectorAll(".receiving-batch-input"));
+            const barcodeInputs = Array.from(document.querySelectorAll(".receiving-barcode-input"));
+            const invalidQuantity = quantityInputs.find(input =>
+                    input.value.trim() === "" || Number.isNaN(Number(input.value)) || Number(input.value) <= 0
                     );
-                    const emptyBatch = batchInputs.find(input => input.value.trim() === "");
-                    const emptyBarcode = barcodeInputs.find(input => input.value.trim() === "");
-                    const normalizedBarcodes = barcodeInputs.map(input => input.value.trim().toUpperCase()).filter(Boolean);
-                    const duplicatedBarcode = new Set(normalizedBarcodes).size !== normalizedBarcodes.length;
+            const emptyBatch = batchInputs.find(input => input.value.trim() === "");
+            const emptyBarcode = barcodeInputs.find(input => input.value.trim() === "");
+            const normalizedBarcodes = barcodeInputs.map(input => input.value.trim().toUpperCase()).filter(Boolean);
+            const duplicatedBarcode = new Set(normalizedBarcodes).size !== normalizedBarcodes.length;
+            if (invalidQuantity) {
+    e.preventDefault();
+            alert("Vui lòng nhập số lượng thực nhận lớn hơn 0 cho tất cả sản phẩm.");
+            invalidQuantity.focus();
+    } else if (emptyBatch) {
+    e.preventDefault();
+            alert("Vui lòng nhập hoặc bấm Tạo Batch Code cho tất cả sản phẩm.");
+            emptyBatch.focus();
+    } else if (emptyBarcode) {
+    e.preventDefault();
+            alert("Vui lòng nhập hoặc tạo đầy đủ Barcode cho từng sản phẩm.");
+            emptyBarcode.focus();
+    } else if (duplicatedBarcode) {
+    e.preventDefault();
+            alert("Barcode không được trùng nhau trong cùng phiếu nhập.");
+    } else if (!hasExistingImages && (!fileInput || fileInput.files.length === 0)) {
+    e.preventDefault();
+            alert("Vui lòng chụp hoặc tải lên ít nhất 1 ảnh hàng hóa đã nhận để làm bằng chứng.");
+    } else if (fileInput && fileInput.files.length > 4) {
+    e.preventDefault();
+            alert("Bạn chỉ được phép tải lên tối đa 4 ảnh hàng hóa.");
+    }
+    }
+    });
+    }
 
-                    if (invalidQuantity) {
-                        e.preventDefault();
-                        alert("Vui lòng nhập số lượng thực nhận lớn hơn 0 cho tất cả sản phẩm.");
-                        invalidQuantity.focus();
-                    } else if (emptyBatch) {
-                        e.preventDefault();
-                        alert("Vui lòng nhập hoặc bấm Tạo Batch Code cho tất cả sản phẩm.");
-                        emptyBatch.focus();
-                    } else if (emptyBarcode) {
-                        e.preventDefault();
-                        alert("Vui lòng nhập hoặc tạo đầy đủ Barcode cho từng sản phẩm.");
-                        emptyBarcode.focus();
-                    } else if (duplicatedBarcode) {
-                        e.preventDefault();
-                        alert("Barcode không được trùng nhau trong cùng phiếu nhập.");
-                    } else if (!hasExistingImages && (!fileInput || fileInput.files.length === 0)) {
-                        e.preventDefault();
-                        alert("Vui lòng chụp hoặc tải lên ít nhất 1 ảnh hàng hóa đã nhận để làm bằng chứng.");
-                    } else if (fileInput && fileInput.files.length > 4) {
-                        e.preventDefault();
-                        alert("Bạn chỉ được phép tải lên tối đa 4 ảnh hàng hóa.");
-                    }
-                }
-            });
-        }
+    // Update Receiving Images Form (inside RECEIVING status page)
+    const updateRecForm = document.getElementById("updateReceivingImagesForm");
+            const updateRecInput = document.getElementById("updateReceivingImagesInput");
+            if (updateRecForm && updateRecInput) {
+    updateRecForm.addEventListener("submit", function (e) {
+    if (updateRecInput.files.length > 4) {
+    e.preventDefault();
+            alert("Bạn chỉ được phép tải lên tối đa 4 ảnh hàng hóa.");
+    } else if (updateRecInput.files.length === 0) {
+    e.preventDefault();
+            alert("Vui lòng chọn ít nhất 1 ảnh.");
+    }
+    });
+    }
 
-        // Update Receiving Images Form (inside RECEIVING status page)
-        const updateRecForm = document.getElementById("updateReceivingImagesForm");
-        const updateRecInput = document.getElementById("updateReceivingImagesInput");
-        if (updateRecForm && updateRecInput) {
-            updateRecForm.addEventListener("submit", function (e) {
-                if (updateRecInput.files.length > 4) {
-                    e.preventDefault();
-                    alert("Bạn chỉ được phép tải lên tối đa 4 ảnh hàng hóa.");
-                } else if (updateRecInput.files.length === 0) {
-                    e.preventDefault();
-                    alert("Vui lòng chọn ít nhất 1 ảnh.");
-                }
-            });
-        }
+    // Modal controls for Lịch sử cập nhật
+    const historyModal = document.getElementById("historyModal");
+            const openHistoryBtn = document.getElementById("openHistoryBtn");
+            const closeHistoryModal = document.getElementById("closeHistoryModal");
+            if (openHistoryBtn && historyModal) {
+    openHistoryBtn.addEventListener("click", function () {
+    historyModal.style.display = "block";
+            document.body.style.overflow = "hidden"; // Prevent background scrolling
+    });
+    }
 
-        // Modal controls for Lịch sử cập nhật
-        const historyModal = document.getElementById("historyModal");
-        const openHistoryBtn = document.getElementById("openHistoryBtn");
-        const closeHistoryModal = document.getElementById("closeHistoryModal");
+    if (closeHistoryModal && historyModal) {
+    closeHistoryModal.addEventListener("click", function () {
+    historyModal.style.display = "none";
+            document.body.style.overflow = "auto";
+    });
+    }
 
-        if (openHistoryBtn && historyModal) {
-            openHistoryBtn.addEventListener("click", function () {
-                historyModal.style.display = "block";
-                document.body.style.overflow = "hidden"; // Prevent background scrolling
-            });
-        }
+    // Close modal when clicking outside of the modal content
+    window.addEventListener("click", function (event) {
+    if (event.target === historyModal) {
+    historyModal.style.display = "none";
+            document.body.style.overflow = "auto";
+    }
+    });
+            // Lightbox Modal Controls
+            const lightbox = document.getElementById('imageLightbox');
+            const closeLightbox = document.getElementById('closeLightbox');
+            const lightboxImg = document.getElementById('lightboxImage');
+            if (closeLightbox && lightbox) {
+    closeLightbox.addEventListener("click", function () {
+    lightbox.style.display = 'none';
+            // Only restore scroll if history modal is also closed
+            if (!historyModal || historyModal.style.display !== "block") {
+    document.body.style.overflow = "auto";
+    }
+    });
+    }
 
-        if (closeHistoryModal && historyModal) {
-            closeHistoryModal.addEventListener("click", function () {
-                historyModal.style.display = "none";
-                document.body.style.overflow = "auto";
-            });
-        }
-
-        // Close modal when clicking outside of the modal content
-        window.addEventListener("click", function (event) {
-            if (event.target === historyModal) {
-                historyModal.style.display = "none";
-                document.body.style.overflow = "auto";
-            }
-        });
-
-        // Lightbox Modal Controls
-        const lightbox = document.getElementById('imageLightbox');
-        const closeLightbox = document.getElementById('closeLightbox');
-        const lightboxImg = document.getElementById('lightboxImage');
-
-        if (closeLightbox && lightbox) {
-            closeLightbox.addEventListener("click", function () {
-                lightbox.style.display = 'none';
-                // Only restore scroll if history modal is also closed
-                if (!historyModal || historyModal.style.display !== "block") {
-                    document.body.style.overflow = "auto";
-                }
-            });
-        }
-
-        if (lightbox) {
-            lightbox.addEventListener("click", function (event) {
-                if (event.target !== lightboxImg && event.target !== closeLightbox) {
-                    lightbox.style.display = 'none';
-                    if (!historyModal || historyModal.style.display !== "block") {
-                        document.body.style.overflow = "auto";
-                    }
-                }
-            });
-        }
+    if (lightbox) {
+    lightbox.addEventListener("click", function (event) {
+    if (event.target !== lightboxImg && event.target !== closeLightbox) {
+    lightbox.style.display = 'none';
+            if (!historyModal || historyModal.style.display !== "block") {
+    document.body.style.overflow = "auto";
+    }
+    }
+    });
+    }
     });
 </script>
 

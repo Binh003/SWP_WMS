@@ -7,6 +7,10 @@
 
 <style>
     @media print {
+        @page {
+            size: auto;
+            margin: 0;
+        }
         .home-topbar, .home-sidebar, #openHistoryBtn, .subpage-header, .no-print, [style*="margin-bottom: 16px;"] {
             display: none !important;
         }
@@ -21,7 +25,7 @@
         .print-section {
             border: none !important;
             box-shadow: none !important;
-            padding: 0 !important;
+            padding: 15mm !important;
             margin: 0 !important;
             background: #ffffff !important;
         }
@@ -45,7 +49,131 @@
             <h2 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0;">Chi tiết Phiếu Nhập: <span style="font-family: monospace; color: var(--primary-color);">${receipt.receiptCode}</span></h2>
             <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">Thông tin chi tiết về các sản phẩm đã nhập kho.</p>
         </div>
-        <div style="display: flex; gap: 12px; align-items: center;">
+        <div style="display: flex; gap: 12px; align-items: center;" class="no-print">
+            
+            <!-- Right-aligned receipt action buttons -->
+            <c:if test="${receipt.status != 'COMPLETED' && receipt.status != 'CANCELLED'}">
+                <c:choose>
+                    <c:when test="${receipt.status == 'DRAFT'}">
+                        <div style="display: flex; gap: 8px;">
+                            <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'PENDING_APPROVAL'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; color: white;">
+                                Gửi yêu cầu duyệt
+                            </button>
+                            <c:if test="${currentUser.hasPermission('RECEIPT_WRITE')}">
+                                <a href="${pageContext.request.contextPath}/manage/receipts?action=delete&id=${receipt.id}" 
+                                   class="premium-btn-outline" 
+                                   onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu nhập nháp này không? Hành động này không thể hoàn tác.');"
+                                   style="display: inline-flex; align-items: center; justify-content: center; height: 40px !important; padding: 0 16px; font-size: 13px; text-decoration: none; color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.4); font-weight: 600; border-radius: 8px; transition: all 0.2s;"
+                                   onmouseover="this.style.background = 'rgba(239, 68, 68, 0.05)'; this.style.borderColor = '#ef4444';"
+                                   onmouseout="this.style.background = 'transparent'; this.style.borderColor = 'rgba(239, 68, 68, 0.4)';">
+                                    Xóa phiếu nháp
+                                </a>
+                            </c:if>
+                            <button type="button"
+                                    onclick="cancelReceipt()"
+                                    class="premium-btn-outline"
+                                    style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                                Hủy phiếu
+                            </button>
+                        </div>
+                    </c:when>
+
+                    <c:when test="${receipt.status == 'PENDING_APPROVAL'}">
+                        <c:choose>
+                            <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('DIRECTOR')}">
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'APPROVED'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important; color: white;">
+                                        Phê duyệt phiếu
+                                    </button>
+                                    <button type="button"
+                                            onclick="cancelReceipt()"
+                                            class="premium-btn-outline"
+                                            style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                                        Từ chối & Hủy
+                                    </button>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid #fde68a; border-radius: 8px; padding: 10px 16px; font-size: 12px; color: #d97706; font-weight: 600;">
+                                    Đang chờ Giám đốc hoặc Admin phê duyệt...
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:when>
+
+                    <c:when test="${receipt.status == 'APPROVED'}">
+                        <c:choose>
+                            <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'RECEIVING'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.2) !important; color: white;">
+                                        Bắt đầu nhận hàng
+                                    </button>
+                                    <button type="button"
+                                            onclick="cancelReceipt()"
+                                            class="premium-btn-outline"
+                                            style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                                        Hủy phiếu
+                                    </button>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 16px; font-size: 12px; color: #1d4ed8; font-weight: 600;">
+                                    Chờ Nhân viên kho thực hiện nhận hàng...
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:when>
+
+                    <c:when test="${receipt.status == 'RECEIVING'}">
+                        <c:choose>
+                            <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'RECEIVED'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #4f46e5, #4338ca) !important; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.2) !important; color: white;">
+                                        Tạo đơn nhận hàng thành công (Xác nhận)
+                                    </button>
+                                    <button type="button"
+                                            onclick="cancelReceipt()"
+                                            class="premium-btn-outline"
+                                            style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                                        Hủy phiếu
+                                    </button>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid #ddd6fe; border-radius: 8px; padding: 10px 16px; font-size: 12px; color: #6d28d9; font-weight: 600;">
+                                    Nhân viên kho đang thực hiện kiểm tra và nhận hàng...
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </c:when>
+
+                    <c:when test="${receipt.status == 'RECEIVED'}">
+                        <c:choose>
+                            <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'COMPLETED'" class="premium-btn-primary" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; border: none; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important; color: white;">
+                                        Hoàn Thành
+                                    </button>
+                                    <button type="button"
+                                            onclick="cancelReceipt()"
+                                            class="premium-btn-outline"
+                                            style="color: #ef4444; border: 1.5px solid #fecaca; height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; border-radius: 8px;">
+                                        Hủy phiếu
+                                    </button>
+                                </div>
+                            </c:when>
+                        </c:choose>
+                    </c:when>
+                </c:choose>
+            </c:if>
+
+            <c:if test="${receipt.status == 'RECEIVED' || receipt.status == 'COMPLETED'}">
+                <button type="button" onclick="window.print()" class="premium-btn-outline" style="height: 40px !important; padding: 0 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1.5px solid var(--card-border); border-radius: 8px; background: transparent; color: var(--text-primary);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    In Phiếu Nhập Kho
+                </button>
+            </c:if>
+
             <button type="button" id="openHistoryBtn" class="premium-btn-secondary" style="display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 16px; font-weight: 600; cursor: pointer; gap: 6px; border: 1.5px solid var(--card-border); background: #ffffff; border-radius: 8px; font-size: 13px; color: var(--text-primary); transition: all 0.2s;" onmouseover="this.style.background = '#f8fafc'; this.style.borderColor = 'var(--primary-color)';" onmouseout="this.style.background = '#ffffff'; this.style.borderColor = 'var(--card-border)';">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                 Lịch sử cập nhật
@@ -381,38 +509,14 @@
                 </div>
             </div>
 
-            <!-- Action Panel on the bottom right of document card (non-printing) -->
-            <div style="margin-top: 30px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1.5px solid #cbd5e1; padding-top: 20px;" class="no-print">
-                <c:if test="${receipt.status == 'RECEIVED' && (currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF'))}">
-                    <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'COMPLETED'" class="premium-btn-primary" style="height: 38px !important; padding: 0 16px; font-size: 13px; font-weight: 600; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: none; border-radius: 8px; color: white;">
-                        Hoàn Thành
-                    </button>
-                    <button type="button"
-                            onclick="cancelReceipt()"
-                            class="premium-btn-outline"
-                            style="color: #ef4444;
-                            border-color: #fecaca;
-                            height: 36px !important;
-                            padding: 0 16px;
-                            font-size: 13px;">
-                        Hủy phiếu
-                    </button>
-                </c:if>
-                <button type="button" onclick="window.print()" class="premium-btn-outline" style="height: 38px !important; padding: 0 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid var(--card-border); border-radius: 8px; background: transparent; color: var(--text-primary);">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                    In Phiếu Nhập Kho
-                </button>
-            </div>
-
         </div>
     </c:if>
 
     <c:if test="${receipt.status != 'RECEIVED' && receipt.status != 'COMPLETED'}">
         <!-- Actions & Evidence Images Panel -->
-        <!-- Actions & Evidence Images Panel -->
         <div class="premium-card no-print" style="padding: 24px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 20px;">
 
-            <!-- Header Section (Title + Align Right Buttons) -->
+            <!-- Header Section (Title) -->
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--card-border); padding-bottom: 12px; margin-bottom: 4px; flex-wrap: wrap; gap: 12px;">
                 <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -425,147 +529,6 @@
                         </c:otherwise>
                     </c:choose>
                 </h3>
-
-                <!-- Right-aligned action buttons -->
-                <c:if test="${receipt.status != 'COMPLETED' && receipt.status != 'CANCELLED'}">
-                    <c:choose>
-                        <c:when test="${receipt.status == 'DRAFT'}">
-                            <div style="display: flex; gap: 8px;">
-                                <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'PENDING_APPROVAL'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; font-weight: 600;">
-                                    Gửi yêu cầu duyệt
-                                </button>
-                                <c:if test="${currentUser.hasPermission('RECEIPT_WRITE')}">
-                                    <a href="${pageContext.request.contextPath}/manage/receipts?action=delete&id=${receipt.id}" 
-                                       class="premium-btn-outline" 
-                                       onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu nhập nháp này không? Hành động này không thể hoàn tác.');"
-                                       style="display: inline-flex; align-items: center; justify-content: center; height: 36px !important; padding: 0 16px; font-size: 13px; text-decoration: none; color: #ef4444; border-color: rgba(239, 68, 68, 0.4); font-weight: 600; border-radius: 8px; transition: all 0.2s;"
-                                       onmouseover="this.style.background = 'rgba(239, 68, 68, 0.05)'; this.style.borderColor = '#ef4444';"
-                                       onmouseout="this.style.background = 'transparent'; this.style.borderColor = 'rgba(239, 68, 68, 0.4)';">
-                                        Xóa phiếu nháp
-                                    </a>
-                                </c:if>
-                                <button type="button"
-                                        onclick="cancelReceipt()"
-                                        class="premium-btn-outline"
-                                        style="color: #ef4444;
-                                        border-color: #fecaca;
-                                        height: 36px !important;
-                                        padding: 0 16px;
-                                        font-size: 13px;">
-                                    Hủy phiếu
-                                </button>
-                            </div>
-                        </c:when>
-
-                        <c:when test="${receipt.status == 'PENDING_APPROVAL'}">
-                            <c:choose>
-                                <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('DIRECTOR')}">
-                                    <div style="display: flex; gap: 8px;">
-                                        <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'APPROVED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important;">
-                                            Phê duyệt phiếu
-                                        </button>
-                                        <button type="button"
-                                                onclick="cancelReceipt()"
-                                                class="premium-btn-outline"
-                                                style="color: #ef4444;
-                                                border-color: #fecaca;
-                                                height: 36px !important;
-                                                padding: 0 16px;
-                                                font-size: 13px;">
-                                            Từ chối & Hủy
-                                        </button>
-                                    </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid #fde68a; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #d97706; font-weight: 600;">
-                                        Đang chờ Giám đốc hoặc Admin phê duyệt...
-                                    </div>
-                                </c:otherwise>
-                            </c:choose>
-                        </c:when>
-
-                        <c:when test="${receipt.status == 'APPROVED'}">
-                            <c:choose>
-                                <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
-                                    <div style="display: flex; gap: 8px;">
-                                        <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'RECEIVING'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.2) !important;">
-                                            Bắt đầu nhận hàng
-                                        </button>
-                                        <button type="button"
-                                                onclick="cancelReceipt()"
-                                                class="premium-btn-outline"
-                                                style="color: #ef4444;
-                                                border-color: #fecaca;
-                                                height: 36px !important;
-                                                padding: 0 16px;
-                                                font-size: 13px;">
-                                            Hủy phiếu
-                                        </button>
-                                    </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid #bfdbfe; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #1d4ed8; font-weight: 600;">
-                                        Chờ Nhân viên kho (Warehouse Staff) thực hiện nhận hàng...
-                                    </div>
-                                </c:otherwise>
-                            </c:choose>
-                        </c:when>
-
-                        <c:when test="${receipt.status == 'RECEIVING'}">
-                            <c:choose>
-                                <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
-                                    <div style="display: flex; gap: 8px;">
-                                        <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'RECEIVED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #4f46e5, #4338ca) !important; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.2) !important;">
-                                            Tạo đơn nhận hàng thành công (Xác nhận)
-                                        </button>
-                                        <button type="button"
-                                                onclick="cancelReceipt()"
-                                                class="premium-btn-outline"
-                                                style="color: #ef4444;
-                                                border-color: #fecaca;
-                                                height: 36px !important;
-                                                padding: 0 16px;
-                                                font-size: 13px;">
-                                            Hủy phiếu
-                                        </button>
-                                    </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid #ddd6fe; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #6d28d9; font-weight: 600;">
-                                        Nhân viên kho (Warehouse Staff) đang thực hiện kiểm tra và nhận hàng...
-                                    </div>
-                                </c:otherwise>
-                            </c:choose>
-                        </c:when>
-
-                        <c:when test="${receipt.status == 'RECEIVED'}">
-                            <c:choose>
-                                <c:when test="${currentUser.hasRole('ADMIN') || currentUser.hasRole('WAREHOUSE STAFF')}">
-                                    <div style="display: flex; gap: 8px;">
-                                        <button type="submit" form="statusForm" onclick="document.getElementById('nextStatus').value = 'COMPLETED'" class="premium-btn-primary" style="height: 36px !important; padding: 0 16px; font-size: 13px; background: linear-gradient(135deg, #10b981, #059669) !important; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2) !important;">
-                                            Hoàn Thành
-                                        </button>
-                                        <button type="button"
-                                                onclick="cancelReceipt()"
-                                                class="premium-btn-outline"
-                                                style="color: #ef4444;
-                                                border-color: #fecaca;
-                                                height: 36px !important;
-                                                padding: 0 16px;
-                                                font-size: 13px;">
-                                            Hủy phiếu
-                                        </button>
-                                    </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div style="background: rgba(79, 70, 229, 0.05); border: 1px solid #c7d2fe; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #4338ca; font-weight: 600;">
-                                        Chờ Nhân viên kho thực hiện cất hàng và hoàn thành nhập kho...
-                                    </div>
-                                </c:otherwise>
-                            </c:choose>
-                        </c:when>
-                    </c:choose>
-                </c:if>
             </div>
 
             <!-- Images Grid -->

@@ -23,34 +23,37 @@
   </div>
 
   <div class="premium-card" style="padding: 32px; max-width: 800px;">
-    <form action="${pageContext.request.contextPath}/manage/shipments" method="post" style="display: flex; flex-direction: column; gap: 24px;" onsubmit="return validateShipment()">
+    <form action="${pageContext.request.contextPath}/manage/shipments" method="post" novalidate style="display: flex; flex-direction: column; gap: 24px;" onsubmit="return validateShipment()">
       <input type="hidden" name="action" value="create"/>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
         <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
           <label for="shipmentCode" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Mã Phiếu Xuất <span style="color: #ef4444;">*</span></label>
-          <input type="text" id="shipmentCode" name="shipmentCode" value="${generatedCode}" required readonly style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; background-color: #f1f5f9; color: var(--text-secondary); font-family: monospace;" />
+          <input type="text" id="shipmentCode" name="shipmentCode" value="${generatedCode}" readonly style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; background-color: #f1f5f9; color: var(--text-secondary); font-family: monospace;" />
         </div>
 
         <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
           <label for="destination" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Nơi nhận (Khách hàng/Chi nhánh) <span style="color: #ef4444;">*</span></label>
-          <input type="text" id="destination" name="destination" required placeholder="VD: Cửa hàng Q1..." style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary);" />
+          <input type="text" id="destination" name="destination" placeholder="VD: Cửa hàng Q1..." style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary);" />
         </div>
       </div>
 
       <div style="border: 1px solid var(--card-border); border-radius: 10px; overflow: hidden; margin-top: 8px;">
-        <div style="background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; align-items: center;">
-          <span>Chi tiết sản phẩm xuất</span>
+        <div style="background: #f8fafc; padding: 14px 16px; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <span style="font-weight: 700; font-size: 14px; color: var(--text-primary); display: block;">Chi tiết sản phẩm xuất</span>
+            <span style="font-size: 12px; color: var(--text-secondary);">Chọn sản phẩm và số lượng cần xuất</span>
+          </div>
           <button type="button" onclick="addRow()" style="height: 32px; padding: 0 16px; font-size: 13px; font-weight: 600; color: var(--primary-color); border: 1.5px solid var(--primary-color); background: rgba(4, 138, 191, 0.05); border-radius: 8px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" onmouseover="this.style.background='rgba(4, 138, 191, 0.1)'" onmouseout="this.style.background='rgba(4, 138, 191, 0.05)'">
             + Thêm dòng
           </button>
         </div>
         <div style="padding: 16px; display: flex; flex-direction: column; gap: 16px;" id="productRows">
           
-          <div class="product-row" style="display: flex; gap: 16px; align-items: flex-end;">
-            <div style="flex: 1;">
+          <div class="product-row" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 260px;">
               <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: block;">Sản phẩm (SKU) <span style="color: #ef4444;">*</span></label>
-              <select name="productId[]" required onchange="updateMaxQty(this)" style="width: 100%; padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 8px; font-size: 14px; outline: none; background: white;">
+              <select name="productId[]" onchange="updateMaxQty(this)" style="width: 100%; padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 8px; font-size: 14px; outline: none; background: white;">
                 <option value="">-- Chọn Sản phẩm --</option>
                 <c:forEach var="p" items="${products}">
                   <c:set var="stock" value="0"/>
@@ -63,10 +66,12 @@
                 </c:forEach>
               </select>
             </div>
-            <div style="width: 150px;">
+
+            <div style="width: 140px;">
               <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: block;">Số lượng <span style="color: #ef4444;">*</span></label>
-              <input type="number" name="quantity[]" required min="1" value="1" style="width: 100%; padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 8px; font-size: 14px; outline: none; background: white;">
+              <input type="number" name="quantity[]" value="1" oninput="checkInputQty(this)" onchange="checkInputQty(this)" style="width: 100%; padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 8px; font-size: 14px; outline: none; background: white;">
             </div>
+
             <button type="button" onclick="removeRow(this)" style="color: #ef4444; border: 1.5px solid #fecaca; background: #fef2f2; width: 38px; height: 38px; border-radius: 8px; cursor: pointer; display: none; align-items: center; justify-content: center; transition: all 0.2s; padding: 0; box-sizing: border-box;" onmouseover="this.style.background='#fee2e2'; this.style.borderColor='#ef4444'" onmouseout="this.style.background='#fef2f2'; this.style.borderColor='#fecaca'">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -103,13 +108,24 @@
 
 <script>
   function updateMaxQty(selectElem) {
-    const stock = selectElem.options[selectElem.selectedIndex].getAttribute('data-stock');
-    const inputQty = selectElem.closest('.product-row').querySelector('input[type="number"]');
-    if (stock) {
-      inputQty.max = stock;
+    const option = selectElem.options[selectElem.selectedIndex];
+    const stock = option ? option.getAttribute('data-stock') : null;
+    const inputQty = selectElem.closest('.product-row').querySelector('input[name="quantity[]"]');
+    if (stock !== null && stock !== '') {
+      inputQty.setAttribute('data-stock', stock);
       inputQty.placeholder = "Max: " + stock;
-      if (parseInt(inputQty.value) > parseInt(stock)) {
-          inputQty.value = stock;
+      checkInputQty(inputQty);
+    }
+  }
+
+  function checkInputQty(inputElem) {
+    const stockStr = inputElem.getAttribute('data-stock');
+    if (stockStr !== null && stockStr !== '') {
+      const maxStock = parseInt(stockStr) || 0;
+      const val = parseInt(inputElem.value) || 0;
+      if (val > maxStock) {
+        showCustomAlert("Số lượng xuất (" + val + ") vượt quá số lượng tồn kho khả dụng (" + maxStock + ").");
+        inputElem.value = maxStock;
       }
     }
   }
@@ -119,10 +135,11 @@
     const firstRow = container.querySelector('.product-row');
     const newRow = firstRow.cloneNode(true);
     
-    newRow.querySelector('select').value = '';
-    newRow.querySelector('input[type="number"]').value = '1';
-    newRow.querySelector('input[type="number"]').removeAttribute('max');
-    newRow.querySelector('input[type="number"]').placeholder = '';
+    newRow.querySelector('select[name="productId[]"]').value = '';
+    const inputQty = newRow.querySelector('input[name="quantity[]"]');
+    inputQty.value = '1';
+    inputQty.removeAttribute('data-stock');
+    inputQty.placeholder = '';
     
     newRow.querySelector('button').style.display = 'inline-flex';
     firstRow.querySelector('button').style.display = 'inline-flex';
@@ -143,37 +160,54 @@
   }
 
   function validateShipment() {
+    const destination = document.getElementById('destination').value.trim();
+    if (!destination) {
+        showCustomAlert("Vui lòng nhập Nơi nhận (Khách hàng/Chi nhánh)!");
+        return false;
+    }
+
     const selects = document.querySelectorAll('select[name="productId[]"]');
     const quantities = document.querySelectorAll('input[name="quantity[]"]');
     
     let productMap = new Map();
     
     for (let i = 0; i < selects.length; i++) {
-        if (!selects[i].value) continue;
+        if (!selects[i].value) {
+            showCustomAlert("Vui lòng chọn sản phẩm ở tất cả các dòng!");
+            return false;
+        }
         
         let pId = selects[i].value;
         let qty = parseInt(quantities[i].value) || 0;
-        let stock = parseInt(selects[i].options[selects[i].selectedIndex].getAttribute('data-stock')) || 0;
+        let option = selects[i].options[selects[i].selectedIndex];
+        let stock = parseInt(option.getAttribute('data-stock')) || 0;
+        let prodName = option.text ? option.text.split('(Tồn:')[0] : '';
         
         if (qty <= 0) {
-            showCustomAlert("Số lượng xuất phải lớn hơn 0");
+            showCustomAlert("Số lượng xuất cho sản phẩm " + prodName + " phải lớn hơn 0!");
+            return false;
+        }
+        
+        if (qty > stock) {
+            showCustomAlert("Số lượng xuất (" + qty + ") vượt quá tồn kho khả dụng (" + stock + ") của sản phẩm " + prodName + "!");
+            quantities[i].value = stock;
             return false;
         }
         
         if (productMap.has(pId)) {
             productMap.set(pId, {
                 qty: productMap.get(pId).qty + qty,
-                stock: stock
+                stock: stock,
+                prodName: prodName
             });
         } else {
-            productMap.set(pId, {qty: qty, stock: stock});
+            productMap.set(pId, {qty: qty, stock: stock, prodName: prodName});
         }
     }
     
-    // Check total
     for (let [pId, data] of productMap) {
         if (data.qty > data.stock) {
-            showCustomAlert("Lỗi: Tổng số lượng xuất (" + data.qty + ") vượt quá số lượng tồn kho (" + data.stock + ") cho sản phẩm đã chọn.");
+            showCustomAlert("Tổng số lượng xuất (" + data.qty + ") vượt quá tồn kho khả dụng (" + data.stock + ") cho sản phẩm " + data.prodName + "!");
             return false;
         }
     }
@@ -210,7 +244,7 @@
 </script>
 
 <!-- Custom Alert Modal -->
-<div id="customAlertModal" style="display: none; position: fixed; z-index: 2500; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); transition: all 0.3s ease; justify-content: center; align-items: center;">
+<div id="customAlertModal" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); transition: all 0.3s ease; justify-content: center; align-items: center;">
   <div style="background-color: #ffffff; padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); width: 90%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position: relative; animation: modalFadeIn 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;">
     <div style="width: 50px; height: 50px; border-radius: 50%; background: #fffbeb; border: 2px solid #f59e0b; color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
       ⚠️

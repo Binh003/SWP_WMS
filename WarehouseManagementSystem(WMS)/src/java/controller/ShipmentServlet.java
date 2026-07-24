@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @jakarta.servlet.annotation.MultipartConfig(
     fileSizeThreshold = 1024 * 1024 * 2, // 2MB
@@ -42,6 +43,7 @@ public class ShipmentServlet extends HttpServlet {
                 case "view" -> viewShipment(request, response);
                 case "delete" -> deleteDraft(request, response);
                 case "deleteShippingImage" -> deleteShippingImage(request, response);
+                case "apiProductBatches" -> getProductBatchesJson(request, response);
                 default -> listShipments(request, response);
             }
         } catch (SQLException ex) {
@@ -176,6 +178,8 @@ public class ShipmentServlet extends HttpServlet {
                 updateShippingImages(request, response);
             } else if ("deleteShippingImage".equals(action)) {
                 deleteShippingImage(request, response);
+            } else if ("updateManualBatches".equals(action)) {
+                updateManualBatches(request, response);
             } else {
                 WebUtil.redirect(request, response, "/manage/shipments");
             }
@@ -204,6 +208,8 @@ public class ShipmentServlet extends HttpServlet {
 
         String[] productIds = request.getParameterValues("productId[]");
         String[] quantities = request.getParameterValues("quantity[]");
+        String[] batchCodes = request.getParameterValues("batchCode[]");
+        String[] barcodes = request.getParameterValues("barcode[]");
         
         if (productIds == null || productIds.length == 0) {
             String singleProductId = WebUtil.param(request, "productId");
@@ -212,6 +218,8 @@ public class ShipmentServlet extends HttpServlet {
                 ShipmentDetail sd = new ShipmentDetail();
                 sd.setProductId(Long.parseLong(singleProductId));
                 sd.setQuantity(Integer.parseInt(singleQty));
+                if (batchCodes != null && batchCodes.length > 0) sd.setBatchCode(batchCodes[0]);
+                if (barcodes != null && barcodes.length > 0) sd.setBarcode(barcodes[0]);
                 if (sd.getQuantity() > 0) {
                     s.getDetails().add(sd);
                 }
@@ -224,6 +232,8 @@ public class ShipmentServlet extends HttpServlet {
                         ShipmentDetail sd = new ShipmentDetail();
                         sd.setProductId(Long.parseLong(productIds[i]));
                         sd.setQuantity(qty);
+                        if (batchCodes != null && i < batchCodes.length) sd.setBatchCode(batchCodes[i]);
+                        if (barcodes != null && i < barcodes.length) sd.setBarcode(barcodes[i]);
                         s.getDetails().add(sd);
                     }
                 }
@@ -431,5 +441,60 @@ public class ShipmentServlet extends HttpServlet {
             return null;
         }
         return String.join(",", uploadedPaths);
+    }
+
+    private void getProductBatchesJson(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        String productIdStr = request.getParameter("productId");
+        if (productIdStr == null || productIdStr.trim().isEmpty()) {
+            response.getWriter().write("[]");
+            return;
+        }
+        try {
+            long productId = Long.parseLong(productIdStr);
+            List<Map<String, Object>> batches = shipmentDAO.getAvailableInventoryBatches(productId);
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+            StringBuilder json = new StringBuilder("[");
+            for (int i = 0; i < batches.size(); i++) {
+                Map<String, Object> b = batches.get(i);
+                if (i > 0) json.append(",");
+                json.append("{");
+                json.append("\"id\":").append(b.get("id")).append(",");
+                json.append("\"batchCode\":\"").append(util.WebUtil.escapeJson((String) b.get("batchCode"))).append("\",");
+                json.append("\"barcode\":\"").append(util.WebUtil.escapeJson((String) b.get("barcode"))).append("\",");
+                json.append("\"quantityInStock\":").append(b.get("quantityInStock")).append(",");
+                java.sql.Timestamp ts = (java.sql.Timestamp) b.get("lastUpdated");
+                json.append("\"lastUpdated\":\"").append(ts != null ? sdf.format(ts) : "").append("\"");
+                json.append("}");
+            }
+            json.append("]");
+            response.getWriter().write(json.toString());
+        } catch (Exception e) {
+            response.getWriter().write("{\"error\":\"" + util.WebUtil.escapeJson(e.getMessage()) + "\"}");
+        }
+    }
+
+    private void updateManualBatches(HttpServletRequest request, HttpServletResponse response)
+        throws SQLException, IOException {
+        long shipmentId = Long.parseLong(WebUtil.param(request, "id"));
+        String[] detailIds = request.getParameterValues("detailId[]");
+        String[] batchCodes = request.getParameterValues("batchCode[]");
+        String[] barcodes = request.getParameterValues("barcode[]");
+
+        if (detailIds != null && detailIds.length > 0) {
+            for (int i = 0; i < detailIds.length; i++) {
+                if (detailIds[i] != null && !detailIds[i].trim().isEmpty()) {
+                    long detailId = Long.parseLong(detailIds[i]);
+                    String batchCode = (batchCodes != null && i < batchCodes.length) ? batchCodes[i] : "";
+                    String barcode = (barcodes != null && i < barcodes.length) ? barcodes[i] : "";
+                    shipmentDAO.updateDetailBatchesAndBarcodes(detailId, batchCode, barcode);
+                }
+            }
+            WebUtil.setFlashSuccess(request, "Đã cập nhật phân bổ Lô hàng & Barcode thủ công thành công!");
+        } else {
+            WebUtil.setFlashError(request, "Lỗi: Không tìm thấy danh sách chi tiết cần cập nhật");
+        }
+        WebUtil.redirect(request, response, "/manage/shipments?action=view&id=" + shipmentId);
     }
 }

@@ -23,18 +23,18 @@
   </div>
 
   <div class="premium-card" style="padding: 32px; max-width: 800px;">
-    <form action="${pageContext.request.contextPath}/manage/receipts" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 24px;">
+    <form action="${pageContext.request.contextPath}/manage/receipts" method="post" enctype="multipart/form-data" novalidate onsubmit="return validateReceiptForm()" style="display: flex; flex-direction: column; gap: 24px;">
       <input type="hidden" name="action" value="create"/>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
         <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
           <label for="receiptCode" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Mã Phiếu Nhập <span style="color: #ef4444;">*</span></label>
-          <input type="text" id="receiptCode" name="receiptCode" value="${generatedCode}" required readonly style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; background-color: #f1f5f9; color: var(--text-secondary); font-family: monospace;" />
+          <input type="text" id="receiptCode" name="receiptCode" value="${generatedCode}" readonly style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; background-color: #f1f5f9; color: var(--text-secondary); font-family: monospace;" />
         </div>
 
         <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
           <label for="supplierId" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Nhà cung cấp <span style="color: #ef4444;">*</span></label>
-          <select id="supplierId" name="supplierId" required style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary);">
+          <select id="supplierId" name="supplierId" style="width: 100%; padding: 12px 16px; border: 1.5px solid var(--card-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; background-color: #f8fafc; color: var(--text-primary);">
             <option value="">-- Chọn Nhà cung cấp --</option>
             <c:forEach var="s" items="${suppliers}">
               <option value="${s.id}">${s.name}</option>
@@ -48,7 +48,7 @@
         
         <!-- Modern Drag and Drop Zone -->
         <div class="upload-dropzone" id="dropzone" onclick="document.getElementById('invoiceImageFile').click()" style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.2s ease-in-out; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; position: relative; overflow: hidden; min-height: 140px;">
-          <input type="file" id="invoiceImageFile" name="invoiceImageFile" accept="image/*" required onchange="previewInvoiceFile()" style="display: none;" />
+          <input type="file" id="invoiceImageFile" name="invoiceImageFile" accept="image/*" onchange="previewInvoiceFile()" style="display: none;" />
           
           <!-- Default State Content -->
           <div id="dropzone-default" style="display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text-secondary);">
@@ -89,7 +89,7 @@
           <div class="product-row" style="display: flex; gap: 16px; align-items: flex-end;">
             <div style="flex: 1;">
               <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: block;">Sản phẩm (SKU) <span style="color: #ef4444;">*</span></label>
-              <select name="productId[]" required style="width: 100%; padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 8px; font-size: 14px; outline: none; background: white;">
+              <select name="productId[]" style="width: 100%; padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 8px; font-size: 14px; outline: none; background: white;">
                 <option value="">-- Chọn Sản phẩm --</option>
                 <c:forEach var="p" items="${products}">
                   <option value="${p.id}" ${param.productId == p.id ? 'selected' : ''}>[${p.sku}] ${p.name}</option>
@@ -98,7 +98,7 @@
             </div>
             <div style="width: 150px;">
               <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: block;">Số lượng <span style="color: #ef4444;">*</span></label>
-              <input type="number" name="quantity[]" required min="1" value="1" style="width: 100%; padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 8px; font-size: 14px; outline: none; background: white;">
+              <input type="number" name="quantity[]" value="1" oninput="checkReceiptInputQty(this)" onchange="checkReceiptInputQty(this)" style="width: 100%; padding: 10px 14px; border: 1px solid var(--card-border); border-radius: 8px; font-size: 14px; outline: none; background: white;">
             </div>
             <button type="button" onclick="removeRow(this)" style="color: #ef4444; border: 1.5px solid #fecaca; background: #fef2f2; width: 38px; height: 38px; border-radius: 8px; cursor: pointer; display: none; align-items: center; justify-content: center; transition: all 0.2s; padding: 0; box-sizing: border-box;" onmouseover="this.style.background='#fee2e2'; this.style.borderColor='#ef4444'" onmouseout="this.style.background='#fef2f2'; this.style.borderColor='#fecaca'">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -227,6 +227,55 @@
 </style>
 
 <script>
+  function showCustomAlert(msg) {
+    const modal = document.getElementById("customAlertModal");
+    const msgEl = document.getElementById("customAlertMessage");
+    if (modal && msgEl) {
+        msgEl.textContent = msg;
+        modal.style.display = "flex";
+        document.body.style.overflow = "hidden";
+    }
+  }
+
+  function checkReceiptInputQty(inputElem) {
+    const val = parseInt(inputElem.value) || 0;
+    if (val < 1) {
+      showCustomAlert("Số lượng nhập phải lớn hơn hoặc bằng 1!");
+      inputElem.value = 1;
+    }
+  }
+
+  function validateReceiptForm() {
+    const supplierId = document.getElementById('supplierId').value.trim();
+    if (!supplierId) {
+      showCustomAlert("Vui lòng chọn Nhà cung cấp!");
+      return false;
+    }
+
+    const fileInput = document.getElementById('invoiceImageFile');
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+      showCustomAlert("Vui lòng tải lên Ảnh hóa đơn / Chứng từ mua hàng!");
+      return false;
+    }
+
+    const selects = document.querySelectorAll('select[name="productId[]"]');
+    const quantities = document.querySelectorAll('input[name="quantity[]"]');
+
+    for (let i = 0; i < selects.length; i++) {
+      if (!selects[i].value) {
+        showCustomAlert("Vui lòng chọn sản phẩm ở tất cả các dòng!");
+        return false;
+      }
+      let qty = parseInt(quantities[i].value) || 0;
+      if (qty <= 0) {
+        showCustomAlert("Số lượng nhập phải lớn hơn 0 ở tất cả các dòng!");
+        quantities[i].value = 1;
+        return false;
+      }
+    }
+    return true;
+  }
+
   function previewInvoiceFile() {
     const fileInput = document.getElementById('invoiceImageFile');
     const defaultContent = document.getElementById('dropzone-default');
@@ -500,9 +549,8 @@
     const selectElem = newRow.querySelector('select');
     selectElem.value = '';
 
-    newRow.querySelector('input[type="number"]').value = '1';
-
-    // KHÔNG reset batchCode ở trang tạo phiếu
+    const inputQty = newRow.querySelector('input[type="number"]');
+    inputQty.value = '1';
 
     newRow.querySelector('button').style.display = 'inline-flex';
     firstRow.querySelector('button').style.display = 'inline-flex';
@@ -510,7 +558,7 @@
     container.appendChild(newRow);
 
     makeSelectSearchable(selectElem);
-}
+  }
 
   function removeRow(btn) {
     const container = document.getElementById('productRows');
@@ -531,6 +579,22 @@
     document.querySelectorAll('select[name="productId[]"]').forEach(selectEl => {
       makeSelectSearchable(selectEl);
     });
+
+    const closeBtn = document.getElementById("closeCustomAlertBtn");
+    const modal = document.getElementById("customAlertModal");
+    if (closeBtn && modal) {
+        closeBtn.addEventListener("click", function() {
+            modal.style.display = "none";
+            document.body.style.overflow = "auto";
+        });
+        
+        window.addEventListener("click", function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+                document.body.style.overflow = "auto";
+            }
+        });
+    }
 
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('invoiceImageFile');
@@ -574,12 +638,33 @@
             // Trigger preview
             previewInvoiceFile();
           } else {
-            alert("Vui lòng chỉ kéo thả tệp hình ảnh!");
+            showCustomAlert("Vui lòng chỉ kéo thả tệp hình ảnh!");
           }
         }
       }
     }
   });
 </script>
+
+<!-- Custom Alert Modal -->
+<div id="customAlertModal" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); transition: all 0.3s ease; justify-content: center; align-items: center;">
+  <div style="background-color: #ffffff; padding: 30px; border-radius: 16px; border: 1px solid var(--card-border); width: 90%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); position: relative; animation: modalFadeIn 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center;">
+    <div style="width: 50px; height: 50px; border-radius: 50%; background: #fffbeb; border: 2px solid #f59e0b; color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">
+      ⚠️
+    </div>
+    <h3 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Cảnh báo</h3>
+    <p id="customAlertMessage" style="font-size: 14px; color: #64748b; line-height: 1.5; margin: 0; font-weight: 600;"></p>
+    <button id="closeCustomAlertBtn" onclick="document.getElementById('customAlertModal').style.display='none'; document.body.style.overflow='auto';" style="margin-top: 8px; width: 100%; height: 40px; border-radius: 8px; border: none; background: #048abf; color: #ffffff; font-weight: 700; font-size: 13px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+      Đồng ý
+    </button>
+  </div>
+</div>
+
+<style>
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>

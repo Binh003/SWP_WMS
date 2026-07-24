@@ -327,14 +327,6 @@
       <p style="color: #64748b; margin: 4px 0 0; font-size: 14px;">Thống kê chi tiết xuất kho, nhập kho và dữ liệu tồn kho thực tế.</p>
     </div>
     <div style="display: flex; gap: 8px; align-items: center;">
-      <button onclick="window.print()" class="outline-danger-button" style="margin: 0; text-decoration: none; border: 1px solid #cbd5e1; color: #475569; background: white; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 16px; height: 42px; border-radius: 10px; font-weight: 600; cursor: pointer; white-space: nowrap; box-sizing: border-box;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 6 2 18 2 18 9"></polyline>
-          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-          <rect x="6" y="14" width="12" height="8"></rect>
-        </svg>
-        In báo cáo
-      </button>
       <c:if test="${reportType != 'overview'}">
         <a href="?action=export&reportType=${reportType}&startDate=${startDate}&endDate=${endDate}&sku=${param.sku}&brandId=${param.brandId}&productLineId=${param.productLineId}" class="filter-btn" style="margin: 0; text-decoration: none; border: 1px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 16px; height: 42px; border-radius: 10px; font-weight: 600; background: #10b981; color: white; white-space: nowrap; box-sizing: border-box;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1984,7 +1976,6 @@
       </button>
       <div style="display: flex; align-items: center; gap: 12px;">
         <button type="button" onclick="closeInventoryDetailModal()" style="padding: 10px 20px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">Đóng</button>
-        <a id="btnGoToOriginalInvPage" href="#" class="premium-btn-primary" style="display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 20px; background: #2563eb; color: #ffffff; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 700; transition: all 0.2s;">Đến trang quản lý tồn kho gốc</a>
       </div>
     </div>
   </div>
@@ -2135,7 +2126,9 @@
         }
 
         const btnGo = document.getElementById('btnGoToOriginalInvPage');
-        btnGo.href = '${pageContext.request.contextPath}/manage/inventories?action=detail&productId=' + productId;
+        if (btnGo) {
+          btnGo.href = '${pageContext.request.contextPath}/manage/inventories?action=detail&productId=' + productId;
+        }
       })
       .catch(err => {
         console.error(err);

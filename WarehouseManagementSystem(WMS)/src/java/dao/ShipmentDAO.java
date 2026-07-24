@@ -5,7 +5,9 @@ import model.*;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ShipmentDAO {
 
@@ -581,38 +583,102 @@ public class ShipmentDAO {
             }
         }
 
-        // 2. Select rows to deduct (FIFO)
-        String sqlSelect = "SELECT id, quantity_in_stock, batch_code, barcode FROM inventories WHERE product_id = ? AND quantity_in_stock > 0 ORDER BY last_updated ASC, id ASC FOR UPDATE";
-        String sqlUpdate = "UPDATE inventories SET quantity_in_stock = ? WHERE id = ?";
-        
+        // 2. Check if specific batch or barcode was manually assigned to this shipment detail
+        String targetBatchCode = null;
+        String targetBarcode = null;
+        if (shipmentDetailId > 0) {
+            String sqlGetDetail = "SELECT batch_code, barcode FROM shipment_details WHERE id = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sqlGetDetail)) {
+                ps.setLong(1, shipmentDetailId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        targetBatchCode = rs.getString("batch_code");
+                        targetBarcode = rs.getString("barcode");
+                    }
+                }
+            }
+        }
+
+        List<String> targetBatches = new ArrayList<>();
+        if (targetBatchCode != null && !targetBatchCode.trim().isEmpty()) {
+            for (String b : targetBatchCode.split(",")) {
+                String tb = b.trim();
+                if (!tb.isEmpty() && !targetBatches.contains(tb)) targetBatches.add(tb);
+            }
+        }
+
         List<String> deductedBatches = new ArrayList<>();
         List<String> deductedBarcodes = new ArrayList<>();
-
         int remaining = quantity;
-        try (PreparedStatement psSel = conn.prepareStatement(sqlSelect);
-             PreparedStatement psUpd = conn.prepareStatement(sqlUpdate)) {
-            psSel.setLong(1, productId);
-            try (ResultSet rs = psSel.executeQuery()) {
-                while (rs.next() && remaining > 0) {
-                    long invId = rs.getLong("id");
-                    int stock = rs.getInt("quantity_in_stock");
-                    String bCode = rs.getString("batch_code");
-                    String bBarcode = rs.getString("barcode");
-                    
-                    int deduct = Math.min(remaining, stock);
-                    
-                    psUpd.setInt(1, stock - deduct);
-                    psUpd.setLong(2, invId);
-                    psUpd.executeUpdate();
-                    
-                    if (bCode != null && !bCode.trim().isEmpty() && !deductedBatches.contains(bCode.trim())) {
-                        deductedBatches.add(bCode.trim());
+        String sqlUpdate = "UPDATE inventories SET quantity_in_stock = quantity_in_stock - ? WHERE id = ?";
+
+        // 2a. Deduct from manually specified batches first
+        if (!targetBatches.isEmpty()) {
+            StringBuilder sqlSelectManual = new StringBuilder(
+                "SELECT id, quantity_in_stock, batch_code, barcode FROM inventories WHERE product_id = ? AND quantity_in_stock > 0 AND batch_code IN ("
+            );
+            for (int i = 0; i < targetBatches.size(); i++) {
+                if (i > 0) sqlSelectManual.append(",");
+                sqlSelectManual.append("?");
+            }
+            sqlSelectManual.append(") ORDER BY last_updated ASC, id ASC FOR UPDATE");
+
+            try (PreparedStatement psSel = conn.prepareStatement(sqlSelectManual.toString());
+                 PreparedStatement psUpd = conn.prepareStatement(sqlUpdate)) {
+                psSel.setLong(1, productId);
+                for (int i = 0; i < targetBatches.size(); i++) {
+                    psSel.setString(i + 2, targetBatches.get(i));
+                }
+                try (ResultSet rs = psSel.executeQuery()) {
+                    while (rs.next() && remaining > 0) {
+                        long invId = rs.getLong("id");
+                        int stock = rs.getInt("quantity_in_stock");
+                        String bCode = rs.getString("batch_code");
+                        String bBarcode = rs.getString("barcode");
+
+                        int deduct = Math.min(remaining, stock);
+                        psUpd.setInt(1, deduct);
+                        psUpd.setLong(2, invId);
+                        psUpd.executeUpdate();
+
+                        if (bCode != null && !bCode.trim().isEmpty() && !deductedBatches.contains(bCode.trim())) {
+                            deductedBatches.add(bCode.trim());
+                        }
+                        if (bBarcode != null && !bBarcode.trim().isEmpty() && !deductedBarcodes.contains(bBarcode.trim())) {
+                            deductedBarcodes.add(bBarcode.trim());
+                        }
+                        remaining -= deduct;
                     }
-                    if (bBarcode != null && !bBarcode.trim().isEmpty() && !deductedBarcodes.contains(bBarcode.trim())) {
-                        deductedBarcodes.add(bBarcode.trim());
+                }
+            }
+        }
+
+        // 2b. Fallback to general FIFO rows if remaining stock is still needed
+        if (remaining > 0) {
+            String sqlSelectFifo = "SELECT id, quantity_in_stock, batch_code, barcode FROM inventories WHERE product_id = ? AND quantity_in_stock > 0 ORDER BY last_updated ASC, id ASC FOR UPDATE";
+            try (PreparedStatement psSel = conn.prepareStatement(sqlSelectFifo);
+                 PreparedStatement psUpd = conn.prepareStatement(sqlUpdate)) {
+                psSel.setLong(1, productId);
+                try (ResultSet rs = psSel.executeQuery()) {
+                    while (rs.next() && remaining > 0) {
+                        long invId = rs.getLong("id");
+                        int stock = rs.getInt("quantity_in_stock");
+                        String bCode = rs.getString("batch_code");
+                        String bBarcode = rs.getString("barcode");
+
+                        int deduct = Math.min(remaining, stock);
+                        psUpd.setInt(1, deduct);
+                        psUpd.setLong(2, invId);
+                        psUpd.executeUpdate();
+
+                        if (bCode != null && !bCode.trim().isEmpty() && !deductedBatches.contains(bCode.trim())) {
+                            deductedBatches.add(bCode.trim());
+                        }
+                        if (bBarcode != null && !bBarcode.trim().isEmpty() && !deductedBarcodes.contains(bBarcode.trim())) {
+                            deductedBarcodes.add(bBarcode.trim());
+                        }
+                        remaining -= deduct;
                     }
-                    
-                    remaining -= deduct;
                 }
             }
         }
@@ -621,7 +687,7 @@ public class ShipmentDAO {
             throw new SQLException("Lỗi trừ tồn kho cho sản phẩm ID " + productId + ": không đủ dòng tồn kho hoạt động.");
         }
 
-        if (shipmentDetailId > 0 && (!deductedBatches.isEmpty() || !deductedBarcodes.isEmpty())) {
+        if (shipmentDetailId > 0 && (targetBatchCode == null || targetBatchCode.trim().isEmpty()) && (!deductedBatches.isEmpty() || !deductedBarcodes.isEmpty())) {
             String sqlUpdateDetail = "UPDATE shipment_details SET batch_code = ?, barcode = ? WHERE id = ?";
             try (PreparedStatement psUpdDetail = conn.prepareStatement(sqlUpdateDetail)) {
                 psUpdDetail.setString(1, String.join(", ", deductedBatches));
@@ -676,6 +742,41 @@ public class ShipmentDAO {
                     }
                 }
             }
+        }
+    }
+
+    public List<Map<String, Object>> getAvailableInventoryBatches(long productId) throws SQLException {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT id, batch_code, barcode, quantity_in_stock, last_updated " +
+                     "FROM inventories " +
+                     "WHERE product_id = ? AND quantity_in_stock > 0 " +
+                     "ORDER BY last_updated ASC, id ASC";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", rs.getLong("id"));
+                    map.put("batchCode", rs.getString("batch_code"));
+                    map.put("barcode", rs.getString("barcode"));
+                    map.put("quantityInStock", rs.getInt("quantity_in_stock"));
+                    map.put("lastUpdated", rs.getTimestamp("last_updated"));
+                    list.add(map);
+                }
+            }
+        }
+        return list;
+    }
+
+    public void updateDetailBatchesAndBarcodes(long detailId, String batchCode, String barcode) throws SQLException {
+        String sql = "UPDATE shipment_details SET batch_code = ?, barcode = ? WHERE id = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, batchCode != null ? batchCode.trim() : "");
+            ps.setString(2, barcode != null ? barcode.trim() : "");
+            ps.setLong(3, detailId);
+            ps.executeUpdate();
         }
     }
 
