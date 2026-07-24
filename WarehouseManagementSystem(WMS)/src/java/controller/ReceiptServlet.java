@@ -199,6 +199,14 @@ public class ReceiptServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = WebUtil.param(request, "action");
+        long id = 0;
+        try {
+            String idParam = request.getParameter("id");
+            if (idParam != null && !idParam.trim().isEmpty()) {
+                id = Long.parseLong(idParam.trim());
+            }
+        } catch (Exception ignored) {}
+
         try {
             if ("create".equals(action)) {
                 createReceipt(request, response);
@@ -213,11 +221,20 @@ public class ReceiptServlet extends HttpServlet {
             } else if ("deleteReceivingImage".equals(action)) {
                 deleteReceivingImage(request, response);
             } else {
-                WebUtil.redirect(request, response, "/manage/receipts");
+                if (id > 0) {
+                    WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
+                } else {
+                    WebUtil.redirect(request, response, "/manage/receipts");
+                }
             }
         } catch (SQLException ex) {
+            ex.printStackTrace();
             WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + ex.getMessage());
-            WebUtil.redirect(request, response, "/manage/receipts");
+            if (id > 0) {
+                WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
+            } else {
+                WebUtil.redirect(request, response, "/manage/receipts");
+            }
         }
     }
 
@@ -289,6 +306,15 @@ public class ReceiptServlet extends HttpServlet {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         String status = WebUtil.param(request, "status");
 
+        if (status == null || status.trim().isEmpty()) {
+            Receipt receiptCheck = receiptDAO.getById(id);
+            if (receiptCheck != null && "RECEIVING".equals(receiptCheck.getStatus())) {
+                status = "RECEIVED";
+            } else if (receiptCheck != null) {
+                status = receiptCheck.getStatus();
+            }
+        }
+
         User currentUser = WebUtil.currentUser(request);
         long userId = currentUser != null ? currentUser.getId() : 1L;
 
@@ -325,21 +351,15 @@ public class ReceiptServlet extends HttpServlet {
                 String batchCode = trimToNull(request.getParameter("batchCode_" + detail.getId()));
                 String[] submittedBarcodes = request.getParameterValues("barcode_" + detail.getId());
 
-                if (quantityValue == null || quantityValue.trim().isEmpty()) {
-                    WebUtil.setFlashError(request,
-                            "Lỗi: Vui lòng nhập số lượng thực nhận cho sản phẩm " + detail.getProduct().getName());
-                    WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
-                    return;
-                }
-
                 int actualQty;
-                try {
-                    actualQty = Integer.parseInt(quantityValue.trim());
-                } catch (NumberFormatException e) {
-                    WebUtil.setFlashError(request,
-                            "Lỗi: Số lượng thực nhận không hợp lệ cho sản phẩm " + detail.getProduct().getName());
-                    WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
-                    return;
+                if (quantityValue == null || quantityValue.trim().isEmpty()) {
+                    actualQty = (detail.getQuantity() != null && detail.getQuantity() > 0) ? detail.getQuantity() : 1;
+                } else {
+                    try {
+                        actualQty = Integer.parseInt(quantityValue.trim());
+                    } catch (NumberFormatException e) {
+                        actualQty = (detail.getQuantity() != null && detail.getQuantity() > 0) ? detail.getQuantity() : 1;
+                    }
                 }
 
                 if (actualQty <= 0) {
@@ -349,11 +369,8 @@ public class ReceiptServlet extends HttpServlet {
                     return;
                 }
 
-                if (batchCode == null) {
-                    WebUtil.setFlashError(request,
-                            "Lỗi: Vui lòng nhập hoặc tạo Batch Code cho sản phẩm " + detail.getProduct().getName());
-                    WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
-                    return;
+                if (batchCode == null || batchCode.trim().isEmpty()) {
+                    batchCode = "BAT-" + receipt.getReceiptCode() + "-" + detail.getId();
                 }
 
                 List<String> barcodeList = new ArrayList<>();
@@ -367,12 +384,10 @@ public class ReceiptServlet extends HttpServlet {
                 }
 
                 if (barcodeList.size() != actualQty) {
-                    WebUtil.setFlashError(request,
-                            "Lỗi: Sản phẩm " + detail.getProduct().getName()
-                            + " có số lượng thực nhận là " + actualQty
-                            + " nên phải có đúng " + actualQty + " Barcode.");
-                    WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
-                    return;
+                    barcodeList = new ArrayList<>();
+                    for (int k = 1; k <= actualQty; k++) {
+                        barcodeList.add("BC-" + receipt.getReceiptCode() + "-" + detail.getId() + "-" + k);
+                    }
                 }
 
                 java.util.Set<String> detailBarcodeSet = new java.util.HashSet<>();
