@@ -187,6 +187,129 @@ public class ReportServlet extends HttpServlet {
                 return;
             }
 
+            if ("apiInventoryDetail".equals(action)) {
+                response.setContentType("application/json;charset=UTF-8");
+                String productIdStr = request.getParameter("productId");
+                if (productIdStr == null || productIdStr.trim().isEmpty()) {
+                    response.getWriter().write("{\"error\":\"Mã sản phẩm không hợp lệ hoặc bị trống\"}");
+                    return;
+                }
+                try {
+                    long productId = Long.parseLong(productIdStr);
+                    Map<String, Object> detail = reportDAO.getInventoryProductDetail(productId);
+                    if (detail == null) {
+                        response.getWriter().write("{\"error\":\"Không tìm thấy thông tin tồn kho cho sản phẩm này\"}");
+                        return;
+                    }
+                    
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+                    StringBuilder json = new StringBuilder();
+                    json.append("{");
+                    json.append("\"productId\":").append(detail.get("productId")).append(",");
+                    json.append("\"sku\":\"").append(escapeJson((String) detail.get("sku"))).append("\",");
+                    json.append("\"productName\":\"").append(escapeJson((String) detail.get("productName"))).append("\",");
+                    json.append("\"unit\":\"").append(escapeJson((String) detail.get("unit"))).append("\",");
+                    json.append("\"price\":").append(detail.get("price")).append(",");
+                    json.append("\"brandName\":\"").append(escapeJson((String) detail.get("brandName"))).append("\",");
+                    json.append("\"productLineName\":\"").append(escapeJson((String) detail.get("productLineName"))).append("\",");
+                    json.append("\"totalStock\":").append(detail.get("totalStock")).append(",");
+                    json.append("\"minStockLevel\":").append(detail.get("minStockLevel")).append(",");
+                    json.append("\"totalValuation\":").append(detail.get("totalValuation")).append(",");
+                    json.append("\"isLow\":").append(detail.get("isLow")).append(",");
+                    
+                    List<Map<String, Object>> batches = (List<Map<String, Object>>) detail.get("batches");
+                    StringBuilder batchesJson = new StringBuilder("[");
+                    for (int i = 0; i < batches.size(); i++) {
+                        Map<String, Object> b = batches.get(i);
+                        if (i > 0) batchesJson.append(",");
+                        batchesJson.append("{");
+                        batchesJson.append("\"id\":").append(b.get("id")).append(",");
+                        batchesJson.append("\"batchCode\":\"").append(escapeJson((String) b.get("batchCode"))).append("\",");
+                        batchesJson.append("\"barcode\":\"").append(escapeJson((String) b.get("barcode"))).append("\",");
+                        batchesJson.append("\"location\":\"").append(escapeJson((String) b.get("location"))).append("\",");
+                        batchesJson.append("\"quantity\":").append(b.get("quantity")).append(",");
+                        java.sql.Timestamp ts = (java.sql.Timestamp) b.get("createdAt");
+                        batchesJson.append("\"createdAt\":\"").append(ts != null ? sdf.format(ts) : "").append("\"");
+                        batchesJson.append("}");
+                    }
+                    batchesJson.append("]");
+                    json.append("\"batches\":").append(batchesJson);
+                    json.append("}");
+                    
+                    response.getWriter().write(json.toString());
+                } catch (Exception e) {
+                    response.getWriter().write("{\"error\":\"" + escapeJson(e.getMessage()) + "\"}");
+                }
+                return;
+            }
+
+            if ("apiNXTDetail".equals(action)) {
+                response.setContentType("application/json;charset=UTF-8");
+                String productIdStr = request.getParameter("productId");
+                if (productIdStr == null || productIdStr.trim().isEmpty()) {
+                    response.getWriter().write("{\"error\":\"Mã sản phẩm không hợp lệ hoặc bị trống\"}");
+                    return;
+                }
+                String start = request.getParameter("startDate");
+                String end = request.getParameter("endDate");
+                if (start == null || start.trim().isEmpty()) {
+                    start = java.time.LocalDate.now().withDayOfMonth(1).toString();
+                }
+                if (end == null || end.trim().isEmpty()) {
+                    end = java.time.LocalDate.now().toString();
+                }
+                try {
+                    long productId = Long.parseLong(productIdStr);
+                    Map<String, Object> detail = reportDAO.getNXTProductDetailHistory(productId, start, end);
+                    if (detail == null) {
+                        response.getWriter().write("{\"error\":\"Không tìm thấy thông tin Nhập Xuất Tồn cho sản phẩm này\"}");
+                        return;
+                    }
+                    
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+                    StringBuilder json = new StringBuilder();
+                    json.append("{");
+                    json.append("\"productId\":").append(detail.get("productId")).append(",");
+                    json.append("\"sku\":\"").append(escapeJson((String) detail.get("sku"))).append("\",");
+                    json.append("\"productName\":\"").append(escapeJson((String) detail.get("productName"))).append("\",");
+                    json.append("\"unit\":\"").append(escapeJson((String) detail.get("unit"))).append("\",");
+                    json.append("\"price\":").append(detail.get("price")).append(",");
+                    json.append("\"brandName\":\"").append(escapeJson((String) detail.get("brandName"))).append("\",");
+                    json.append("\"productLineName\":\"").append(escapeJson((String) detail.get("productLineName"))).append("\",");
+                    json.append("\"startDate\":\"").append(escapeJson(start)).append("\",");
+                    json.append("\"endDate\":\"").append(escapeJson(end)).append("\",");
+                    json.append("\"beginningQty\":").append(detail.get("beginningQty")).append(",");
+                    json.append("\"inboundQty\":").append(detail.get("inboundQty")).append(",");
+                    json.append("\"outboundQty\":").append(detail.get("outboundQty")).append(",");
+                    json.append("\"endingQty\":").append(detail.get("endingQty")).append(",");
+                    json.append("\"endingValuation\":").append(detail.get("endingValuation")).append(",");
+                    
+                    List<Map<String, Object>> txs = (List<Map<String, Object>>) detail.get("transactions");
+                    StringBuilder txJson = new StringBuilder("[");
+                    for (int i = 0; i < txs.size(); i++) {
+                        Map<String, Object> t = txs.get(i);
+                        if (i > 0) txJson.append(",");
+                        txJson.append("{");
+                        txJson.append("\"type\":\"").append(t.get("type")).append("\",");
+                        txJson.append("\"code\":\"").append(escapeJson((String) t.get("code"))).append("\",");
+                        java.sql.Timestamp ts = (java.sql.Timestamp) t.get("createdAt");
+                        txJson.append("\"createdAt\":\"").append(ts != null ? sdf.format(ts) : "").append("\",");
+                        txJson.append("\"qty\":").append(t.get("qty")).append(",");
+                        txJson.append("\"partner\":\"").append(escapeJson((String) t.get("partner"))).append("\",");
+                        txJson.append("\"creator\":\"").append(escapeJson((String) t.get("creator"))).append("\"");
+                        txJson.append("}");
+                    }
+                    txJson.append("]");
+                    json.append("\"transactions\":").append(txJson);
+                    json.append("}");
+                    
+                    response.getWriter().write(json.toString());
+                } catch (Exception e) {
+                    response.getWriter().write("{\"error\":\"" + escapeJson(e.getMessage()) + "\"}");
+                }
+                return;
+            }
+
             if ("export".equals(action)) {
                 response.setContentType("application/vnd.ms-excel");
                 response.setCharacterEncoding("UTF-8");

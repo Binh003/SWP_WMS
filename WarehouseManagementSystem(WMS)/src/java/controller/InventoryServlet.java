@@ -217,7 +217,7 @@ public class InventoryServlet extends HttpServlet {
                 // Also update min_stock_level for all other items of the same product and batch
                 inventoryDAO.updateMinStockLevelForProductAndBatch(productId, oldBatchCode, minStockLevel);
                 
-                WebUtil.setFlashSuccess(request, "Đã cập nhật cấu hình tồn kho");
+                WebUtil.setFlashSuccess(request, "Đã cập nhật cấu hình cảnh báo tồn kho");
             } catch (NumberFormatException e) {
                 WebUtil.setFlashError(request, "Lỗi: Mức tồn kho tối thiểu không hợp lệ!");
                 WebUtil.redirect(request, response, "/manage/inventories?action=edit&id=" + i.getId());

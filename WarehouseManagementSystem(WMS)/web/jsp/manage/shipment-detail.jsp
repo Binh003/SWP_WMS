@@ -11,6 +11,10 @@
     display: none !important;
   }
   
+  div[id^="moreBarcodes_"] {
+    display: flex !important;
+  }
+  
   body, .home-shell, .home-layout, .home-main, .subpage-container {
     background: #ffffff !important;
     padding: 0 !important;
@@ -159,9 +163,8 @@
         <div style="width: 100%; height: 100%; background: #e2e8f0;"></div>
         <!-- Active line -->
         <div style="position: absolute; top: 0; left: 0; height: 100%; background: var(--primary-color); z-index: 2; transition: width 0.5s ease; width: <c:choose>
-          <c:when test="${shipment.status == 'DRAFT'}">0%</c:when>
-          <c:when test="${shipment.status == 'PENDING'}">33%</c:when>
-          <c:when test="${shipment.status == 'APPROVED'}">66%</c:when>
+          <c:when test="${shipment.status == 'DRAFT' || shipment.status == 'PENDING'}">0%</c:when>
+          <c:when test="${shipment.status == 'APPROVED'}">33%</c:when>
           <c:when test="${shipment.status == 'PICKING'}">66%</c:when>
           <c:when test="${shipment.status == 'COMPLETED'}">100%</c:when>
           <c:otherwise>0%</c:otherwise>
@@ -171,49 +174,55 @@
       <!-- Steps -->
       <!-- Step 1: Request Created -->
       <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 110px; text-align: center; flex-shrink: 0;">
-        <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; background: #10b981; color: #ffffff;">
-          ✓
-        </div>
-        <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Yêu cầu xuất kho</span>
-      </div>
-
-      <!-- Step 2: Create Export Note (PENDING -> APPROVED) -->
-      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 110px; text-align: center; flex-shrink: 0;">
         <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
           <c:choose>
-            <c:when test="${shipment.status == 'PENDING'}">background: #0284c7; color: #ffffff;</c:when>
-            <c:when test="${shipment.status == 'APPROVED' || shipment.status == 'PICKING' || shipment.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
-            <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
+            <c:when test="${shipment.status == 'DRAFT' || shipment.status == 'PENDING'}">background: #0284c7; color: #ffffff;</c:when>
+            <c:otherwise>background: #10b981; color: #ffffff;</c:otherwise>
           </c:choose>">
           <c:choose>
-            <c:when test="${shipment.status == 'APPROVED' || shipment.status == 'PICKING' || shipment.status == 'COMPLETED'}">✓</c:when>
-            <c:otherwise>2</c:otherwise>
+            <c:when test="${shipment.status == 'DRAFT' || shipment.status == 'PENDING'}">1</c:when>
+            <c:otherwise>✓</c:otherwise>
           </c:choose>
         </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'PENDING' ? '#0284c7' : (shipment.status == 'APPROVED' || shipment.status == 'PICKING' || shipment.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)')};">Tạo phiếu xuất</span>
+        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'DRAFT' || shipment.status == 'PENDING' ? '#0284c7' : '#10b981'};">Yêu cầu xuất kho</span>
       </div>
-      
-      <!-- Step 3: Picking & Packing (APPROVED -> PICKING) -->
+
+      <!-- Step 2: Create Export Note (APPROVED) -->
       <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 110px; text-align: center; flex-shrink: 0;">
         <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
           <c:choose>
-            <c:when test="${shipment.status == 'APPROVED'}">background: #a855f7; color: #ffffff;</c:when>
+            <c:when test="${shipment.status == 'APPROVED'}">background: #0284c7; color: #ffffff;</c:when>
             <c:when test="${shipment.status == 'PICKING' || shipment.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
             <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
           </c:choose>">
           <c:choose>
             <c:when test="${shipment.status == 'PICKING' || shipment.status == 'COMPLETED'}">✓</c:when>
-            <c:otherwise>3</c:otherwise>
+            <c:otherwise>2</c:otherwise>
           </c:choose>
         </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'APPROVED' ? '#a855f7' : (shipment.status == 'PICKING' || shipment.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)')};">Lấy & Đóng gói</span>
+        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'APPROVED' ? '#0284c7' : (shipment.status == 'PICKING' || shipment.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)')};">Tạo phiếu xuất</span>
       </div>
       
-      <!-- Step 4: Confirm Issue (PICKING -> COMPLETED) -->
+      <!-- Step 3: Picking & Packing (PICKING) -->
       <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 110px; text-align: center; flex-shrink: 0;">
         <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
           <c:choose>
-            <c:when test="${shipment.status == 'PICKING'}">background: #d97706; color: #ffffff;</c:when>
+            <c:when test="${shipment.status == 'PICKING'}">background: #a855f7; color: #ffffff;</c:when>
+            <c:when test="${shipment.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
+            <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
+          </c:choose>">
+          <c:choose>
+            <c:when test="${shipment.status == 'COMPLETED'}">✓</c:when>
+            <c:otherwise>3</c:otherwise>
+          </c:choose>
+        </div>
+        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'PICKING' ? '#a855f7' : (shipment.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)')};">Lấy & Đóng gói</span>
+      </div>
+      
+      <!-- Step 4: Confirm Issue (COMPLETED) -->
+      <div style="z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 110px; text-align: center; flex-shrink: 0;">
+        <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;
+          <c:choose>
             <c:when test="${shipment.status == 'COMPLETED'}">background: #10b981; color: #ffffff;</c:when>
             <c:otherwise>background: #e2e8f0; color: var(--text-secondary);</c:otherwise>
           </c:choose>">
@@ -222,7 +231,7 @@
             <c:otherwise>4</c:otherwise>
           </c:choose>
         </div>
-        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'PICKING' ? '#d97706' : (shipment.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)')};">Xác nhận xuất kho</span>
+        <span style="font-size: 13px; font-weight: 600; color: ${shipment.status == 'COMPLETED' ? '#10b981' : 'var(--text-secondary)'};">Xác nhận xuất kho</span>
       </div>
     </div>
   </c:if>
@@ -351,13 +360,22 @@
                 <c:choose>
                   <c:when test="${not empty detail.barcode}">
                     <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
-                      <c:forTokens var="itemBarcode" items="${detail.barcode}" delims=",">
+                      <c:forTokens var="itemBarcode" items="${detail.barcode}" delims="," varStatus="bStatus">
                         <c:set var="tb" value="${itemBarcode.trim()}"/>
                         <c:if test="${not empty tb}">
+                          <c:if test="${bStatus.index == 2}">
+                            <div id="moreBarcodes_doc_${status.index}" style="display: none; flex-direction: column; gap: 8px; width: 100%;">
+                          </c:if>
                           <div style="display: inline-flex; flex-direction: column; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                             <img src="${pageContext.request.contextPath}/manage/barcode?code=${tb}&height=36" alt="Barcode ${tb}" style="height: 32px; max-width: 150px; object-fit: contain; display: block;" />
                             <span style="font-family: monospace; font-size: 10px; font-weight: 700; color: #1e293b; margin-top: 2px; letter-spacing: 0.5px;">${tb}</span>
                           </div>
+                          <c:if test="${bStatus.last && bStatus.count > 2}">
+                            </div>
+                            <button type="button" class="no-print" onclick="toggleBarcodes('moreBarcodes_doc_${status.index}', this, ${bStatus.count - 2})" style="background: rgba(2, 132, 199, 0.08); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                              + Xem thêm ${bStatus.count - 2} barcode còn lại
+                            </button>
+                          </c:if>
                         </c:if>
                       </c:forTokens>
                     </div>
@@ -420,27 +438,18 @@
     </div>
   </c:if>
   
-  <c:if test="${shipment.status != 'COMPLETED'}">
+  <c:if test="${shipment.status == 'PICKING'}">
     <!-- Actions & Evidence Images Panel -->
     <div class="premium-card no-print" style="padding: 24px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 20px;">
     
-    <!-- Header Section -->
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--card-border); padding-bottom: 12px; margin-bottom: 4px; flex-wrap: wrap; gap: 12px;">
-      <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
-        <c:choose>
-          <c:when test="${shipment.status == 'PICKING'}">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-            Hình ảnh sản phẩm cần xuất kho
-          </c:when>
-          <c:otherwise>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6v6l4 2"></path></svg>
-            Thao tác xử lý
-          </c:otherwise>
-        </c:choose>
-      </h3>
-    </div>
+      <!-- Header Section -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--card-border); padding-bottom: 12px; margin-bottom: 4px; flex-wrap: wrap; gap: 12px;">
+        <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          Hình ảnh sản phẩm cần xuất kho
+        </h3>
+      </div>
 
-    <c:if test="${shipment.status == 'PICKING'}">
       <!-- Images Grid -->
       <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
         <!-- Card: Hình ảnh sản phẩm cần xuất kho (Shipping Images) -->
@@ -454,15 +463,13 @@
                     <a href="javascript:void(0)" onclick="openLightbox('${pageContext.request.contextPath}${img}')" style="display: block; width: 100%; height: 100%; text-align: center;">
                       <img src="${pageContext.request.contextPath}${img}" alt="Ảnh sản phẩm xuất kho" style="height: 100%; max-width: 100%; object-fit: contain; border-radius: 4px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1.0)'">
                     </a>
-                    <c:if test="${shipment.status == 'PICKING'}">
-                      <a href="${pageContext.request.contextPath}/manage/shipments?action=deleteShippingImage&id=${shipment.id}&imageUrl=${img}"
-                         onclick="return confirm('Bạn có chắc chắn muốn xóa ảnh này không?');"
-                         title="Xóa ảnh này"
-                         style="position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: #ef4444; color: #ffffff; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; font-weight: bold; line-height: 1; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.25);"
-                         onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
-                        &times;
-                      </a>
-                    </c:if>
+                    <a href="${pageContext.request.contextPath}/manage/shipments?action=deleteShippingImage&id=${shipment.id}&imageUrl=${img}"
+                       onclick="return confirm('Bạn có chắc chắn muốn xóa ảnh này không?');"
+                       title="Xóa ảnh này"
+                       style="position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: #ef4444; color: #ffffff; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; font-weight: bold; line-height: 1; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.25);"
+                       onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                      &times;
+                    </a>
                   </div>
                 </c:forEach>
               </div>
@@ -474,218 +481,225 @@
             </c:otherwise>
           </c:choose>
 
-          <c:if test="${shipment.status == 'PICKING'}">
-            <form action="${pageContext.request.contextPath}/manage/shipments" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 8px;" id="updateShippingImagesForm">
-              <input type="hidden" name="action" value="updateShippingImages"/>
-              <input type="hidden" name="id" value="${shipment.id}"/>
-              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
-                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
-                  <c:choose>
-                    <c:when test="${not empty shipment.shippingImages}">Tải thêm / Bổ sung hình ảnh sản phẩm xuất kho:</c:when>
-                    <c:otherwise>Tải lên hình ảnh sản phẩm xuất kho (Bắt buộc tối thiểu 1 ảnh):</c:otherwise>
-                  </c:choose>
-                </label>
-                <input type="file" name="shippingImagesFiles" id="shippingImagesInput" accept="image/*" multiple required style="font-size: 12px; width: 100%;">
-                <button type="submit" class="premium-btn-secondary" style="height: 32px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; width: 100%; border-radius: 6px; background: rgba(139, 92, 246, 0.05); border: 1.5px solid #8b5cf6; color: #8b5cf6; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#8b5cf6'; this.style.color='#fff';" onmouseout="this.style.background='rgba(139, 92, 246, 0.05)'; this.style.color='#8b5cf6';">
-                  <c:choose>
-                    <c:when test="${not empty shipment.shippingImages}">+ Tải thêm ảnh sản phẩm</c:when>
-                    <c:otherwise>Tải lên ảnh sản phẩm</c:otherwise>
-                  </c:choose>
-                </button>
-              </div>
-            </form>
-          </c:if>
+          <form action="${pageContext.request.contextPath}/manage/shipments" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 8px;" id="updateShippingImagesForm">
+            <input type="hidden" name="action" value="updateShippingImages"/>
+            <input type="hidden" name="id" value="${shipment.id}"/>
+            <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">
+                <c:choose>
+                  <c:when test="${not empty shipment.shippingImages}">Tải thêm / Bổ sung hình ảnh sản phẩm xuất kho:</c:when>
+                  <c:otherwise>Tải lên hình ảnh sản phẩm xuất kho (Bắt buộc tối thiểu 1 ảnh):</c:otherwise>
+                </c:choose>
+              </label>
+              <input type="file" name="shippingImagesFiles" id="shippingImagesInput" accept="image/*" multiple required style="font-size: 12px; width: 100%;">
+              <button type="submit" class="premium-btn-secondary" style="height: 32px; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; width: 100%; border-radius: 6px; background: rgba(139, 92, 246, 0.05); border: 1.5px solid #8b5cf6; color: #8b5cf6; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#8b5cf6'; this.style.color='#fff';" onmouseout="this.style.background='rgba(139, 92, 246, 0.05)'; this.style.color='#8b5cf6';">
+                <c:choose>
+                  <c:when test="${not empty shipment.shippingImages}">+ Tải thêm ảnh sản phẩm</c:when>
+                  <c:otherwise>Tải lên ảnh sản phẩm</c:otherwise>
+                </c:choose>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-    </c:if>
-  </div>
+    </div>
+  </c:if>
 
-  <!-- Combined Information & Products Card -->
-  <div class="premium-card" style="padding: 24px; margin-bottom: 24px;">
-    
-    <!-- Metadata Grid -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; background: #f8fafc; border: 1.5px solid var(--card-border); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-      <!-- Destination -->
-      <div style="display: flex; align-items: flex-start; gap: 12px;">
-        <div style="background: rgba(4, 138, 191, 0.08); padding: 8px; border-radius: 8px; color: var(--primary-color);">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+  <!-- Combined Information & Products Card (Only shown for Draft & Pending requests) -->
+  <c:if test="${shipment.status == 'DRAFT' || shipment.status == 'PENDING'}">
+    <div class="premium-card" style="padding: 24px; margin-bottom: 24px;">
+      <!-- Metadata Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; background: #f8fafc; border: 1.5px solid var(--card-border); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <!-- Destination -->
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="background: rgba(4, 138, 191, 0.08); padding: 8px; border-radius: 8px; color: var(--primary-color);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Nơi nhận</div>
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);">${shipment.destination}</div>
+          </div>
         </div>
-        <div>
-          <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Nơi nhận</div>
-          <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);">${shipment.destination}</div>
+        
+        <!-- Created Date -->
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="background: rgba(4, 138, 191, 0.08); padding: 8px; border-radius: 8px; color: var(--primary-color);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Ngày tạo</div>
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);">
+              <fmt:formatDate value="${shipment.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+            </div>
+          </div>
         </div>
-      </div>
-      
-      <!-- Created Date -->
-      <div style="display: flex; align-items: flex-start; gap: 12px;">
-        <div style="background: rgba(4, 138, 191, 0.08); padding: 8px; border-radius: 8px; color: var(--primary-color);">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        
+        <!-- Creator -->
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="background: rgba(4, 138, 191, 0.08); padding: 8px; border-radius: 8px; color: var(--primary-color);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Người xuất</div>
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);">${shipment.creator.fullName}</div>
+          </div>
         </div>
-        <div>
-          <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Ngày tạo</div>
-          <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);">
-            <fmt:formatDate value="${shipment.createdAt}" pattern="dd/MM/yyyy HH:mm"/>
+        
+        <!-- Status -->
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="background: rgba(4, 138, 191, 0.08); padding: 8px; border-radius: 8px; color: var(--primary-color);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+          </div>
+          <div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Trạng thái</div>
+            <div style="margin-top: 2px;">
+              <c:choose>
+                <c:when test="${shipment.status == 'DRAFT'}">
+                  <span class="premium-tag" style="background: rgba(100, 116, 139, 0.1); color: #64748b; font-weight: 600;">Nháp</span>
+                </c:when>
+                <c:when test="${shipment.status == 'PENDING'}">
+                  <span class="premium-tag" style="background: rgba(245, 158, 11, 0.1); color: #d97706; font-weight: 600;">Yêu cầu xuất kho</span>
+                </c:when>
+                <c:when test="${shipment.status == 'APPROVED'}">
+                  <span class="premium-tag" style="background: rgba(2, 132, 199, 0.1); color: #0284c7; font-weight: 600;">Đã tạo phiếu xuất</span>
+                </c:when>
+                <c:when test="${shipment.status == 'PICKING'}">
+                  <span class="premium-tag" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; font-weight: 600;">Lấy & Đóng gói</span>
+                </c:when>
+                <c:when test="${shipment.status == 'COMPLETED'}">
+                  <span class="premium-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 600;">Đã hoàn thành</span>
+                </c:when>
+                <c:otherwise>
+                  <span class="premium-tag" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; font-weight: 600;">Đã hủy</span>
+                </c:otherwise>
+              </c:choose>
+            </div>
           </div>
         </div>
       </div>
       
-      <!-- Creator -->
-      <div style="display: flex; align-items: flex-start; gap: 12px;">
-        <div style="background: rgba(4, 138, 191, 0.08); padding: 8px; border-radius: 8px; color: var(--primary-color);">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <!-- Notes -->
+      <c:if test="${not empty shipment.notes}">
+        <div style="background: rgba(248, 250, 252, 0.6); border: 1.5px dashed var(--card-border); border-radius: 8px; padding: 14px 18px; margin-bottom: 24px;">
+          <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">Ghi chú:</span>
+          <span style="font-size: 14px; color: var(--text-primary); line-height: 1.5;">${shipment.notes}</span>
         </div>
-        <div>
-          <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Người xuất</div>
-          <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);">${shipment.creator.fullName}</div>
-        </div>
-      </div>
-      
-      <!-- Status -->
-      <div style="display: flex; align-items: flex-start; gap: 12px;">
-        <div style="background: rgba(4, 138, 191, 0.08); padding: 8px; border-radius: 8px; color: var(--primary-color);">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
-        </div>
-        <div>
-          <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Trạng thái</div>
-          <div style="margin-top: 2px;">
-            <c:choose>
-              <c:when test="${shipment.status == 'DRAFT'}">
-                <span class="premium-tag" style="background: rgba(100, 116, 139, 0.1); color: #64748b; font-weight: 600;">Nháp</span>
-              </c:when>
-              <c:when test="${shipment.status == 'PENDING'}">
-                <span class="premium-tag" style="background: rgba(245, 158, 11, 0.1); color: #d97706; font-weight: 600;">Yêu cầu xuất kho</span>
-              </c:when>
-              <c:when test="${shipment.status == 'APPROVED'}">
-                <span class="premium-tag" style="background: rgba(2, 132, 199, 0.1); color: #0284c7; font-weight: 600;">Đã tạo phiếu xuất</span>
-              </c:when>
-              <c:when test="${shipment.status == 'PICKING'}">
-                <span class="premium-tag" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; font-weight: 600;">Lấy & Đóng gói</span>
-              </c:when>
-              <c:when test="${shipment.status == 'COMPLETED'}">
-                <span class="premium-tag" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 600;">Đã hoàn thành</span>
-              </c:when>
-              <c:otherwise>
-                <span class="premium-tag" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; font-weight: 600;">Đã hủy</span>
-              </c:otherwise>
-            </c:choose>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Notes -->
-    <c:if test="${not empty shipment.notes}">
-      <div style="background: rgba(248, 250, 252, 0.6); border: 1.5px dashed var(--card-border); border-radius: 8px; padding: 14px 18px; margin-bottom: 24px;">
-        <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 4px;">Ghi chú:</span>
-        <span style="font-size: 14px; color: var(--text-primary); line-height: 1.5;">${shipment.notes}</span>
-      </div>
-    </c:if>
+      </c:if>
 
-    <!-- Product list -->
-    <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-      Danh sách sản phẩm xuất kho
-    </h3>
-    
-    <div style="overflow-x: auto;">
-      <table style="width: 100%; border-collapse: collapse;">
-        <c:choose>
-          <c:when test="${shipment.status == 'PENDING'}">
-            <thead>
-              <tr>
-                <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">SKU</th>
-                <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Tên sản phẩm</th>
-                <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Đơn vị</th>
-                <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số lượng thực xuất</th>
-              </tr>
-            </thead>
-            <tbody>
-              <c:set var="totalItems" value="0"/>
-              <c:forEach var="detail" items="${shipment.details}">
-                <tr style="transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">${detail.product.sku}</td>
-                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-weight: 600; color: var(--text-primary);">${detail.product.name}</td>
-                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; color: var(--text-secondary);">${detail.product.unit}</td>
-                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; font-weight: 700; color: #ef4444;">-${detail.quantity}</td>
+      <!-- Product list -->
+      <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0; border-bottom: 1px solid var(--card-border); padding-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        Danh sách sản phẩm xuất kho
+      </h3>
+      
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <c:choose>
+            <c:when test="${shipment.status == 'PENDING'}">
+              <thead>
+                <tr>
+                  <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">SKU</th>
+                  <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Tên sản phẩm</th>
+                  <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Đơn vị</th>
+                  <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số lượng thực xuất</th>
                 </tr>
-                <c:set var="totalItems" value="${totalItems + detail.quantity}"/>
-              </c:forEach>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="3" style="text-align: right; padding: 16px 12px; font-weight: 700; color: var(--text-secondary);">Tổng số lượng xuất:</td>
-                <td style="text-align: right; padding: 16px 12px; font-weight: 800; font-size: 16px; color: var(--primary-color);">${totalItems}</td>
-              </tr>
-            </tfoot>
-          </c:when>
-          <c:otherwise>
-            <thead>
-              <tr>
-                <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">SKU</th>
-                <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Tên sản phẩm</th>
-                <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Batch Code</th>
-                <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Barcode</th>
-                <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Đơn vị</th>
-                <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số lượng thực xuất</th>
-              </tr>
-            </thead>
-            <tbody>
-              <c:set var="totalItems" value="0"/>
-              <c:forEach var="detail" items="${shipment.details}">
-                <tr style="transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">${detail.product.sku}</td>
-                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-weight: 600; color: var(--text-primary);">${detail.product.name}</td>
-                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border);">
-                    <c:choose>
-                      <c:when test="${not empty detail.batchCode}">
-                        <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-                          <c:forTokens var="bCode" items="${detail.batchCode}" delims=",">
-                            <span style="display: inline-block; padding: 3px 8px; border-radius: 6px; background: #f5f3ff; color: #6d28d9; font-family: monospace; font-size: 12px; font-weight: 700; border: 1px solid #ddd6fe;">${bCode.trim()}</span>
-                          </c:forTokens>
-                        </div>
-                      </c:when>
-                      <c:otherwise>
-                        <span style="color: #94a3b8; font-style: italic; font-size: 12px;">Chưa gán lô</span>
-                      </c:otherwise>
-                    </c:choose>
-                  </td>
-                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border);">
-                    <c:choose>
-                      <c:when test="${not empty detail.barcode}">
-                        <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
-                          <c:forTokens var="itemBarcode" items="${detail.barcode}" delims=",">
-                            <c:set var="tb" value="${itemBarcode.trim()}"/>
-                            <c:if test="${not empty tb}">
-                              <div style="display: inline-flex; flex-direction: column; align-items: center; background: #ffffff; border: 1px solid var(--card-border); border-radius: 6px; padding: 4px 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                                <img src="${pageContext.request.contextPath}/manage/barcode?code=${tb}&height=36" alt="Barcode ${tb}" style="height: 28px; max-width: 130px; object-fit: contain; display: block;" />
-                                <span style="font-family: monospace; font-size: 10px; font-weight: 700; color: var(--text-primary); margin-top: 2px;">${tb}</span>
-                              </div>
-                            </c:if>
-                          </c:forTokens>
-                        </div>
-                      </c:when>
-                      <c:otherwise>
-                        <span style="color: #94a3b8; font-style: italic; font-size: 12px;">Chưa gán Barcode</span>
-                      </c:otherwise>
-                    </c:choose>
-                  </td>
-                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; color: var(--text-secondary);">${detail.product.unit}</td>
-                  <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; font-weight: 700; color: #ef4444;">-${detail.quantity}</td>
+              </thead>
+              <tbody>
+                <c:set var="totalItems" value="0"/>
+                <c:forEach var="detail" items="${shipment.details}">
+                  <tr style="transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">${detail.product.sku}</td>
+                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-weight: 600; color: var(--text-primary);">${detail.product.name}</td>
+                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; color: var(--text-secondary);">${detail.product.unit}</td>
+                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; font-weight: 700; color: #ef4444;">-${detail.quantity}</td>
+                  </tr>
+                  <c:set var="totalItems" value="${totalItems + detail.quantity}"/>
+                </c:forEach>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" style="text-align: right; padding: 16px 12px; font-weight: 700; color: var(--text-secondary);">Tổng số lượng xuất:</td>
+                  <td style="text-align: right; padding: 16px 12px; font-weight: 800; font-size: 16px; color: var(--primary-color);">${totalItems}</td>
                 </tr>
-                <c:set var="totalItems" value="${totalItems + detail.quantity}"/>
-              </c:forEach>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="5" style="text-align: right; padding: 16px 12px; font-weight: 700; color: var(--text-secondary);">Tổng số lượng xuất:</td>
-                <td style="text-align: right; padding: 16px 12px; font-weight: 800; font-size: 16px; color: var(--primary-color);">${totalItems}</td>
-              </tr>
-            </tfoot>
-          </c:otherwise>
-        </c:choose>
-      </table>
+              </tfoot>
+            </c:when>
+            <c:otherwise>
+              <thead>
+                <tr>
+                  <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">SKU</th>
+                  <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Tên sản phẩm</th>
+                  <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Batch Code</th>
+                  <th style="text-align: left; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Barcode</th>
+                  <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Đơn vị</th>
+                  <th style="text-align: right; padding: 12px 16px; border-bottom: 2px solid var(--card-border); font-size: 13px; color: var(--text-secondary); font-weight: 600;">Số lượng thực xuất</th>
+                </tr>
+              </thead>
+              <tbody>
+                <c:set var="totalItems" value="0"/>
+                <c:forEach var="detail" items="${shipment.details}">
+                  <tr style="transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-family: monospace; font-size: 13px; color: var(--text-secondary);">${detail.product.sku}</td>
+                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); font-weight: 600; color: var(--text-primary);">${detail.product.name}</td>
+                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border);">
+                      <c:choose>
+                        <c:when test="${not empty detail.batchCode}">
+                          <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                            <c:forTokens var="bCode" items="${detail.batchCode}" delims=",">
+                              <span style="display: inline-block; padding: 3px 8px; border-radius: 6px; background: #f5f3ff; color: #6d28d9; font-family: monospace; font-size: 12px; font-weight: 700; border: 1px solid #ddd6fe;">${bCode.trim()}</span>
+                            </c:forTokens>
+                          </div>
+                        </c:when>
+                        <c:otherwise>
+                          <span style="color: #94a3b8; font-style: italic; font-size: 12px;">Chưa gán lô</span>
+                        </c:otherwise>
+                      </c:choose>
+                    </td>
+                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border);">
+                      <c:choose>
+                        <c:when test="${not empty detail.barcode}">
+                          <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+                            <c:forTokens var="itemBarcode" items="${detail.barcode}" delims="," varStatus="bStatus">
+                              <c:set var="tb" value="${itemBarcode.trim()}"/>
+                              <c:if test="${not empty tb}">
+                                <c:if test="${bStatus.index == 2}">
+                                  <div id="moreBarcodes_bottom_${detail.id}" style="display: none; flex-direction: column; gap: 8px; width: 100%;">
+                                </c:if>
+                                <div style="display: inline-flex; flex-direction: column; align-items: center; background: #ffffff; border: 1px solid var(--card-border); border-radius: 6px; padding: 4px 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                  <img src="${pageContext.request.contextPath}/manage/barcode?code=${tb}&height=36" alt="Barcode ${tb}" style="height: 28px; max-width: 130px; object-fit: contain; display: block;" />
+                                  <span style="font-family: monospace; font-size: 10px; font-weight: 700; color: var(--text-primary); margin-top: 2px;">${tb}</span>
+                                </div>
+                                <c:if test="${bStatus.last && bStatus.count > 2}">
+                                  </div>
+                                  <button type="button" class="no-print" onclick="toggleBarcodes('moreBarcodes_bottom_${detail.id}', this, ${bStatus.count - 2})" style="background: rgba(2, 132, 199, 0.08); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                                    + Xem thêm ${bStatus.count - 2} barcode còn lại
+                                  </button>
+                                </c:if>
+                              </c:if>
+                            </c:forTokens>
+                          </div>
+                        </c:when>
+                        <c:otherwise>
+                          <span style="color: #94a3b8; font-style: italic; font-size: 12px;">Chưa gán Barcode</span>
+                        </c:otherwise>
+                      </c:choose>
+                    </td>
+                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; color: var(--text-secondary);">${detail.product.unit}</td>
+                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--card-border); text-align: right; font-weight: 700; color: #ef4444;">-${detail.quantity}</td>
+                  </tr>
+                  <c:set var="totalItems" value="${totalItems + detail.quantity}"/>
+                </c:forEach>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="5" style="text-align: right; padding: 16px 12px; font-weight: 700; color: var(--text-secondary);">Tổng số lượng xuất:</td>
+                  <td style="text-align: right; padding: 16px 12px; font-weight: 800; font-size: 16px; color: var(--primary-color);">${totalItems}</td>
+                </tr>
+              </tfoot>
+            </c:otherwise>
+          </c:choose>
+        </table>
+      </div>
     </div>
-  </div>
   </c:if>
 </div>
 
@@ -864,6 +878,18 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+
+function toggleBarcodes(containerId, btn, count) {
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  if (container.style.display === 'none' || container.style.display === '') {
+    container.style.display = 'flex';
+    btn.innerHTML = '- Thu gọn';
+  } else {
+    container.style.display = 'none';
+    btn.innerHTML = '+ Xem thêm ' + count + ' barcode còn lại';
+  }
+}
 </script>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>

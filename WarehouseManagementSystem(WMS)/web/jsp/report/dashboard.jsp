@@ -620,9 +620,29 @@
                       <td><c:out value="${item.supplierName}"/></td>
                       <td><c:out value="${item.creatorName}"/></td>
                       <td>
-                        <span class="report-badge" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; font-weight: bold;">
-                          <c:out value="${item.status}"/>
-                        </span>
+                        <c:choose>
+                          <c:when test="${item.status == 'COMPLETED'}">
+                            <span class="report-badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-weight: bold;">COMPLETED</span>
+                          </c:when>
+                          <c:when test="${item.status == 'RECEIVED'}">
+                            <span class="report-badge" style="background: rgba(79, 70, 229, 0.12); color: #4f46e5; font-weight: bold;">RECEIVED</span>
+                          </c:when>
+                          <c:when test="${item.status == 'RECEIVING'}">
+                            <span class="report-badge" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6; font-weight: bold;">RECEIVING</span>
+                          </c:when>
+                          <c:when test="${item.status == 'APPROVED'}">
+                            <span class="report-badge" style="background: rgba(59, 130, 246, 0.12); color: #2563eb; font-weight: bold;">APPROVED</span>
+                          </c:when>
+                          <c:when test="${item.status == 'PENDING_APPROVAL' || item.status == 'PENDING'}">
+                            <span class="report-badge" style="background: rgba(245, 158, 11, 0.12); color: #d97706; font-weight: bold;">PENDING</span>
+                          </c:when>
+                          <c:when test="${item.status == 'CANCELLED'}">
+                            <span class="report-badge" style="background: rgba(239, 68, 68, 0.12); color: #ef4444; font-weight: bold;">CANCELLED</span>
+                          </c:when>
+                          <c:otherwise>
+                            <span class="report-badge" style="background: rgba(100, 116, 139, 0.12); color: #64748b; font-weight: bold;"><c:out value="${item.status}"/></span>
+                          </c:otherwise>
+                        </c:choose>
                       </td>
                       <td style="text-align: right; font-weight: 600;"><fmt:formatNumber value="${item.totalQty}" pattern="#,##0"/></td>
                       <td style="text-align: right; font-weight: 700; color: #1e293b;"><fmt:formatNumber value="${item.totalVal}" type="currency" currencyCode="VND"/></td>
@@ -761,9 +781,29 @@
                       <td><c:out value="${item.destination}"/></td>
                       <td><c:out value="${item.creatorName}"/></td>
                       <td>
-                        <span class="report-badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: bold;">
-                          <c:out value="${item.status}"/>
-                        </span>
+                        <c:choose>
+                          <c:when test="${item.status == 'COMPLETED'}">
+                            <span class="report-badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-weight: bold;">COMPLETED</span>
+                          </c:when>
+                          <c:when test="${item.status == 'PICKING'}">
+                            <span class="report-badge" style="background: rgba(168, 85, 247, 0.12); color: #a855f7; font-weight: bold;">PICKING</span>
+                          </c:when>
+                          <c:when test="${item.status == 'APPROVED'}">
+                            <span class="report-badge" style="background: rgba(2, 132, 199, 0.12); color: #0284c7; font-weight: bold;">APPROVED</span>
+                          </c:when>
+                          <c:when test="${item.status == 'PENDING'}">
+                            <span class="report-badge" style="background: rgba(245, 158, 11, 0.12); color: #d97706; font-weight: bold;">PENDING</span>
+                          </c:when>
+                          <c:when test="${item.status == 'DRAFT'}">
+                            <span class="report-badge" style="background: rgba(100, 116, 139, 0.12); color: #64748b; font-weight: bold;">DRAFT</span>
+                          </c:when>
+                          <c:when test="${item.status == 'CANCELLED'}">
+                            <span class="report-badge" style="background: rgba(239, 68, 68, 0.12); color: #ef4444; font-weight: bold;">CANCELLED</span>
+                          </c:when>
+                          <c:otherwise>
+                            <span class="report-badge" style="background: rgba(100, 116, 139, 0.12); color: #64748b; font-weight: bold;"><c:out value="${item.status}"/></span>
+                          </c:otherwise>
+                        </c:choose>
                       </td>
                       <td style="text-align: right; font-weight: 600;"><fmt:formatNumber value="${item.totalQty}" pattern="#,##0"/></td>
                       <td style="text-align: right; font-weight: 700; color: #1e293b;"><fmt:formatNumber value="${item.totalVal}" type="currency" currencyCode="VND"/></td>
@@ -883,12 +923,12 @@
             <thead>
               <tr>
                 <th>Tên sản phẩm</th>
-                <th>Mã lô (Batch)</th>
                 <th>SKU</th>
                 <th style="text-align: right;">Đơn giá</th>
-                <th style="text-align: right;">Lượng tồn kho</th>
+                <th style="text-align: right;">Tổng lượng tồn kho</th>
                 <th style="text-align: right;">Định mức tối thiểu</th>
                 <th>Trạng thái</th>
+                <th style="text-align: center;">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -898,7 +938,6 @@
                     <c:set var="isLow" value="${item.minStockLevel > 0 && item.quantityInStock <= item.minStockLevel}"/>
                     <tr>
                       <td><strong><c:out value="${item.productName}"/></strong></td>
-                      <td><code><c:out value="${item.batchCode}"/></code></td>
                       <td><c:out value="${item.sku}"/></td>
                       <td style="text-align: right; font-weight: 500;"><fmt:formatNumber value="${item.price}" type="currency" currencyCode="VND"/></td>
                       <td style="text-align: right; font-weight: 700; color: ${isLow ? '#ef4444' : '#1e293b'};">
@@ -914,6 +953,12 @@
                             <span class="report-badge" style="background: #e6fbf1; color: #10b981;">Đủ hàng</span>
                           </c:otherwise>
                         </c:choose>
+                      </td>
+                      <td style="text-align: center;">
+                        <button type="button" onclick="openInventoryDetailModal('${item.productId}')" title="Xem chi tiết tồn kho sản phẩm" style="padding: 6px 14px; background: rgba(59, 130, 246, 0.08); color: #2563eb; border: 1.5px solid rgba(59, 130, 246, 0.25); border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='#2563eb'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(59, 130, 246, 0.08)'; this.style.color='#2563eb';">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                          Xem chi tiết
+                        </button>
                       </td>
                     </tr>
                   </c:forEach>
@@ -1046,6 +1091,7 @@
                 <th style="text-align: right; background-color: #fef2f2;">Xuất kho</th>
                 <th style="text-align: right; background-color: #faf5ff;">Tồn cuối</th>
                 <th style="text-align: right;">Giá trị tồn cuối</th>
+                <th style="text-align: center;">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -1067,12 +1113,18 @@
                       <td style="text-align: right; font-weight: 700; color: #4f46e5;">
                         <fmt:formatNumber value="${item.endingQty * item.price}" type="currency" currencyCode="VND"/>
                       </td>
+                      <td style="text-align: center;">
+                        <button type="button" onclick="openNXTDetailModal('${item.productId}')" title="Xem nhật ký Nhập Xuất Tồn" style="padding: 6px 14px; background: rgba(168, 85, 247, 0.08); color: #9333ea; border: 1.5px solid rgba(168, 85, 247, 0.25); border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='#9333ea'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(168, 85, 247, 0.08)'; this.style.color='#9333ea';">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                          Xem chi tiết
+                        </button>
+                      </td>
                     </tr>
                   </c:forEach>
                 </c:when>
                 <c:otherwise>
                   <tr>
-                    <td colspan="10" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy dữ liệu nào phù hợp với bộ lọc đã chọn.</td>
+                    <td colspan="11" style="text-align: center; color: #64748b; padding: 24px;">Không tìm thấy dữ liệu nào phù hợp với bộ lọc đã chọn.</td>
                   </tr>
                 </c:otherwise>
               </c:choose>
@@ -1389,8 +1441,8 @@
     if (codes.length === 0) return '<span style="color: #94a3b8; font-size: 11px;">-</span>';
 
     const renderBox = (code) => {
-      return '<div style="display: inline-flex; flex-direction: column; align-items: center; padding: 4px 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.04); white-space: nowrap;">' +
-             '  <svg width="64" height="20" viewBox="0 0 64 20">' +
+      return '<div style="display: inline-flex; flex-direction: column; align-items: center; padding: 6px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.04); white-space: nowrap; min-width: 130px;">' +
+             '  <svg width="115" height="26" viewBox="0 0 64 20">' +
              '    <rect x="2" y="2" width="2" height="16" fill="#1e293b"/>' +
              '    <rect x="6" y="2" width="1" height="16" fill="#1e293b"/>' +
              '    <rect x="9" y="2" width="3" height="16" fill="#1e293b"/>' +
@@ -1406,7 +1458,7 @@
              '    <rect x="52" y="2" width="1" height="16" fill="#1e293b"/>' +
              '    <rect x="55" y="2" width="2" height="16" fill="#1e293b"/>' +
              '  </svg>' +
-             '  <span style="font-size: 10px; font-family: monospace; color: #475569; font-weight: 700; margin-top: 2px;">' + code + '</span>' +
+             '  <span style="font-size: 11px; font-family: monospace; color: #334155; font-weight: 700; margin-top: 3px; letter-spacing: 0.5px;">' + code + '</span>' +
              '</div>';
     };
 
@@ -1431,7 +1483,7 @@
            '  </div>' +
            '  <button type="button" id="' + btnId + '" onclick="toggleBarcodeExpand(\'' + containerId + '\', \'' + btnId + '\', ' + hiddenCount + ', ' + totalCount + ')" style="padding: 4px 10px; border: 1.5px solid #bfdbfe; background: #eff6ff; color: #2563eb; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background=\'#dbeafe\';" onmouseout="this.style.background=\'#eff6ff\';">' +
            '    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>' +
-           '    +' + hiddenCount + ' mã khác (Xem tất cả ' + totalCount + ' mã)' +
+           '    Xem tất cả Barcode' +
            '  </button>' +
            '</div>';
   }
@@ -1443,13 +1495,13 @@
 
     if (container.style.display === 'none' || container.style.display === '') {
       container.style.display = 'flex';
-      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg> Thu gọn';
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg> Thu gọn Barcode';
       btn.style.background = '#f1f5f9';
       btn.style.color = '#475569';
       btn.style.borderColor = '#cbd5e1';
     } else {
       container.style.display = 'none';
-      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg> +' + hiddenCount + ' mã khác (Xem tất cả ' + totalCount + ' mã)';
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg> Xem tất cả Barcode';
       btn.style.background = '#eff6ff';
       btn.style.color = '#2563eb';
       btn.style.borderColor = '#bfdbfe';
@@ -1488,14 +1540,22 @@
         document.getElementById('modalTotalVal').innerText = formatCurrency(data.totalVal);
 
         const statusContainer = document.getElementById('modalStatusContainer');
-        let badgeClass = 'rgba(59, 130, 246, 0.12)';
-        let badgeColor = '#2563eb';
+        let badgeClass = 'rgba(100, 116, 139, 0.12)';
+        let badgeColor = '#64748b';
         if (data.status === 'COMPLETED') {
-          badgeClass = 'rgba(16, 185, 129, 0.12)';
-          badgeColor = '#10b981';
+          badgeClass = 'rgba(16, 185, 129, 0.12)'; badgeColor = '#10b981';
+        } else if (data.status === 'RECEIVED') {
+          badgeClass = 'rgba(79, 70, 229, 0.12)'; badgeColor = '#4f46e5';
+        } else if (data.status === 'RECEIVING') {
+          badgeClass = 'rgba(139, 92, 246, 0.12)'; badgeColor = '#8b5cf6';
+        } else if (data.status === 'APPROVED') {
+          badgeClass = 'rgba(59, 130, 246, 0.12)'; badgeColor = '#2563eb';
+        } else if (data.status === 'PENDING_APPROVAL' || data.status === 'PENDING') {
+          badgeClass = 'rgba(245, 158, 11, 0.12)'; badgeColor = '#d97706';
         } else if (data.status === 'CANCELLED') {
-          badgeClass = 'rgba(239, 68, 68, 0.12)';
-          badgeColor = '#ef4444';
+          badgeClass = 'rgba(239, 68, 68, 0.12)'; badgeColor = '#ef4444';
+        } else if (data.status === 'DRAFT') {
+          badgeClass = 'rgba(100, 116, 139, 0.12)'; badgeColor = '#64748b';
         }
         statusContainer.innerHTML = '<span class="report-badge" style="background: ' + badgeClass + '; color: ' + badgeColor + '; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 12px; display: inline-block;">' + (data.status || '') + '</span>';
 
@@ -1507,16 +1567,19 @@
         if (details.length === 0) {
           tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #94a3b8; padding: 20px;">Không có chi tiết sản phẩm nào.</td></tr>';
         } else {
+          const isCompleted = (data.status === 'COMPLETED');
           details.forEach((d, idx) => {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid #f1f5f9';
+            const batchDisplay = isCompleted ? formatBatchCode(d.batchCode) : '<span style="color: #94a3b8; font-style: italic; font-size: 12px;">Chưa hoàn thành</span>';
+            const barcodeDisplay = isCompleted ? generateBarcodeSvg(d.barcode, 'rcpt_' + idx) : '<span style="color: #94a3b8; font-style: italic; font-size: 12px;">Chưa hoàn thành</span>';
             tr.innerHTML = 
               '<td style="padding: 12px 14px; text-align: center; color: #64748b; font-weight: 600;">' + (idx + 1) + '</td>' +
               '<td style="padding: 12px 14px; font-weight: 600; color: #475569;">' + (d.sku || '-') + '</td>' +
               '<td style="padding: 12px 14px; font-weight: 700; color: #0f172a;">' + (d.productName || '-') + '</td>' +
               '<td style="padding: 12px 14px; color: #475569;">' + (d.unit || '-') + '</td>' +
-              '<td style="padding: 12px 14px;">' + formatBatchCode(d.batchCode) + '</td>' +
-              '<td style="padding: 12px 14px; text-align: center;">' + generateBarcodeSvg(d.barcode, 'rcpt_' + idx) + '</td>' +
+              '<td style="padding: 12px 14px;">' + batchDisplay + '</td>' +
+              '<td style="padding: 12px 14px; text-align: center;">' + barcodeDisplay + '</td>' +
               '<td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #0f172a;">' + d.quantity + '</td>' +
               '<td style="padding: 12px 14px; text-align: right; color: #334155;">' + formatCurrency(d.price) + '</td>' +
               '<td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #0f172a;">' + formatCurrency(d.totalVal) + '</td>';
@@ -1524,14 +1587,7 @@
           });
         }
 
-        const imgContainer = document.getElementById('modalInvoiceImageContainer');
-        if (data.invoiceImage && data.invoiceImage.trim() !== '') {
-          imgContainer.innerHTML = '<a href="${pageContext.request.contextPath}/uploads/' + data.invoiceImage + '" target="_blank">' +
-                                   '  <img src="${pageContext.request.contextPath}/uploads/' + data.invoiceImage + '" style="max-width: 220px; max-height: 160px; border-radius: 8px; border: 1px solid #cbd5e1; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" alt="Ảnh hóa đơn"/>' +
-                                   '</a>';
-        } else {
-          imgContainer.innerHTML = '<div style="color: #94a3b8; font-size: 13px; font-style: italic;">Không có ảnh hóa đơn đính kèm</div>';
-        }
+
 
         const btnGo = document.getElementById('btnGoToOriginalPage');
         btnGo.href = '${pageContext.request.contextPath}/manage/receipts?action=view&id=' + receiptId;
@@ -1598,14 +1654,20 @@
         document.getElementById('modalShipmentTotalVal').innerText = formatCurrency(data.totalVal);
 
         const statusContainer = document.getElementById('modalShipmentStatusContainer');
-        let badgeClass = 'rgba(16, 185, 129, 0.12)';
-        let badgeColor = '#10b981';
-        if (data.status === 'CANCELLED') {
-          badgeClass = 'rgba(239, 68, 68, 0.12)';
-          badgeColor = '#ef4444';
-        } else if (data.status === 'DRAFT' || data.status === 'PENDING') {
-          badgeClass = 'rgba(245, 158, 11, 0.12)';
-          badgeColor = '#d97706';
+        let badgeClass = 'rgba(100, 116, 139, 0.12)';
+        let badgeColor = '#64748b';
+        if (data.status === 'COMPLETED') {
+          badgeClass = 'rgba(16, 185, 129, 0.12)'; badgeColor = '#10b981';
+        } else if (data.status === 'PICKING') {
+          badgeClass = 'rgba(168, 85, 247, 0.12)'; badgeColor = '#a855f7';
+        } else if (data.status === 'APPROVED') {
+          badgeClass = 'rgba(2, 132, 199, 0.12)'; badgeColor = '#0284c7';
+        } else if (data.status === 'PENDING') {
+          badgeClass = 'rgba(245, 158, 11, 0.12)'; badgeColor = '#d97706';
+        } else if (data.status === 'DRAFT') {
+          badgeClass = 'rgba(100, 116, 139, 0.12)'; badgeColor = '#64748b';
+        } else if (data.status === 'CANCELLED') {
+          badgeClass = 'rgba(239, 68, 68, 0.12)'; badgeColor = '#ef4444';
         }
         statusContainer.innerHTML = '<span class="report-badge" style="background: ' + badgeClass + '; color: ' + badgeColor + '; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 12px; display: inline-block;">' + (data.status || '') + '</span>';
 
@@ -1617,16 +1679,19 @@
         if (details.length === 0) {
           tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #94a3b8; padding: 20px;">Không có chi tiết sản phẩm nào.</td></tr>';
         } else {
+          const isCompleted = (data.status === 'COMPLETED');
           details.forEach((d, idx) => {
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid #f1f5f9';
+            const batchDisplay = isCompleted ? formatBatchCode(d.batchCode) : '<span style="color: #94a3b8; font-style: italic; font-size: 12px;">Chưa hoàn thành</span>';
+            const barcodeDisplay = isCompleted ? generateBarcodeSvg(d.barcode, 'shpm_' + idx) : '<span style="color: #94a3b8; font-style: italic; font-size: 12px;">Chưa hoàn thành</span>';
             tr.innerHTML = 
               '<td style="padding: 12px 14px; text-align: center; color: #64748b; font-weight: 600;">' + (idx + 1) + '</td>' +
               '<td style="padding: 12px 14px; font-weight: 600; color: #475569;">' + (d.sku || '-') + '</td>' +
               '<td style="padding: 12px 14px; font-weight: 700; color: #0f172a;">' + (d.productName || '-') + '</td>' +
               '<td style="padding: 12px 14px; color: #475569;">' + (d.unit || '-') + '</td>' +
-              '<td style="padding: 12px 14px;">' + formatBatchCode(d.batchCode) + '</td>' +
-              '<td style="padding: 12px 14px; text-align: center;">' + generateBarcodeSvg(d.barcode, 'shpm_' + idx) + '</td>' +
+              '<td style="padding: 12px 14px;">' + batchDisplay + '</td>' +
+              '<td style="padding: 12px 14px; text-align: center;">' + barcodeDisplay + '</td>' +
               '<td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #0f172a;">' + d.quantity + '</td>' +
               '<td style="padding: 12px 14px; text-align: right; color: #334155;">' + formatCurrency(d.price) + '</td>' +
               '<td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #0f172a;">' + formatCurrency(d.totalVal) + '</td>';
@@ -1744,10 +1809,7 @@
           </table>
         </div>
       </div>
-      <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
-        <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 10px 0;">Ảnh hóa đơn yêu cầu:</h4>
-        <div id="modalInvoiceImageContainer"></div>
-      </div>
+
     </div>
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e2e8f0; background: #ffffff;">
       <button type="button" onclick="printReceiptDetailModal()" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">
@@ -1844,5 +1906,364 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Chi tiết Tồn kho HTML -->
+<div id="inventoryDetailModal" class="shipment-modal-backdrop" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease;">
+  <div class="shipment-modal-card" style="background: #ffffff; width: 95%; max-width: 920px; max-height: 90vh; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); transition: transform 0.25s ease;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid #e2e8f0; background: #ffffff;">
+      <div style="display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: #0f172a;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        </svg>
+        <span>Chi tiết Tồn kho sản phẩm: <span id="modalInvProductNameHeader" style="color: #2563eb;">-</span></span>
+      </div>
+      <button type="button" onclick="closeInventoryDetailModal()" style="border: none; background: #f1f5f9; color: #64748b; width: 32px; height: 32px; border-radius: 8px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a';" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b';">✕</button>
+    </div>
+    <div id="inventoryModalBody" style="padding: 24px; overflow-y: auto; flex: 1;">
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 20px;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">MÃ SKU</div>
+            <div id="modalInvSku" style="font-size: 14px; font-weight: 800; color: #0f172a; font-family: monospace;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">HÃNG & DÒNG SP</div>
+            <div id="modalInvBrand" style="font-size: 13px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">ĐƠN VỊ TÍNH</div>
+            <div id="modalInvUnit" style="font-size: 14px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">ĐƠN GIÁ NIÊM YẾT</div>
+            <div id="modalInvPrice" style="font-size: 14px; font-weight: 700; color: #334155;">0 đ</div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 20px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed #cbd5e1;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">TỔNG LƯỢNG TỒN</div>
+            <div id="modalInvTotalStock" style="font-size: 18px; font-weight: 800; color: #0f172a;">0</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">ĐỊNH MỨC TỐI THIỂU</div>
+            <div id="modalInvMinStock" style="font-size: 14px; font-weight: 700; color: #64748b;">0</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">TỔNG GIÁ TRỊ TỒN</div>
+            <div id="modalInvTotalVal" style="font-size: 17px; font-weight: 800; color: #2563eb;">0 đ</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">TRẠNG THÁI TỒN</div>
+            <div id="modalInvStatusBadge"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 14px 0;">Danh sách Lô hàng & Barcode thực tế trong kho</h4>
+        <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 10px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700;">
+                <th style="padding: 12px 14px; text-align: center; width: 45px;">STT</th>
+                <th style="padding: 12px 14px;">Mã lô (Batch)</th>
+                <th style="padding: 12px 14px;">Vị trí lưu kho</th>
+                <th style="padding: 12px 14px; text-align: center;">Mã vạch (Barcode)</th>
+                <th style="padding: 12px 14px; text-align: right;">Số lượng tồn</th>
+                <th style="padding: 12px 14px; text-align: center;">Ngày khởi tạo</th>
+              </tr>
+            </thead>
+            <tbody id="modalInvBatchesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e2e8f0; background: #ffffff;">
+      <button type="button" onclick="printInventoryDetailModal()" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        In chi tiết
+      </button>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button type="button" onclick="closeInventoryDetailModal()" style="padding: 10px 20px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">Đóng</button>
+        <a id="btnGoToOriginalInvPage" href="#" class="premium-btn-primary" style="display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 20px; background: #2563eb; color: #ffffff; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 700; transition: all 0.2s;">Đến trang quản lý tồn kho gốc</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Chi tiết Nhập Xuất Tồn HTML -->
+<div id="nxtDetailModal" class="shipment-modal-backdrop" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease;">
+  <div class="shipment-modal-card" style="background: #ffffff; width: 95%; max-width: 960px; max-height: 90vh; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.95); transition: transform 0.25s ease;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid #e2e8f0; background: #ffffff;">
+      <div style="display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: #0f172a;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        <span>Chi tiết Nhập - Xuất - Tồn: <span id="modalNXTProductNameHeader" style="color: #9333ea;">-</span></span>
+      </div>
+      <button type="button" onclick="closeNXTDetailModal()" style="border: none; background: #f1f5f9; color: #64748b; width: 32px; height: 32px; border-radius: 8px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a';" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b';">✕</button>
+    </div>
+    <div id="nxtModalBody" style="padding: 24px; overflow-y: auto; flex: 1;">
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 20px;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">MÃ SKU</div>
+            <div id="modalNXTSku" style="font-size: 14px; font-weight: 800; color: #0f172a; font-family: monospace;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">HÃNG & DÒNG SP</div>
+            <div id="modalNXTBrand" style="font-size: 13px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">ĐƠN VỊ TÍNH</div>
+            <div id="modalNXTUnit" style="font-size: 14px; font-weight: 700; color: #0f172a;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">KHOẢNG THỜI GIAN</div>
+            <div id="modalNXTDateRange" style="font-size: 13px; font-weight: 700; color: #334155;">-</div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 20px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed #cbd5e1;">
+          <div style="background: #eff6ff; padding: 12px 14px; border-radius: 8px; border: 1px solid #bfdbfe;">
+            <div style="font-size: 11px; font-weight: 700; color: #1e40af; text-transform: uppercase; margin-bottom: 2px;">TỒN ĐẦU KỲ</div>
+            <div id="modalNXTBeginning" style="font-size: 18px; font-weight: 800; color: #1e3a8a;">0</div>
+          </div>
+          <div style="background: #f0fdf4; padding: 12px 14px; border-radius: 8px; border: 1px solid #bbf7d0;">
+            <div style="font-size: 11px; font-weight: 700; color: #166534; text-transform: uppercase; margin-bottom: 2px;">NHẬP TRONG KỲ</div>
+            <div id="modalNXTInbound" style="font-size: 18px; font-weight: 800; color: #15803d;">+0</div>
+          </div>
+          <div style="background: #fef2f2; padding: 12px 14px; border-radius: 8px; border: 1px solid #fecaca;">
+            <div style="font-size: 11px; font-weight: 700; color: #991b1b; text-transform: uppercase; margin-bottom: 2px;">XUẤT TRONG KỲ</div>
+            <div id="modalNXTOutbound" style="font-size: 18px; font-weight: 800; color: #b91c1c;">-0</div>
+          </div>
+          <div style="background: #faf5ff; padding: 12px 14px; border-radius: 8px; border: 1px solid #e9d5ff;">
+            <div style="font-size: 11px; font-weight: 700; color: #6b21a8; text-transform: uppercase; margin-bottom: 2px;">TỒN CUỐI KỲ</div>
+            <div id="modalNXTEnding" style="font-size: 18px; font-weight: 800; color: #7e22ce;">0</div>
+            <div id="modalNXTEndingVal" style="font-size: 11px; font-weight: 600; color: #6b21a8; margin-top: 2px;">Trị giá: 0 đ</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 14px 0;">Nhật ký Lịch sử Giao dịch Nhập - Xuất kho trong kỳ</h4>
+        <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 10px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700;">
+                <th style="padding: 12px 14px; text-align: center; width: 45px;">STT</th>
+                <th style="padding: 12px 14px; text-align: center;">Loại Giao Dịch</th>
+                <th style="padding: 12px 14px;">Mã Phiếu</th>
+                <th style="padding: 12px 14px;">Thời gian</th>
+                <th style="padding: 12px 14px; text-align: right;">Số lượng biến động</th>
+                <th style="padding: 12px 14px;">Đối tác / Địa điểm</th>
+                <th style="padding: 12px 14px;">Người thực hiện</th>
+              </tr>
+            </thead>
+            <tbody id="modalNXTTransactionsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-top: 1px solid #e2e8f0; background: #ffffff;">
+      <button type="button" onclick="printNXTDetailModal()" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        In báo cáo NXT
+      </button>
+      <button type="button" onclick="closeNXTDetailModal()" style="padding: 10px 24px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #334155; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='#ffffff';">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 3. Modal Chi tiết Tồn kho JS
+  window.openInventoryDetailModal = function(productId) {
+    if (!productId || productId === 'null' || productId === 'undefined' || productId.trim() === '') {
+      alert('Không tìm thấy ID sản phẩm.');
+      return;
+    }
+    const modal = document.getElementById('inventoryDetailModal');
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.style.opacity = '1';
+      const card = modal.querySelector('.shipment-modal-card');
+      if (card) card.style.transform = 'scale(1)';
+    }, 10);
+
+    fetch('${pageContext.request.contextPath}/manage/reports?action=apiInventoryDetail&productId=' + encodeURIComponent(productId))
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          alert('Lỗi: ' + data.error);
+          closeInventoryDetailModal();
+          return;
+        }
+
+        document.getElementById('modalInvProductNameHeader').innerText = data.productName || '-';
+        document.getElementById('modalInvSku').innerText = data.sku || '-';
+        document.getElementById('modalInvBrand').innerText = (data.brandName || '-') + ' - ' + (data.productLineName || '-');
+        document.getElementById('modalInvUnit').innerText = data.unit || '-';
+        document.getElementById('modalInvPrice').innerText = formatCurrency(data.price);
+        document.getElementById('modalInvTotalStock').innerText = (data.totalStock || 0) + ' ' + (data.unit || '');
+        document.getElementById('modalInvMinStock').innerText = (data.minStockLevel || 0) + ' ' + (data.unit || '');
+        document.getElementById('modalInvTotalVal').innerText = formatCurrency(data.totalValuation);
+
+        const statusContainer = document.getElementById('modalInvStatusBadge');
+        if (data.isLow) {
+          statusContainer.innerHTML = '<span class="report-badge" style="background: rgba(239, 68, 68, 0.12); color: #ef4444; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 12px; display: inline-block;">Tồn kho thấp</span>';
+        } else {
+          statusContainer.innerHTML = '<span class="report-badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-size: 12px; display: inline-block;">Đủ hàng</span>';
+        }
+
+        const batches = data.batches || [];
+        const tbody = document.getElementById('modalInvBatchesTableBody');
+        tbody.innerHTML = '';
+        if (batches.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #94a3b8; padding: 20px;">Không có dữ liệu lô hàng nào trong kho.</td></tr>';
+        } else {
+          batches.forEach((b, idx) => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #f1f5f9';
+            tr.innerHTML = 
+              '<td style="padding: 12px 14px; text-align: center; color: #64748b; font-weight: 600;">' + (idx + 1) + '</td>' +
+              '<td style="padding: 12px 14px; font-weight: 700; color: #0f172a; font-family: monospace;">' + (b.batchCode || '-') + '</td>' +
+              '<td style="padding: 12px 14px; color: #475569;">' + (b.location || '-') + '</td>' +
+              '<td style="padding: 12px 14px; text-align: center;">' + generateBarcodeSvg(b.barcode, 'inv_' + idx) + '</td>' +
+              '<td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #0f172a;">' + b.quantity + '</td>' +
+              '<td style="padding: 12px 14px; text-align: center; color: #64748b;">' + (b.createdAt || '-') + '</td>';
+            tbody.appendChild(tr);
+          });
+        }
+
+        const btnGo = document.getElementById('btnGoToOriginalInvPage');
+        btnGo.href = '${pageContext.request.contextPath}/manage/inventories?action=detail&productId=' + productId;
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Đã xảy ra lỗi khi tải thông tin chi tiết tồn kho: ' + (err.message || err));
+        closeInventoryDetailModal();
+      });
+  };
+
+  window.closeInventoryDetailModal = function() {
+    const modal = document.getElementById('inventoryDetailModal');
+    if (!modal) return;
+    modal.style.opacity = '0';
+    const card = modal.querySelector('.shipment-modal-card');
+    if (card) card.style.transform = 'scale(0.95)';
+    setTimeout(() => { modal.style.display = 'none'; }, 250);
+  };
+
+  window.printInventoryDetailModal = function() {
+    const printContent = document.getElementById('inventoryModalBody').innerHTML;
+    const nameHeader = document.getElementById('modalInvProductNameHeader').innerText;
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    printWindow.document.write('<html><head><title>Chi tiết Tồn kho ' + nameHeader + '</title>');
+    printWindow.document.write('<style>body { font-family: system-ui, sans-serif; padding: 24px; color: #0f172a; } table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; } th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; } th { background: #f8fafc; font-weight: bold; }</style></head><body>');
+    printWindow.document.write('<h2 style="margin-bottom: 20px; border-bottom: 2px solid #2563eb; padding-bottom: 8px;">Chi tiết Tồn kho: ' + nameHeader + '</h2>');
+    printWindow.document.write(printContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 250);
+  };
+
+  // 4. Modal Chi tiết Nhập Xuất Tồn JS
+  window.openNXTDetailModal = function(productId) {
+    if (!productId || productId === 'null' || productId === 'undefined' || productId.trim() === '') {
+      alert('Không tìm thấy ID sản phẩm.');
+      return;
+    }
+    const modal = document.getElementById('nxtDetailModal');
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      modal.style.opacity = '1';
+      const card = modal.querySelector('.shipment-modal-card');
+      if (card) card.style.transform = 'scale(1)';
+    }, 10);
+
+    const startDate = '${startDate}' || '';
+    const endDate = '${endDate}' || '';
+
+    fetch('${pageContext.request.contextPath}/manage/reports?action=apiNXTDetail&productId=' + encodeURIComponent(productId) + '&startDate=' + encodeURIComponent(startDate) + '&endDate=' + encodeURIComponent(endDate))
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          alert('Lỗi: ' + data.error);
+          closeNXTDetailModal();
+          return;
+        }
+
+        document.getElementById('modalNXTProductNameHeader').innerText = data.productName || '-';
+        document.getElementById('modalNXTSku').innerText = data.sku || '-';
+        document.getElementById('modalNXTBrand').innerText = (data.brandName || '-') + ' - ' + (data.productLineName || '-');
+        document.getElementById('modalNXTUnit').innerText = data.unit || '-';
+        document.getElementById('modalNXTDateRange').innerText = data.startDate + ' ~ ' + data.endDate;
+
+        document.getElementById('modalNXTBeginning').innerText = (data.beginningQty || 0) + ' ' + (data.unit || '');
+        document.getElementById('modalNXTInbound').innerText = '+' + (data.inboundQty || 0) + ' ' + (data.unit || '');
+        document.getElementById('modalNXTOutbound').innerText = '-' + (data.outboundQty || 0) + ' ' + (data.unit || '');
+        document.getElementById('modalNXTEnding').innerText = (data.endingQty || 0) + ' ' + (data.unit || '');
+        document.getElementById('modalNXTEndingVal').innerText = 'Trị giá: ' + formatCurrency(data.endingValuation);
+
+        const txs = data.transactions || [];
+        const tbody = document.getElementById('modalNXTTransactionsTableBody');
+        tbody.innerHTML = '';
+        if (txs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #94a3b8; padding: 20px;">Không có giao dịch Nhập / Xuất kho nào trong kỳ báo cáo này.</td></tr>';
+        } else {
+          txs.forEach((t, idx) => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #f1f5f9';
+            const isIn = (t.type === 'IN');
+            const typeBadge = isIn 
+              ? '<span class="report-badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-weight: 800; padding: 3px 8px; border-radius: 6px; font-size: 11px;">Nhập kho</span>'
+              : '<span class="report-badge" style="background: rgba(245, 158, 11, 0.12); color: #d97706; font-weight: 800; padding: 3px 8px; border-radius: 6px; font-size: 11px;">Xuất kho</span>';
+            const qtyColor = isIn ? '#16a34a' : '#dc2626';
+            const qtySign = isIn ? '+' : '-';
+
+            tr.innerHTML = 
+              '<td style="padding: 12px 14px; text-align: center; color: #64748b; font-weight: 600;">' + (idx + 1) + '</td>' +
+              '<td style="padding: 12px 14px; text-align: center;">' + typeBadge + '</td>' +
+              '<td style="padding: 12px 14px; font-weight: 700; color: #0f172a; font-family: monospace;">#' + (t.code || '-') + '</td>' +
+              '<td style="padding: 12px 14px; color: #475569;">' + (t.createdAt || '-') + '</td>' +
+              '<td style="padding: 12px 14px; text-align: right; font-weight: 800; color: ' + qtyColor + ';">' + qtySign + t.qty + ' ' + (data.unit || '') + '</td>' +
+              '<td style="padding: 12px 14px; color: #334155; font-weight: 600;">' + (t.partner || '-') + '</td>' +
+              '<td style="padding: 12px 14px; color: #64748b;">' + (t.creator || '-') + '</td>';
+            tbody.appendChild(tr);
+          });
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Đã xảy ra lỗi khi tải thông tin Nhập Xuất Tồn: ' + (err.message || err));
+        closeNXTDetailModal();
+      });
+  };
+
+  window.closeNXTDetailModal = function() {
+    const modal = document.getElementById('nxtDetailModal');
+    if (!modal) return;
+    modal.style.opacity = '0';
+    const card = modal.querySelector('.shipment-modal-card');
+    if (card) card.style.transform = 'scale(0.95)';
+    setTimeout(() => { modal.style.display = 'none'; }, 250);
+  };
+
+  window.printNXTDetailModal = function() {
+    const printContent = document.getElementById('nxtModalBody').innerHTML;
+    const nameHeader = document.getElementById('modalNXTProductNameHeader').innerText;
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    printWindow.document.write('<html><head><title>Chi tiết Nhập Xuất Tồn ' + nameHeader + '</title>');
+    printWindow.document.write('<style>body { font-family: system-ui, sans-serif; padding: 24px; color: #0f172a; } table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; } th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; } th { background: #f8fafc; font-weight: bold; }</style></head><body>');
+    printWindow.document.write('<h2 style="margin-bottom: 20px; border-bottom: 2px solid #9333ea; padding-bottom: 8px;">Chi tiết Báo cáo Nhập Xuất Tồn: ' + nameHeader + '</h2>');
+    printWindow.document.write(printContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 250);
+  };
+</script>
 
 <jsp:include page="../includes/dashboard-layout-end.jsp"/>
