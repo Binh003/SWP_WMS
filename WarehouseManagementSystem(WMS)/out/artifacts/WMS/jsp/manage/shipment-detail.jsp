@@ -387,7 +387,7 @@
                         <c:set var="tb" value="${itemBarcode.trim()}"/>
                         <c:if test="${not empty tb}">
                           <c:if test="${bStatus.index == 2}">
-                            <div id="moreBarcodes_doc_${status.index}" style="display: none; flex-direction: column; gap: 8px; width: 100%;">
+                            <div id="moreBarcodes_doc_${status.index}" style="display: none; flex-direction: column; gap: 8px; align-items: flex-start;">
                           </c:if>
                           <div style="display: inline-flex; flex-direction: column; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                             <img src="${pageContext.request.contextPath}/manage/barcode?code=${tb}&height=36" alt="Barcode ${tb}" style="height: 32px; max-width: 150px; object-fit: contain; display: block;" />

@@ -15,6 +15,10 @@
             display: none !important;
         }
 
+        div[id^="moreBarcodes_"] {
+            display: flex !important;
+        }
+
         body, .home-shell, .home-layout, .home-main, .subpage-container {
             background: #ffffff !important;
             padding: 0 !important;
@@ -445,11 +449,24 @@
                                 <td style="padding: 10px 12px;">
                                     <c:choose>
                                         <c:when test="${not empty detail.barcode}">
-                                            <div style="display: flex; flex-direction: column; gap: 5px;">
-                                                <c:forTokens var="itemBarcode" items="${detail.barcode}" delims=",">
-                                                    <span style="display: inline-block; width: fit-content; padding: 4px 7px; border-radius: 5px; background: #eff6ff; color: #1d4ed8; font-family: monospace; font-size: 12px; word-break: break-all;">
-                                                        ${itemBarcode}
-                                                    </span>
+                                            <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+                                                <c:forTokens var="itemBarcode" items="${detail.barcode}" delims="," varStatus="bStatus">
+                                                    <c:set var="tb" value="${itemBarcode.trim()}"/>
+                                                    <c:if test="${not empty tb}">
+                                                        <c:if test="${bStatus.index == 2}">
+                                                            <div id="moreBarcodes_rec_${status.index}" style="display: none; flex-direction: column; gap: 8px; align-items: flex-start;">
+                                                        </c:if>
+                                                        <div style="display: inline-flex; flex-direction: column; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                                            <img src="${pageContext.request.contextPath}/manage/barcode?code=${tb}&height=36" alt="Barcode ${tb}" style="height: 32px; max-width: 150px; object-fit: contain; display: block;" />
+                                                            <span style="font-family: monospace; font-size: 10px; font-weight: 700; color: #1e293b; margin-top: 2px; letter-spacing: 0.5px;">${tb}</span>
+                                                        </div>
+                                                        <c:if test="${bStatus.last && bStatus.count > 2}">
+                                                            </div>
+                                                            <button type="button" class="no-print" onclick="toggleBarcodes('moreBarcodes_rec_${status.index}', this)" style="background: rgba(4, 138, 191, 0.08); color: var(--primary-color); border: 1px solid rgba(4, 138, 191, 0.3); border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                                                                + Xem tất cả Barcode
+                                                            </button>
+                                                        </c:if>
+                                                    </c:if>
                                                 </c:forTokens>
                                             </div>
                                         </c:when>
@@ -877,6 +894,19 @@
                 .replace(/-+/g, "-")
                 .replace(/^-|-$/g, "");
     }
+
+    function toggleBarcodes(containerId, btn) {
+      var container = document.getElementById(containerId);
+      if (!container) return;
+      if (container.style.display === 'none' || container.style.display === '') {
+        container.style.display = 'flex';
+        btn.innerHTML = '- Thu gọn';
+      } else {
+        container.style.display = 'none';
+        btn.innerHTML = '+ Xem tất cả Barcode';
+      }
+    }
+    window.toggleBarcodes = toggleBarcodes;
 
     function generateBatchCode(detailId) {
         const input = document.getElementById("batchCode_" + detailId);
