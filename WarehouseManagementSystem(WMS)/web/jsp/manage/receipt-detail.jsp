@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Chi tiết Phiếu Nhập"/>
@@ -434,9 +434,9 @@
                                     Gửi yêu cầu duyệt
                                 </button>
                                 <c:if test="${currentUser.hasPermission('RECEIPT_WRITE')}">
-                                    <a href="${pageContext.request.contextPath}/manage/receipts?action=delete&id=${receipt.id}" 
+                                    <a href="javascript:void(0)" 
                                        class="premium-btn-outline" 
-                                       onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu nhập nháp này không? Hành động này không thể hoàn tác.');"
+                                       onclick="showDeleteModal({title: 'Xác nhận xóa Phiếu Nhập', message: 'Bạn có chắc chắn muốn xóa phiếu nhập nháp <strong><c:out value="${receipt.receiptCode}"/></strong> không? Hành động này không thể hoàn tác.', form: { submit: function() { window.location.href = '${pageContext.request.contextPath}/manage/receipts?action=delete&id=${receipt.id}'; } }})"
                                        style="display: inline-flex; align-items: center; justify-content: center; height: 36px !important; padding: 0 16px; font-size: 13px; text-decoration: none; color: #ef4444; border-color: rgba(239, 68, 68, 0.4); font-weight: 600; border-radius: 8px; transition: all 0.2s;"
                                        onmouseover="this.style.background = 'rgba(239, 68, 68, 0.05)'; this.style.borderColor = '#ef4444';"
                                        onmouseout="this.style.background = 'transparent'; this.style.borderColor = 'rgba(239, 68, 68, 0.4)';">

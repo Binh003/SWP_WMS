@@ -135,7 +135,11 @@ public class ProductServlet extends HttpServlet {
                 default -> WebUtil.redirect(request, response, "/manage/products");
             }
         } catch (SQLException ex) {
-            WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + ex.getMessage());
+            if (ex.getErrorCode() == 1451 || (ex.getMessage() != null && ex.getMessage().contains("foreign key constraint fails"))) {
+                WebUtil.setFlashModalError(request, "Không thể xóa sản phẩm này vì đang có dữ liệu (tồn kho, phiếu nhập/xuất) liên quan trong hệ thống.");
+            } else {
+                WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + ex.getMessage());
+            }
             WebUtil.redirect(request, response, "/manage/products");
         }
     }
@@ -237,9 +241,9 @@ public class ProductServlet extends HttpServlet {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         try {
             productService.deleteProduct(id);
-            WebUtil.setFlashSuccess(request, "Đã xóa sản phẩm");
+            WebUtil.setFlashSuccess(request, "Đã xóa sản phẩm thành công!");
         } catch (IllegalArgumentException ex) {
-            WebUtil.setFlashError(request, ex.getMessage());
+            WebUtil.setFlashModalError(request, ex.getMessage());
         }
         WebUtil.redirect(request, response, "/manage/products");
     }

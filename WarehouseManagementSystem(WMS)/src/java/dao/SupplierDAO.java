@@ -143,6 +143,20 @@ public class SupplierDAO {
         return null;
     }
 
+    public int countReceiptsBySupplierId(long supplierId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM receipts WHERE supplier_id = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, supplierId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
     private Supplier mapSupplier(ResultSet rs) throws SQLException {
         Supplier s = new Supplier();
         s.setId(rs.getLong("id"));

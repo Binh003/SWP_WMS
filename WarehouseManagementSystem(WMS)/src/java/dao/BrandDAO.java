@@ -135,6 +135,20 @@ public class BrandDAO {
         return null;
     }
 
+    public int countProductLinesByBrandId(long brandId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM product_lines WHERE brand_id = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, brandId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
     private Brand mapBrand(ResultSet rs) throws SQLException {
         Brand brand = new Brand();
         brand.setId(rs.getLong("id"));

@@ -116,7 +116,24 @@ public class SupplierService {
         }
     }
 
-    public void deleteSupplier(long id) throws SQLException {
-        supplierDAO.delete(id);
+    public void deleteSupplier(long id) throws SQLException, IllegalArgumentException {
+        Supplier supplier = supplierDAO.getById(id);
+        if (supplier == null) {
+            throw new IllegalArgumentException("Nhà cung cấp không tồn tại hoặc đã bị xóa!");
+        }
+
+        int receiptCount = supplierDAO.countReceiptsBySupplierId(id);
+        if (receiptCount > 0) {
+            throw new IllegalArgumentException("Không thể xóa nhà cung cấp \"" + supplier.getName() + "\" (Mã: " + supplier.getCode() + ") vì đang có " + receiptCount + " phiếu nhập kho liên quan trong hệ thống. Vui lòng xử lý hoặc xóa các phiếu nhập kho này trước!");
+        }
+
+        try {
+            supplierDAO.delete(id);
+        } catch (SQLException ex) {
+            if (ex.getErrorCode() == 1451 || (ex.getMessage() != null && ex.getMessage().contains("foreign key constraint fails"))) {
+                throw new IllegalArgumentException("Không thể xóa nhà cung cấp \"" + supplier.getName() + "\" (Mã: " + supplier.getCode() + ") vì đang có dữ liệu (phiếu nhập kho) thuộc nhà cung cấp này trong hệ thống.");
+            }
+            throw ex;
+        }
     }
 }

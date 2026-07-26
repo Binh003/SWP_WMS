@@ -122,7 +122,24 @@ public class ProductLineService {
         }
     }
 
-    public void deleteProductLine(long id) throws SQLException {
-        productLineDAO.delete(id);
+    public void deleteProductLine(long id) throws SQLException, IllegalArgumentException {
+        ProductLine pl = productLineDAO.getById(id);
+        if (pl == null) {
+            throw new IllegalArgumentException("Dòng sản phẩm không tồn tại hoặc đã bị xóa!");
+        }
+
+        int productCount = productLineDAO.countProductsByProductLineId(id);
+        if (productCount > 0) {
+            throw new IllegalArgumentException("Không thể xóa dòng sản phẩm \"" + pl.getName() + "\" (Mã: " + pl.getCode() + ") vì đang có " + productCount + " sản phẩm liên quan trong hệ thống. Vui lòng xóa hoặc chuyển hướng các sản phẩm này trước!");
+        }
+
+        try {
+            productLineDAO.delete(id);
+        } catch (SQLException ex) {
+            if (ex.getErrorCode() == 1451 || (ex.getMessage() != null && ex.getMessage().contains("foreign key constraint fails"))) {
+                throw new IllegalArgumentException("Không thể xóa dòng sản phẩm \"" + pl.getName() + "\" (Mã: " + pl.getCode() + ") vì đang có dữ liệu (sản phẩm) thuộc dòng sản phẩm này trong hệ thống.");
+            }
+            throw ex;
+        }
     }
 }

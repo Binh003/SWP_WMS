@@ -108,7 +108,24 @@ public class BrandService {
         }
     }
 
-    public void deleteBrand(long id) throws SQLException {
-        brandDAO.delete(id);
+    public void deleteBrand(long id) throws SQLException, IllegalArgumentException {
+        Brand brand = brandDAO.getById(id);
+        if (brand == null) {
+            throw new IllegalArgumentException("Hãng sản xuất không tồn tại hoặc đã bị xóa!");
+        }
+
+        int productLineCount = brandDAO.countProductLinesByBrandId(id);
+        if (productLineCount > 0) {
+            throw new IllegalArgumentException("Không thể xóa hãng \"" + brand.getName() + "\" (Mã: " + brand.getCode() + ") vì đang có " + productLineCount + " dòng sản phẩm (Product Lines) thuộc hãng này trong hệ thống. Vui lòng xóa hoặc di chuyển các dòng sản phẩm liên quan trước khi xóa hãng!");
+        }
+
+        try {
+            brandDAO.delete(id);
+        } catch (SQLException ex) {
+            if (ex.getErrorCode() == 1451 || (ex.getMessage() != null && ex.getMessage().contains("foreign key constraint fails"))) {
+                throw new IllegalArgumentException("Không thể xóa hãng \"" + brand.getName() + "\" (Mã: " + brand.getCode() + ") vì đang có dữ liệu thuộc hãng này tồn tại ở các bảng khác trong hệ thống!");
+            }
+            throw ex;
+        }
     }
 }

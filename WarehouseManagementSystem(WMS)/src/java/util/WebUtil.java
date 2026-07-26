@@ -28,6 +28,10 @@ public final class WebUtil {
         request.getSession(true).setAttribute(SessionKeys.FLASH_ERROR, message);
     }
 
+    public static void setFlashModalError(HttpServletRequest request, String message) {
+        request.getSession(true).setAttribute(SessionKeys.FLASH_MODAL_ERROR, message);
+    }
+
     public static void consumeFlash(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session == null) {
@@ -35,6 +39,7 @@ public final class WebUtil {
         }
         Object success = session.getAttribute(SessionKeys.FLASH_SUCCESS);
         Object error = session.getAttribute(SessionKeys.FLASH_ERROR);
+        Object modalError = session.getAttribute(SessionKeys.FLASH_MODAL_ERROR);
         if (success != null) {
             request.setAttribute("flashSuccess", success);
             session.removeAttribute(SessionKeys.FLASH_SUCCESS);
@@ -42,6 +47,10 @@ public final class WebUtil {
         if (error != null) {
             request.setAttribute("flashError", error);
             session.removeAttribute(SessionKeys.FLASH_ERROR);
+        }
+        if (modalError != null) {
+            request.setAttribute("flashModalError", modalError);
+            session.removeAttribute(SessionKeys.FLASH_MODAL_ERROR);
         }
     }
 

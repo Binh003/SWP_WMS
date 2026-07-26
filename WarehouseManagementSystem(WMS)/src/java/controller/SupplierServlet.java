@@ -113,7 +113,11 @@ public class SupplierServlet extends HttpServlet {
                 default -> WebUtil.redirect(request, response, "/manage/suppliers");
             }
         } catch (SQLException ex) {
-            WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + ex.getMessage());
+            if (ex.getErrorCode() == 1451 || (ex.getMessage() != null && ex.getMessage().contains("foreign key constraint fails"))) {
+                WebUtil.setFlashModalError(request, "Không thể xóa nhà cung cấp này vì đang có dữ liệu (phiếu nhập kho) liên quan trong hệ thống.");
+            } else {
+                WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + ex.getMessage());
+            }
             WebUtil.redirect(request, response, "/manage/suppliers");
         }
     }
@@ -158,8 +162,12 @@ public class SupplierServlet extends HttpServlet {
     private void deleteSupplier(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        supplierService.deleteSupplier(id);
-        WebUtil.setFlashSuccess(request, "Đã xóa nhà cung cấp");
+        try {
+            supplierService.deleteSupplier(id);
+            WebUtil.setFlashSuccess(request, "Đã xóa nhà cung cấp thành công!");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashModalError(request, ex.getMessage());
+        }
         WebUtil.redirect(request, response, "/manage/suppliers");
     }
 }

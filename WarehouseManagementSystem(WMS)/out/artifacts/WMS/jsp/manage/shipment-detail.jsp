@@ -64,9 +64,9 @@
                 Gửi yêu cầu duyệt
               </button>
               <c:if test="${currentUser.hasPermission('SHIPMENT_WRITE')}">
-                <a href="${pageContext.request.contextPath}/manage/shipments?action=delete&id=${shipment.id}" 
+                <a href="javascript:void(0)" 
                    class="premium-btn-outline" 
-                   onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu xuất nháp này không? Hành động này không thể hoàn tác.');"
+                   onclick="showDeleteModal({title: 'Xác nhận xóa Phiếu Xuất', message: 'Bạn có chắc chắn muốn xóa phiếu xuất nháp <strong><c:out value="${shipment.shipmentCode}"/></strong> không? Hành động này không thể hoàn tác.', form: { submit: function() { window.location.href = '${pageContext.request.contextPath}/manage/shipments?action=delete&id=${shipment.id}'; } }})"
                    style="display: inline-flex; align-items: center; justify-content: center; height: 40px !important; padding: 0 16px; font-size: 13px; text-decoration: none; color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.4); font-weight: 600; border-radius: 8px; transition: all 0.2s;"
                    onmouseover="this.style.background='rgba(239, 68, 68, 0.05)'; this.style.borderColor='#ef4444';"
                    onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(239, 68, 68, 0.4)';">

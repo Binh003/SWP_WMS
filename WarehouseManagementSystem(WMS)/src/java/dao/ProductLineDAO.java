@@ -196,6 +196,20 @@ public class ProductLineDAO {
         return null;
     }
 
+    public int countProductsByProductLineId(long productLineId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM products WHERE product_line_id = ?";
+        try (Connection conn = DBConfig.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, productLineId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
     private ProductLine mapProductLineWithBrand(ResultSet rs) throws SQLException {
         ProductLine pl = new ProductLine();
         pl.setId(rs.getLong("id"));

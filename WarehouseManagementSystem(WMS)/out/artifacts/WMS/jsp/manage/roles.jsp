@@ -160,7 +160,7 @@
                           <c:choose>
                             <c:when test="${r.enabled}">
                               <button type="button" class="action-dropdown-item action-dropdown-item--danger" 
-                                      onclick="if(confirm('Bạn có chắc chắn muốn không kích hoạt vai trò này?')) { document.getElementById('toggle-role-form-${r.id}').submit(); }"
+                                      onclick="showDeleteModal({title: 'Xác nhận thay đổi', message: 'Bạn có chắc chắn muốn <strong>không kích hoạt</strong> vai trò <strong><c:out value="${r.name}"/></strong>?', form: document.getElementById('toggle-role-form-${r.id}')})"
                                       style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                   <circle cx="12" cy="12" r="10"></circle>
@@ -171,7 +171,7 @@
                             </c:when>
                             <c:otherwise>
                               <button type="button" class="action-dropdown-item action-dropdown-item--success" 
-                                      onclick="if(confirm('Bạn có chắc chắn muốn kích hoạt vai trò này?')) { document.getElementById('toggle-role-form-${r.id}').submit(); }"
+                                      onclick="showDeleteModal({title: 'Xác nhận thay đổi', message: 'Bạn có chắc chắn muốn <strong>kích hoạt</strong> vai trò <strong><c:out value="${r.name}"/></strong>?', form: document.getElementById('toggle-role-form-${r.id}')})"
                                       style="display: flex; align-items: center; width: 100%; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; transition: background 0.15s;">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>

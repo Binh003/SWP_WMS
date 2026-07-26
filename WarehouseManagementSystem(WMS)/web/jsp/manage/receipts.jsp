@@ -248,7 +248,7 @@
                     
                     <c:if test="${r.status == 'DRAFT'}">
                       <c:if test="${currentUser.hasPermission('RECEIPT_WRITE')}">
-                        <a href="${pageContext.request.contextPath}/manage/receipts?action=delete&id=${r.id}" class="action-dropdown-item action-dropdown-item--danger" onclick="return confirm('Bạn có chắc chắn muốn xóa phiếu nhập nháp này không? Hành động này không thể hoàn tác.');" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: #ef4444; text-decoration: none; transition: background 0.15s;">
+                        <a href="javascript:void(0)" onclick="showDeleteModal({title: 'Xác nhận xóa Phiếu Nhập', message: 'Bạn có chắc chắn muốn xóa phiếu nhập nháp <strong><c:out value="${r.receiptCode}"/></strong> không? Hành động này không thể hoàn tác.', form: { submit: function() { window.location.href = '${pageContext.request.contextPath}/manage/receipts?action=delete&id=${r.id}'; } }})" class="action-dropdown-item action-dropdown-item--danger" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 13px; font-weight: 600; color: #ef4444; text-decoration: none; transition: background 0.15s;">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="3 6 5 6 21 6"></polyline>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
