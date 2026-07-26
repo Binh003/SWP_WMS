@@ -1,8 +1,7 @@
 package controller;
 
-import dao.UserDAO;
 import model.User;
-import util.PasswordUtil;
+import service.AuthService;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -13,7 +12,7 @@ import java.sql.SQLException;
 
 public class ChangePasswordServlet extends HttpServlet {
 
-    private final UserDAO userDAO = new UserDAO();
+    private final AuthService authService = new AuthService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -31,23 +30,13 @@ public class ChangePasswordServlet extends HttpServlet {
         String newPassword = WebUtil.param(request, "newPassword");
 
         try {
-            User dbUser = userDAO.findById(current.getId());
-            if (dbUser == null || !PasswordUtil.matches(currentPassword, dbUser.getPasswordHash())) {
-                request.setAttribute("flashError", "Mật khẩu hiện tại không đúng.");
-                request.setAttribute("currentUser", current);
-                request.getRequestDispatcher("/jsp/profile/change-password.jsp").forward(request, response);
-                return;
-            }
-
-            if (newPassword.length() < 8 || !newPassword.matches(".*[a-z].*") || !newPassword.matches(".*[A-Z].*") || !newPassword.matches(".*\\d.*")) {
-                request.setAttribute("flashError", "Mật khẩu mới phải từ 8 ký tự, bao gồm chữ hoa, chữ thường và chữ số.");
-                request.setAttribute("currentUser", current);
-                request.getRequestDispatcher("/jsp/profile/change-password.jsp").forward(request, response);
-                return;
-            }
-            userDAO.updatePassword(current.getId(), PasswordUtil.hash(newPassword));
+            authService.changePassword(current.getId(), currentPassword, newPassword);
             WebUtil.setFlashSuccess(request, "Đổi mật khẩu thành công");
             WebUtil.redirect(request, response, "/profile");
+        } catch (IllegalArgumentException ex) {
+            request.setAttribute("flashError", ex.getMessage());
+            request.setAttribute("currentUser", current);
+            request.getRequestDispatcher("/jsp/profile/change-password.jsp").forward(request, response);
         } catch (SQLException ex) {
             request.setAttribute("flashError", ex.getMessage());
             request.setAttribute("currentUser", current);

@@ -1,11 +1,8 @@
 package controller;
 
-import dao.ShipmentDAO;
-import dao.ProductDAO;
-import dao.InventoryDAO;
 import model.Shipment;
-import model.ShipmentDetail;
 import model.User;
+import service.ShipmentService;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -24,9 +21,7 @@ import java.util.Map;
 )
 public class ShipmentServlet extends HttpServlet {
 
-    private final ShipmentDAO shipmentDAO = new ShipmentDAO();
-    private final ProductDAO productDAO = new ProductDAO();
-    private final InventoryDAO inventoryDAO = new InventoryDAO();
+    private final ShipmentService shipmentService = new ShipmentService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -53,30 +48,6 @@ public class ShipmentServlet extends HttpServlet {
 
     private void listShipments(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
-        
-        // 1. Calculate stats counts
-        List<Shipment> allShipments = shipmentDAO.getAll();
-        int pendingCount = 0;   // Represents "Yêu cầu xuất kho" (PENDING)
-        int approvedCount = 0;  // Represents "Đã tạo phiếu xuất" (APPROVED)
-        int shippingCount = 0;  // Represents "Đang xử lý" (PICKING)
-        int completedCount = 0; // Represents "Hoàn thành" (COMPLETED)
-        for (Shipment s : allShipments) {
-            if ("PENDING".equals(s.getStatus())) {
-                pendingCount++;
-            } else if ("APPROVED".equals(s.getStatus())) {
-                approvedCount++;
-            } else if ("PICKING".equals(s.getStatus())) {
-                shippingCount++;
-            } else if ("COMPLETED".equals(s.getStatus())) {
-                completedCount++;
-            }
-        }
-        request.setAttribute("pendingCount", pendingCount);
-        request.setAttribute("approvedCount", approvedCount);
-        request.setAttribute("shippingCount", shippingCount);
-        request.setAttribute("completedCount", completedCount);
-
-        // 2. Pagination parameters
         int page = 1;
         int limit = 10;
         String pageParam = request.getParameter("page");
@@ -107,32 +78,31 @@ public class ShipmentServlet extends HttpServlet {
         String endDate = request.getParameter("endDate");
         if (endDate != null) endDate = endDate.trim();
 
-        // 3. Query paginated list
-        List<Shipment> paginatedShipments = shipmentDAO.findPaginated(page, limit, search, status, creatorId, startDate, endDate);
-        int totalItems = shipmentDAO.count(search, status, creatorId, startDate, endDate);
-        int totalPages = (int) Math.ceil((double) totalItems / limit);
-        if (totalPages < 1) totalPages = 1;
-        
-        request.setAttribute("shipments", paginatedShipments);
-        request.setAttribute("totalItems", totalItems);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("currentPage", page);
-        request.setAttribute("limit", limit);
+        ShipmentService.ShipmentPageResult result = shipmentService.getShipmentsPaginated(page, limit, search, status, creatorId, startDate, endDate);
+
+        request.setAttribute("pendingCount", result.getPendingCount());
+        request.setAttribute("approvedCount", result.getApprovedCount());
+        request.setAttribute("shippingCount", result.getShippingCount());
+        request.setAttribute("completedCount", result.getCompletedCount());
+        request.setAttribute("shipments", result.getShipments());
+        request.setAttribute("totalItems", result.getTotalItems());
+        request.setAttribute("totalPages", result.getTotalPages());
+        request.setAttribute("currentPage", result.getCurrentPage());
+        request.setAttribute("limit", result.getLimit());
         request.setAttribute("search", search);
         request.setAttribute("selectedStatus", status);
         request.setAttribute("selectedCreatorId", creatorId);
         request.setAttribute("startDate", startDate);
         request.setAttribute("endDate", endDate);
-        
-        request.setAttribute("creators", shipmentDAO.getCreators());
+        request.setAttribute("creators", result.getCreators());
         
         request.getRequestDispatcher("/jsp/manage/shipments.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
-        request.setAttribute("products", productDAO.getAll());
-        request.setAttribute("inventories", inventoryDAO.getAll()); // for UI stock checking
+        request.setAttribute("products", shipmentService.getAllProducts());
+        request.setAttribute("inventories", shipmentService.getAllInventories());
         
         String generatedCode = "PX-" + System.currentTimeMillis();
         request.setAttribute("generatedCode", generatedCode);
@@ -143,7 +113,7 @@ public class ShipmentServlet extends HttpServlet {
     private void viewShipment(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        Shipment shipment = shipmentDAO.getById(id);
+        Shipment shipment = shipmentService.getById(id);
         if (shipment == null) {
             WebUtil.setFlashError(request, "Không tìm thấy phiếu xuất");
             WebUtil.redirect(request, response, "/manage/shipments");
@@ -157,7 +127,7 @@ public class ShipmentServlet extends HttpServlet {
         throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         try {
-            shipmentDAO.deleteDraft(id);
+            shipmentService.deleteDraft(id);
             WebUtil.setFlashSuccess(request, "Xóa phiếu xuất nháp thành công");
         } catch (SQLException ex) {
             WebUtil.setFlashError(request, "Lỗi khi xóa phiếu: " + ex.getMessage());
@@ -191,68 +161,25 @@ public class ShipmentServlet extends HttpServlet {
 
     private void createShipment(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException, ServletException {
-        
         User currentUser = WebUtil.currentUser(request);
-        
-        Shipment s = new Shipment();
-        s.setShipmentCode(WebUtil.param(request, "shipmentCode"));
-        s.setDestination(WebUtil.param(request, "destination"));
-        s.setCreatedBy(currentUser.getId());
-        s.setNotes(WebUtil.param(request, "notes"));
-        
+        String shipmentCode = WebUtil.param(request, "shipmentCode");
+        String destination = WebUtil.param(request, "destination");
+        String notes = WebUtil.param(request, "notes");
         String status = WebUtil.param(request, "status");
-        if (status == null || status.trim().isEmpty()) {
-            status = "PENDING";
-        }
-        s.setStatus(status);
 
         String[] productIds = request.getParameterValues("productId[]");
         String[] quantities = request.getParameterValues("quantity[]");
         String[] batchCodes = request.getParameterValues("batchCode[]");
         String[] barcodes = request.getParameterValues("barcode[]");
-        
-        if (productIds == null || productIds.length == 0) {
-            String singleProductId = WebUtil.param(request, "productId");
-            String singleQty = WebUtil.param(request, "quantity");
-            if (singleProductId != null && !singleProductId.isEmpty() && singleQty != null && !singleQty.isEmpty()) {
-                ShipmentDetail sd = new ShipmentDetail();
-                sd.setProductId(Long.parseLong(singleProductId));
-                sd.setQuantity(Integer.parseInt(singleQty));
-                if (batchCodes != null && batchCodes.length > 0) sd.setBatchCode(batchCodes[0]);
-                if (barcodes != null && barcodes.length > 0) sd.setBarcode(barcodes[0]);
-                if (sd.getQuantity() > 0) {
-                    s.getDetails().add(sd);
-                }
-            }
-        } else {
-            for (int i = 0; i < productIds.length; i++) {
-                if (productIds[i] != null && !productIds[i].trim().isEmpty() && quantities[i] != null && !quantities[i].trim().isEmpty()) {
-                    int qty = Integer.parseInt(quantities[i]);
-                    if (qty > 0) {
-                        ShipmentDetail sd = new ShipmentDetail();
-                        sd.setProductId(Long.parseLong(productIds[i]));
-                        sd.setQuantity(qty);
-                        if (batchCodes != null && i < batchCodes.length) sd.setBatchCode(batchCodes[i]);
-                        if (barcodes != null && i < barcodes.length) sd.setBarcode(barcodes[i]);
-                        s.getDetails().add(sd);
-                    }
-                }
-            }
-        }
-        
-        if (s.getDetails().isEmpty()) {
-            WebUtil.setFlashError(request, "Lỗi: Vui lòng thêm ít nhất 1 sản phẩm với số lượng > 0");
-            WebUtil.redirect(request, response, "/manage/shipments?action=create");
-            return;
-        }
+        String singleProductId = WebUtil.param(request, "productId");
+        String singleQty = WebUtil.param(request, "quantity");
 
         try {
-            shipmentDAO.insertWithDetails(s);
-            String msg = "Đã tạo yêu cầu xuất kho thành công";
-            WebUtil.setFlashSuccess(request, msg);
+            shipmentService.createShipment(shipmentCode, destination, currentUser, notes, status, productIds, quantities, batchCodes, barcodes, singleProductId, singleQty);
+            WebUtil.setFlashSuccess(request, "Đã tạo yêu cầu xuất kho thành công");
             WebUtil.redirect(request, response, "/manage/shipments");
-        } catch (SQLException ex) {
-            WebUtil.setFlashError(request, "Lỗi tạo yêu cầu xuất kho: " + ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
             WebUtil.redirect(request, response, "/manage/shipments?action=create");
         }
     }
@@ -261,45 +188,16 @@ public class ShipmentServlet extends HttpServlet {
         throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         String status = WebUtil.param(request, "status");
-        
         User currentUser = WebUtil.currentUser(request);
-        long userId = currentUser != null ? currentUser.getId() : 1L;
-        
-        if ("COMPLETED".equals(status)) {
-            Shipment shipment = shipmentDAO.getById(id);
-            String existingImages = (shipment != null) ? shipment.getShippingImages() : null;
-            String newUploadedImages = handleMultipleFilesUpload(request, "shippingImagesFiles");
-            
-            String shippingImages = existingImages;
-            if (newUploadedImages != null && !newUploadedImages.trim().isEmpty()) {
-                if (existingImages != null && !existingImages.trim().isEmpty()) {
-                    shippingImages = existingImages + "," + newUploadedImages;
-                } else {
-                    shippingImages = newUploadedImages;
-                }
-            }
-            String deliveryNoteImage = handleFileUpload(request, "deliveryNoteImageFile");
-            
-            try {
-                shipmentDAO.updateStatus(id, status, deliveryNoteImage, shippingImages, userId);
-                WebUtil.setFlashSuccess(request, "Đã xác nhận xuất kho thành công và trừ tồn kho (PGI)!");
-            } catch (SQLException ex) {
-                WebUtil.setFlashError(request, "Lỗi khi hoàn thành xuất kho (PGI): " + ex.getMessage());
-            }
-        } else {
-            try {
-                shipmentDAO.updateStatus(id, status, userId);
-                String msg = "Đã cập nhật trạng thái phiếu xuất";
-                if ("PENDING".equals(status)) msg = "Đã gửi yêu cầu xuất kho";
-                else if ("APPROVED".equals(status)) msg = "Đã tạo phiếu xuất kho thành công";
-                else if ("PICKING".equals(status)) msg = "Bắt đầu lấy hàng & đóng gói";
-                else if ("CANCELLED".equals(status)) msg = "Đã hủy phiếu xuất kho và hoàn trả tồn kho (nếu có)";
-                WebUtil.setFlashSuccess(request, msg);
-            } catch (SQLException ex) {
-                WebUtil.setFlashError(request, "Lỗi cập nhật trạng thái: " + ex.getMessage());
-            }
+        String uploadedImages = handleMultipleFilesUpload(request, "shippingImagesFiles");
+        String deliveryNoteImage = handleFileUpload(request, "deliveryNoteImageFile");
+
+        try {
+            String msg = shipmentService.updateShipmentStatus(id, status, uploadedImages, deliveryNoteImage, currentUser);
+            WebUtil.setFlashSuccess(request, msg);
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
         }
-        
         WebUtil.redirect(request, response, "/manage/shipments?action=view&id=" + id);
     }
 
@@ -307,15 +205,11 @@ public class ShipmentServlet extends HttpServlet {
         throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         String imageUrls = handleMultipleFilesUpload(request, "shippingImagesFiles");
-        if (imageUrls != null && !imageUrls.trim().isEmpty()) {
-            Shipment shipment = shipmentDAO.getById(id);
-            if (shipment != null && shipment.getShippingImages() != null && !shipment.getShippingImages().trim().isEmpty()) {
-                imageUrls = shipment.getShippingImages() + "," + imageUrls;
-            }
-            shipmentDAO.updateShippingImages(id, imageUrls);
+        try {
+            shipmentService.updateShippingImages(id, imageUrls);
             WebUtil.setFlashSuccess(request, "Đã cập nhật hình ảnh sản phẩm xuất kho thành công");
-        } else {
-            WebUtil.setFlashError(request, "Lỗi: Không thể tải ảnh lên hoặc số lượng ảnh trống");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
         }
         WebUtil.redirect(request, response, "/manage/shipments?action=view&id=" + id);
     }
@@ -324,15 +218,8 @@ public class ShipmentServlet extends HttpServlet {
         throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         String imageUrl = WebUtil.param(request, "imageUrl");
-        
-        Shipment shipment = shipmentDAO.getById(id);
-        if (shipment != null && imageUrl != null) {
-            List<String> list = shipment.getShippingImagesList();
-            list.remove(imageUrl.trim());
-            String newImages = String.join(",", list);
-            shipmentDAO.updateShippingImages(id, newImages.trim().isEmpty() ? null : newImages);
-            WebUtil.setFlashSuccess(request, "Đã xóa ảnh sản phẩm xuất kho thành công");
-        }
+        shipmentService.deleteShippingImage(id, imageUrl);
+        WebUtil.setFlashSuccess(request, "Đã xóa ảnh sản phẩm xuất kho thành công");
         WebUtil.redirect(request, response, "/manage/shipments?action=view&id=" + id);
     }
 
@@ -361,7 +248,7 @@ public class ShipmentServlet extends HttpServlet {
                 if (!deployDir.exists()) deployDir.mkdirs();
                 filePart.write(deployPath + java.io.File.separator + uniqueFileName);
                 
-                // Source path sync (optional, fallback if folder doesn't exist)
+                // Source path sync
                 String workspacePath = util.WebUtil.getWorkspacePath(request);
                 if (workspacePath != null) {
                     String srcPath = workspacePath + java.io.File.separator + "web" + java.io.File.separator + "uploads" + java.io.File.separator + "shipments";
@@ -398,7 +285,7 @@ public class ShipmentServlet extends HttpServlet {
                 if (part.getName().equals(fieldName) && part.getSize() > 0) {
                     fileCount++;
                     if (fileCount > 4) {
-                        break; // Limit to max 4 images
+                        break;
                     }
                     String fileName = java.nio.file.Paths.get(part.getSubmittedFileName()).getFileName().toString();
                     String extension = "";
@@ -452,8 +339,8 @@ public class ShipmentServlet extends HttpServlet {
             return;
         }
         try {
-            long productId = Long.parseLong(productIdStr);
-            List<Map<String, Object>> batches = shipmentDAO.getAvailableInventoryBatches(productId);
+            long productId = Long.parseLong(productIdStr.trim());
+            List<Map<String, Object>> batches = shipmentService.getAvailableInventoryBatches(productId);
             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
             StringBuilder json = new StringBuilder("[");
             for (int i = 0; i < batches.size(); i++) {
@@ -482,18 +369,11 @@ public class ShipmentServlet extends HttpServlet {
         String[] batchCodes = request.getParameterValues("batchCode[]");
         String[] barcodes = request.getParameterValues("barcode[]");
 
-        if (detailIds != null && detailIds.length > 0) {
-            for (int i = 0; i < detailIds.length; i++) {
-                if (detailIds[i] != null && !detailIds[i].trim().isEmpty()) {
-                    long detailId = Long.parseLong(detailIds[i]);
-                    String batchCode = (batchCodes != null && i < batchCodes.length) ? batchCodes[i] : "";
-                    String barcode = (barcodes != null && i < barcodes.length) ? barcodes[i] : "";
-                    shipmentDAO.updateDetailBatchesAndBarcodes(detailId, batchCode, barcode);
-                }
-            }
+        try {
+            shipmentService.updateManualBatches(shipmentId, detailIds, batchCodes, barcodes);
             WebUtil.setFlashSuccess(request, "Đã cập nhật phân bổ Lô hàng & Barcode thủ công thành công!");
-        } else {
-            WebUtil.setFlashError(request, "Lỗi: Không tìm thấy danh sách chi tiết cần cập nhật");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
         }
         WebUtil.redirect(request, response, "/manage/shipments?action=view&id=" + shipmentId);
     }

@@ -1,10 +1,8 @@
 package controller;
 
-import dao.RoleDAO;
-import dao.UserDAO;
 import model.Role;
 import model.User;
-import util.PasswordUtil;
+import service.UserService;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -12,13 +10,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserAdminServlet extends HttpServlet {
 
-    private final UserDAO userDAO = new UserDAO();
-    private final RoleDAO roleDAO = new RoleDAO();
+    private final UserService userService = new UserService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -73,46 +69,38 @@ public class UserAdminServlet extends HttpServlet {
             } catch (NumberFormatException ignored) {}
         }
 
-        int totalCount = userDAO.count(search, status, role);
-        int totalPages = (int) Math.ceil((double) totalCount / size);
-        if (totalPages < 1) totalPages = 1;
-        if (page > totalPages) page = totalPages;
-        if (page < 1) page = 1;
+        UserService.UserPageResult result = userService.getUsersPaginated(search, status, role, page, size);
 
-        int offset = (page - 1) * size;
-        List<User> users = userDAO.findPaginated(search, status, role, offset, size);
-
-        request.setAttribute("users", users);
-        request.setAttribute("roles", roleDAO.findAll()); // for the filter dropdown
+        request.setAttribute("users", result.getUsers());
+        request.setAttribute("roles", result.getAllRoles());
         request.setAttribute("search", search);
         request.setAttribute("status", status);
         request.setAttribute("selectedRole", role);
-        request.setAttribute("currentPage", page);
-        request.setAttribute("pageSize", size);
-        request.setAttribute("totalCount", totalCount);
-        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("currentPage", result.getCurrentPage());
+        request.setAttribute("pageSize", result.getPageSize());
+        request.setAttribute("totalCount", result.getTotalCount());
+        request.setAttribute("totalPages", result.getTotalPages());
 
         request.getRequestDispatcher("/jsp/manage/users.jsp").forward(request, response);
     }
 
-
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
-        request.setAttribute("roles", roleDAO.findAll());
+        request.setAttribute("roles", userService.getAllRoles());
         request.getRequestDispatcher("/jsp/manage/user-create.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        User user = userDAO.findById(id);
+        User user = userService.getUserById(id);
         if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
             WebUtil.setFlashError(request, "Không thể chỉnh sửa tài khoản quản trị hệ thống");
             WebUtil.redirect(request, response, "/manage/users");
             return;
         }
         request.setAttribute("user", user);
-        request.setAttribute("roles", roleDAO.findAll());
+        request.setAttribute("roles", userService.getAllRoles());
         request.getRequestDispatcher("/jsp/manage/user-edit.jsp").forward(request, response);
     }
 
@@ -124,7 +112,7 @@ public class UserAdminServlet extends HttpServlet {
             return;
         }
         long id = Long.parseLong(idStr);
-        User user = userDAO.findById(id);
+        User user = userService.getUserById(id);
         if (user == null) {
             WebUtil.setFlashError(request, "Không tìm thấy tài khoản");
             WebUtil.redirect(request, response, "/manage/users");
@@ -133,7 +121,6 @@ public class UserAdminServlet extends HttpServlet {
         request.setAttribute("user", user);
         request.getRequestDispatcher("/jsp/manage/user-detail.jsp").forward(request, response);
     }
-
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -168,115 +155,58 @@ public class UserAdminServlet extends HttpServlet {
         String email = WebUtil.param(request, "email");
         String password = WebUtil.param(request, "password");
         String confirmPassword = WebUtil.param(request, "confirmPassword");
-        List<Role> selectedRoles = resolveRoles(request);
+        String[] roleCodes = request.getParameterValues("roleCodes");
 
         // Keep values in request attributes to prepopulate form in case of error
         request.setAttribute("username", username);
         request.setAttribute("fullName", fullName);
         request.setAttribute("email", email);
-        List<String> roleCodes = selectedRoles.stream().map(Role::getCode).toList();
-        request.setAttribute("roleCodes", roleCodes);
+        List<Role> selectedRoles = userService.resolveRoles(roleCodes);
+        List<String> roleCodesList = selectedRoles.stream().map(Role::getCode).toList();
+        request.setAttribute("roleCodes", roleCodesList);
 
-        if (!password.equals(confirmPassword)) {
-            request.setAttribute("flashError", "Mật khẩu xác nhận không khớp.");
+        try {
+            userService.createUser(username, fullName, email, password, confirmPassword, roleCodes);
+            WebUtil.setFlashSuccess(request, "Đã tạo tài khoản");
+            WebUtil.redirect(request, response, "/manage/users");
+        } catch (IllegalArgumentException ex) {
+            request.setAttribute("flashError", ex.getMessage());
             showCreateForm(request, response);
-            return;
         }
-
-        if (password.length() < 8 || !password.matches(".*[a-z].*") || !password.matches(".*[A-Z].*") || !password.matches(".*\\d.*")) {
-            request.setAttribute("flashError", "Mật khẩu phải từ 8 ký tự, bao gồm chữ hoa, chữ thường và chữ số.");
-            showCreateForm(request, response);
-            return;
-        }
-
-        if (userDAO.existsByUsername(username)) {
-            request.setAttribute("flashError", "Tài khoản đã tồn tại");
-            showCreateForm(request, response);
-            return;
-        }
-
-        User user = new User();
-        user.setUsername(username);
-        user.setFullName(fullName.isEmpty() ? username : fullName);
-        user.setEmail(email);
-        user.setPasswordHash(PasswordUtil.hash(password));
-        user.setStatus("ACTIVE");
-        user.setRoles(selectedRoles);
-
-        userDAO.insert(user);
-        WebUtil.setFlashSuccess(request, "Đã tạo tài khoản");
-        WebUtil.redirect(request, response, "/manage/users");
     }
 
     private void updateUser(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        User user = userDAO.findById(id);
-        if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
-            WebUtil.setFlashError(request, "Không thể chỉnh sửa tài khoản quản trị hệ thống");
-            WebUtil.redirect(request, response, "/manage/users");
-            return;
-        }
-
         String password = WebUtil.param(request, "password");
         String confirmPassword = WebUtil.param(request, "confirmPassword");
-
-        if (!password.isEmpty()) {
-            if (!password.equals(confirmPassword)) {
-                request.setAttribute("flashError", "Mật khẩu xác nhận không khớp.");
-                showEditForm(request, response);
-                return;
-            }
-
-            if (password.length() < 8 || !password.matches(".*[a-z].*") || !password.matches(".*[A-Z].*") || !password.matches(".*\\d.*")) {
-                request.setAttribute("flashError", "Mật khẩu phải từ 8 ký tự, bao gồm chữ hoa, chữ thường và chữ số.");
-                showEditForm(request, response);
-                return;
-            }
-        }
-
-        userDAO.updateProfile(id, WebUtil.param(request, "fullName"), WebUtil.param(request, "email"));
-
-        if (!password.isEmpty()) {
-            userDAO.updatePassword(id, PasswordUtil.hash(password));
-        }
-
+        String fullName = WebUtil.param(request, "fullName");
+        String email = WebUtil.param(request, "email");
         String status = WebUtil.param(request, "status");
-        if (status != null && !status.isEmpty()) {
-            userDAO.setStatus(id, status);
-        } else {
-            boolean enabled = "on".equalsIgnoreCase(WebUtil.param(request, "enabled"))
-                || "true".equalsIgnoreCase(WebUtil.param(request, "enabled"));
-            userDAO.setEnabled(id, enabled);
+        String enabled = WebUtil.param(request, "enabled");
+        String[] roleCodes = request.getParameterValues("roleCodes");
+
+        try {
+            userService.updateUser(id, fullName, email, password, confirmPassword, status, enabled, roleCodes);
+            WebUtil.setFlashSuccess(request, "Đã cập nhật tài khoản");
+            WebUtil.redirect(request, response, "/manage/users");
+        } catch (IllegalArgumentException ex) {
+            request.setAttribute("flashError", ex.getMessage());
+            showEditForm(request, response);
         }
-        userDAO.replaceRoles(id, resolveRoles(request));
-        WebUtil.setFlashSuccess(request, "Đã cập nhật tài khoản");
-        WebUtil.redirect(request, response, "/manage/users");
     }
 
     private void toggleUser(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        User user = userDAO.findById(id);
-        if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
-            WebUtil.setFlashError(request, "Không thể thay đổi trạng thái tài khoản quản trị hệ thống");
-            WebUtil.redirect(request, response, "/manage/users");
-            return;
-        }
         String status = WebUtil.param(request, "status");
-        if (status != null && !status.isEmpty()) {
-            userDAO.setStatus(id, status);
-            String displayStatus = "Đang hoạt động";
-            if ("LOCKED".equalsIgnoreCase(status)) {
-                displayStatus = "Bị khóa";
-            } else if ("PENDING".equalsIgnoreCase(status)) {
-                displayStatus = "Chờ phê duyệt";
-            }
-            WebUtil.setFlashSuccess(request, "Đã chuyển trạng thái sang " + displayStatus);
-        } else {
-            boolean enabled = Boolean.parseBoolean(WebUtil.param(request, "enabled"));
-            userDAO.setEnabled(id, enabled);
-            WebUtil.setFlashSuccess(request, enabled ? "Đã kích hoạt" : "Đã vô hiệu hóa");
+        String enabled = WebUtil.param(request, "enabled");
+
+        try {
+            String message = userService.toggleUserStatus(id, status, enabled);
+            WebUtil.setFlashSuccess(request, message);
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
         }
         WebUtil.redirect(request, response, "/manage/users");
     }
@@ -284,39 +214,14 @@ public class UserAdminServlet extends HttpServlet {
     private void updateRoles(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        User user = userDAO.findById(id);
-        if (user != null && "admin".equalsIgnoreCase(user.getUsername())) {
-            WebUtil.setFlashError(request, "Không thể thay đổi vai trò tài khoản quản trị hệ thống");
-            WebUtil.redirect(request, response, "/manage/users");
-            return;
-        }
-        userDAO.replaceRoles(id, resolveRoles(request));
-        WebUtil.setFlashSuccess(request, "Đã cập nhật vai trò");
-        WebUtil.redirect(request, response, "/manage/users");
-    }
+        String[] roleCodes = request.getParameterValues("roleCodes");
 
-    private List<Role> resolveRoles(HttpServletRequest request) throws SQLException {
-        String[] codes = request.getParameterValues("roleCodes");
-        if (codes == null || codes.length == 0) {
-            Role defaultRole = roleDAO.findByCode("WAREHOUSE STAFF");
-            return defaultRole == null ? List.of() : List.of(defaultRole);
+        try {
+            userService.updateRoles(id, roleCodes);
+            WebUtil.setFlashSuccess(request, "Đã cập nhật vai trò");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
         }
-        List<Role> roles = new ArrayList<>();
-        for (String code : codes) {
-            if ("ADMIN".equalsIgnoreCase(code)) {
-                continue; // Skip ADMIN role assignment
-            }
-            Role role = roleDAO.findByCode(code);
-            if (role != null) {
-                roles.add(role);
-            }
-        }
-        if (roles.isEmpty()) {
-            Role defaultRole = roleDAO.findByCode("WAREHOUSE STAFF");
-            if (defaultRole != null) {
-                roles.add(defaultRole);
-            }
-        }
-        return roles;
+        WebUtil.redirect(request, response, "/manage/users");
     }
 }

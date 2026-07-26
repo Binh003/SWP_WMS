@@ -1,8 +1,7 @@
 package controller;
 
-import dao.UserDAO;
 import model.User;
-import util.PasswordUtil;
+import service.AuthService;
 import util.SessionKeys;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
@@ -14,7 +13,7 @@ import java.sql.SQLException;
 
 public class LoginServlet extends HttpServlet {
 
-    private final UserDAO userDAO = new UserDAO();
+    private final AuthService authService = new AuthService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -34,25 +33,15 @@ public class LoginServlet extends HttpServlet {
         String password = WebUtil.param(request, "password");
 
         try {
-            User user = userDAO.findByUsername(username);
-            if (user == null || !PasswordUtil.matches(password, user.getPasswordHash())) {
-                request.setAttribute("flashError", "Tài khoản hoặc mật khẩu không đúng");
+            AuthService.LoginResult result = authService.login(username, password);
+            if (!result.isSuccess()) {
+                request.setAttribute("flashError", result.getErrorMessage());
                 request.setAttribute("username", username);
                 request.getRequestDispatcher("/jsp/auth/login.jsp").forward(request, response);
                 return;
             }
-            if (!user.isEnabled()) {
-                String errorMsg = "Tài khoản chưa được admin kích hoạt";
-                if ("LOCKED".equalsIgnoreCase(user.getStatus())) {
-                    errorMsg = "Tài khoản đã bị khóa bởi quản trị viên";
-                } else if ("PENDING".equalsIgnoreCase(user.getStatus())) {
-                    errorMsg = "Tài khoản đang chờ phê duyệt từ quản trị viên";
-                }
-                request.setAttribute("flashError", errorMsg);
-                request.setAttribute("username", username);
-                request.getRequestDispatcher("/jsp/auth/login.jsp").forward(request, response);
-                return;
-            }
+
+            User user = result.getUser();
             request.getSession(true).setAttribute(SessionKeys.CURRENT_USER, user);
             WebUtil.setFlashSuccess(request, "Chào mừng trở lại!");
             WebUtil.redirect(request, response, "/home");

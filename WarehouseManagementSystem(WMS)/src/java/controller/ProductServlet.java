@@ -1,11 +1,8 @@
 package controller;
 
-import dao.ProductDAO;
-import dao.ProductLineDAO;
-import dao.InventoryDAO;
-import dao.BrandDAO;
 import model.Product;
 import model.Inventory;
+import service.ProductService;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -22,10 +19,7 @@ import java.sql.SQLException;
 )
 public class ProductServlet extends HttpServlet {
 
-    private final ProductDAO productDAO = new ProductDAO();
-    private final ProductLineDAO productLineDAO = new ProductLineDAO();
-    private final InventoryDAO inventoryDAO = new InventoryDAO();
-    private final BrandDAO brandDAO = new BrandDAO();
+    private final ProductService productService = new ProductService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -51,13 +45,13 @@ public class ProductServlet extends HttpServlet {
     private void showProductDetail(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        Product product = productDAO.getById(id);
+        Product product = productService.getById(id);
         if (product == null) {
             WebUtil.setFlashError(request, "Không tìm thấy sản phẩm");
             WebUtil.redirect(request, response, "/manage/products");
             return;
         }
-        Inventory inventory = inventoryDAO.getByProductId(id);
+        Inventory inventory = productService.getInventoryByProductId(id);
         request.setAttribute("product", product);
         request.setAttribute("inventory", inventory);
         request.getRequestDispatcher("/jsp/manage/product-detail.jsp").forward(request, response);
@@ -93,41 +87,39 @@ public class ProductServlet extends HttpServlet {
             try { productLineId = Long.parseLong(productLineIdParam); } catch (NumberFormatException ignored) {}
         }
         
-        java.util.List<Product> products = productDAO.findPaginated(page, limit, search, brandId, productLineId);
-        int totalItems = productDAO.count(search, brandId, productLineId);
-        int totalPages = (int) Math.ceil((double) totalItems / limit);
-        
-        request.setAttribute("products", products);
-        request.setAttribute("totalItems", totalItems);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("currentPage", page);
-        request.setAttribute("limit", limit);
+        ProductService.ProductPageResult result = productService.getProductsPaginated(page, limit, search, brandId, productLineId);
+
+        request.setAttribute("products", result.getProducts());
+        request.setAttribute("totalItems", result.getTotalItems());
+        request.setAttribute("totalPages", result.getTotalPages());
+        request.setAttribute("currentPage", result.getCurrentPage());
+        request.setAttribute("limit", result.getLimit());
         request.setAttribute("search", search);
         request.setAttribute("selectedBrandId", brandId);
         request.setAttribute("selectedProductLineId", productLineId);
-        request.setAttribute("brands", brandDAO.getAll());
-        request.setAttribute("productLines", productLineDAO.getAll());
+        request.setAttribute("brands", result.getAllBrands());
+        request.setAttribute("productLines", result.getAllProductLines());
         
         request.getRequestDispatcher("/jsp/manage/products.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
-        request.setAttribute("productLines", productLineDAO.getAll());
+        request.setAttribute("productLines", productService.getAllProductLines());
         request.getRequestDispatcher("/jsp/manage/product-form.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        Product product = productDAO.getById(id);
+        Product product = productService.getById(id);
         if (product == null) {
             WebUtil.setFlashError(request, "Không tìm thấy sản phẩm");
             WebUtil.redirect(request, response, "/manage/products");
             return;
         }
         request.setAttribute("product", product);
-        request.setAttribute("productLines", productLineDAO.getAll());
+        request.setAttribute("productLines", productService.getAllProductLines());
         request.getRequestDispatcher("/jsp/manage/product-form.jsp").forward(request, response);
     }
 
@@ -151,96 +143,43 @@ public class ProductServlet extends HttpServlet {
     private void createProduct(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException, ServletException {
         
+        long productLineId = Long.parseLong(WebUtil.param(request, "productLineId"));
         String sku = WebUtil.param(request, "sku");
-        // Check if SKU exists
-        if (productDAO.getBySku(sku) != null) {
-            WebUtil.setFlashError(request, "Lỗi: SKU đã tồn tại trong hệ thống!");
-            WebUtil.redirect(request, response, "/manage/products?action=create");
-            return;
-        }
-
-        Product p = new Product();
-        p.setProductLineId(Long.parseLong(WebUtil.param(request, "productLineId")));
-        p.setSku(sku);
-        p.setName(WebUtil.param(request, "name"));
-        p.setUnit(WebUtil.param(request, "unit"));
-        
+        String name = WebUtil.param(request, "name");
+        String unit = WebUtil.param(request, "unit");
         String priceStr = WebUtil.param(request, "price");
-        if (priceStr != null && !priceStr.isEmpty()) {
-            try {
-                double price = Double.parseDouble(priceStr);
-                if (price < 0) {
-                    WebUtil.setFlashError(request, "Lỗi: Giá bán không được nhỏ hơn 0!");
-                    WebUtil.redirect(request, response, "/manage/products?action=create");
-                    return;
-                }
-                p.setPrice(price);
-            } catch (NumberFormatException e) {
-                WebUtil.setFlashError(request, "Lỗi: Giá bán không hợp lệ!");
-                WebUtil.redirect(request, response, "/manage/products?action=create");
-                return;
-            }
+        String description = WebUtil.param(request, "description");
+        String imageUrl = handleFileUpload(request);
+
+        try {
+            productService.createProduct(productLineId, sku, name, unit, priceStr, description, imageUrl);
+            WebUtil.setFlashSuccess(request, "Đã thêm sản phẩm thành công");
+            WebUtil.redirect(request, response, "/manage/products");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
+            WebUtil.redirect(request, response, "/manage/products?action=create");
         }
-        p.setDescription(WebUtil.param(request, "description"));
-        p.setImageUrl(handleFileUpload(request));
-
-        productDAO.insert(p);
-        
-        // Initialize inventory for new product
-        Inventory inv = new Inventory();
-        inv.setProductId(p.getId()); // Get the generated ID
-        inv.setQuantityInStock(0);
-        inv.setMinStockLevel(0);
-        inventoryDAO.insert(inv);
-
-        WebUtil.setFlashSuccess(request, "Đã thêm sản phẩm thành công");
-        WebUtil.redirect(request, response, "/manage/products");
     }
 
     private void updateProduct(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        Product p = productDAO.getById(id);
-        if (p != null) {
-            String newSku = WebUtil.param(request, "sku");
-            
-            // Check SKU unique if changed
-            if (!p.getSku().equals(newSku) && productDAO.getBySku(newSku) != null) {
-                WebUtil.setFlashError(request, "Lỗi: SKU đã tồn tại trong hệ thống!");
-                WebUtil.redirect(request, response, "/manage/products?action=edit&id=" + id);
-                return;
-            }
+        long productLineId = Long.parseLong(WebUtil.param(request, "productLineId"));
+        String sku = WebUtil.param(request, "sku");
+        String name = WebUtil.param(request, "name");
+        String unit = WebUtil.param(request, "unit");
+        String priceStr = WebUtil.param(request, "price");
+        String description = WebUtil.param(request, "description");
+        String imageUrl = handleFileUpload(request);
 
-            p.setProductLineId(Long.parseLong(WebUtil.param(request, "productLineId")));
-            p.setSku(newSku);
-            p.setName(WebUtil.param(request, "name"));
-            p.setUnit(WebUtil.param(request, "unit"));
-            
-            String priceStr = WebUtil.param(request, "price");
-            if (priceStr != null && !priceStr.isEmpty()) {
-                try {
-                    double price = Double.parseDouble(priceStr);
-                    if (price < 0) {
-                        WebUtil.setFlashError(request, "Lỗi: Giá bán không được nhỏ hơn 0!");
-                        WebUtil.redirect(request, response, "/manage/products?action=edit&id=" + id);
-                        return;
-                    }
-                    p.setPrice(price);
-                } catch (NumberFormatException e) {
-                    WebUtil.setFlashError(request, "Lỗi: Giá bán không hợp lệ!");
-                    WebUtil.redirect(request, response, "/manage/products?action=edit&id=" + id);
-                    return;
-                }
-            } else {
-                p.setPrice(null);
-            }
-            p.setDescription(WebUtil.param(request, "description"));
-            p.setImageUrl(handleFileUpload(request));
-            
-            productDAO.update(p);
+        try {
+            productService.updateProduct(id, productLineId, sku, name, unit, priceStr, description, imageUrl);
             WebUtil.setFlashSuccess(request, "Đã cập nhật sản phẩm");
+            WebUtil.redirect(request, response, "/manage/products");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
+            WebUtil.redirect(request, response, "/manage/products?action=edit&id=" + id);
         }
-        WebUtil.redirect(request, response, "/manage/products");
     }
 
     private String handleFileUpload(HttpServletRequest request) throws ServletException, IOException {
@@ -297,11 +236,10 @@ public class ProductServlet extends HttpServlet {
         throws SQLException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         try {
-            productDAO.delete(id);
+            productService.deleteProduct(id);
             WebUtil.setFlashSuccess(request, "Đã xóa sản phẩm");
-        } catch (SQLException ex) {
-            // Cannot delete if there are foreign key constraints (e.g., inventory or orders)
-            WebUtil.setFlashError(request, "Không thể xóa sản phẩm này vì có dữ liệu liên quan (tồn kho, phiếu nhập/xuất...).");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
         }
         WebUtil.redirect(request, response, "/manage/products");
     }

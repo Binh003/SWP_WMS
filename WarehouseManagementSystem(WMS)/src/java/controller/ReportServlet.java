@@ -1,14 +1,6 @@
 package controller;
 
-import dao.ReportDAO;
-import dao.BrandDAO;
-import dao.ProductLineDAO;
-import dao.ReceiptDAO;
-import dao.ShipmentDAO;
-import model.Receipt;
-import model.ReceiptDetail;
-import model.Shipment;
-import model.ShipmentDetail;
+import service.ReportService;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -16,28 +8,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class ReportServlet extends HttpServlet {
 
-    private final ReportDAO reportDAO = new ReportDAO();
-    private final BrandDAO brandDAO = new BrandDAO();
-    private final ProductLineDAO productLineDAO = new ProductLineDAO();
-    private final ReceiptDAO receiptDAO = new ReceiptDAO();
-    private final ShipmentDAO shipmentDAO = new ShipmentDAO();
-
-    private String escapeJson(String input) {
-        if (input == null) return "";
-        return input.replace("\\", "\\\\")
-                    .replace("\"", "\\\"")
-                    .replace("\b", "\\b")
-                    .replace("\f", "\\f")
-                    .replace("\n", "\\n")
-                    .replace("\r", "\\r")
-                    .replace("\t", "\\t");
-    }
+    private final ReportService reportService = new ReportService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -66,59 +42,9 @@ public class ReportServlet extends HttpServlet {
                 String idStr = request.getParameter("id");
                 try {
                     long id = Long.parseLong(idStr);
-                    Receipt receipt = receiptDAO.getById(id);
-                    if (receipt == null) {
-                        response.getWriter().write("{\"error\":\"Không tìm thấy phiếu nhập kho\"}");
-                        return;
-                    }
-                    
-                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
-                    StringBuilder json = new StringBuilder();
-                    json.append("{");
-                    json.append("\"id\":").append(receipt.getId()).append(",");
-                    json.append("\"code\":\"").append(escapeJson(receipt.getReceiptCode())).append("\",");
-                    json.append("\"createdAt\":\"").append(receipt.getCreatedAt() != null ? sdf.format(receipt.getCreatedAt()) : "").append("\",");
-                    json.append("\"supplierName\":\"").append(receipt.getSupplier() != null ? escapeJson(receipt.getSupplier().getName()) : "").append("\",");
-                    json.append("\"creatorName\":\"").append(receipt.getCreator() != null ? escapeJson(receipt.getCreator().getFullName()) : "").append("\",");
-                    json.append("\"status\":\"").append(escapeJson(receipt.getStatus())).append("\",");
-                    json.append("\"invoiceImage\":\"").append(receipt.getInvoiceImage() != null ? escapeJson(receipt.getInvoiceImage()) : "").append("\",");
-                    
-                    int totalQty = 0;
-                    double totalVal = 0.0;
-                    StringBuilder detailsJson = new StringBuilder("[");
-                    if (receipt.getDetails() != null) {
-                        for (int i = 0; i < receipt.getDetails().size(); i++) {
-                            ReceiptDetail d = receipt.getDetails().get(i);
-                            int qty = d.getQuantity() != null ? d.getQuantity() : 0;
-                            double price = (d.getProduct() != null && d.getProduct().getPrice() != null) ? d.getProduct().getPrice() : 0.0;
-                            double lineVal = qty * price;
-                            totalQty += qty;
-                            totalVal += lineVal;
-                            
-                            if (i > 0) detailsJson.append(",");
-                            detailsJson.append("{");
-                            detailsJson.append("\"id\":").append(d.getId()).append(",");
-                            detailsJson.append("\"sku\":\"").append(d.getProduct() != null ? escapeJson(d.getProduct().getSku()) : "").append("\",");
-                            detailsJson.append("\"productName\":\"").append(d.getProduct() != null ? escapeJson(d.getProduct().getName()) : "").append("\",");
-                            detailsJson.append("\"unit\":\"").append(d.getProduct() != null ? escapeJson(d.getProduct().getUnit()) : "").append("\",");
-                            detailsJson.append("\"batchCode\":\"").append(escapeJson(d.getBatchCode())).append("\",");
-                            detailsJson.append("\"barcode\":\"").append(escapeJson(d.getBarcode())).append("\",");
-                            detailsJson.append("\"quantity\":").append(qty).append(",");
-                            detailsJson.append("\"price\":").append(price).append(",");
-                            detailsJson.append("\"totalVal\":").append(lineVal);
-                            detailsJson.append("}");
-                        }
-                    }
-                    detailsJson.append("]");
-                    
-                    json.append("\"totalQty\":").append(totalQty).append(",");
-                    json.append("\"totalVal\":").append(totalVal).append(",");
-                    json.append("\"details\":").append(detailsJson);
-                    json.append("}");
-                    
-                    response.getWriter().write(json.toString());
+                    response.getWriter().write(reportService.getReceiptDetailJson(id));
                 } catch (Exception e) {
-                    response.getWriter().write("{\"error\":\"" + escapeJson(e.getMessage()) + "\"}");
+                    response.getWriter().write("{\"error\":\"" + reportService.escapeJson(e.getMessage()) + "\"}");
                 }
                 return;
             }
@@ -128,61 +54,9 @@ public class ReportServlet extends HttpServlet {
                 String idStr = request.getParameter("id");
                 try {
                     long id = Long.parseLong(idStr);
-                    Shipment shipment = shipmentDAO.getById(id);
-                    if (shipment == null) {
-                        response.getWriter().write("{\"error\":\"Không tìm thấy phiếu xuất kho\"}");
-                        return;
-                    }
-                    
-                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
-                    StringBuilder json = new StringBuilder();
-                    json.append("{");
-                    json.append("\"id\":").append(shipment.getId()).append(",");
-                    json.append("\"code\":\"").append(escapeJson(shipment.getShipmentCode())).append("\",");
-                    json.append("\"createdAt\":\"").append(shipment.getCreatedAt() != null ? sdf.format(shipment.getCreatedAt()) : "").append("\",");
-                    json.append("\"destination\":\"").append(escapeJson(shipment.getDestination())).append("\",");
-                    json.append("\"creatorName\":\"").append(shipment.getCreator() != null ? escapeJson(shipment.getCreator().getFullName()) : "").append("\",");
-                    json.append("\"status\":\"").append(escapeJson(shipment.getStatus())).append("\",");
-                    json.append("\"deliveryNoteImage\":\"").append(shipment.getDeliveryNoteImage() != null ? escapeJson(shipment.getDeliveryNoteImage()) : "").append("\",");
-                    json.append("\"shippingImages\":\"").append(shipment.getShippingImages() != null ? escapeJson(shipment.getShippingImages()) : "").append("\",");
-                    json.append("\"notes\":\"").append(shipment.getNotes() != null ? escapeJson(shipment.getNotes()) : "").append("\",");
-                    
-                    int totalQty = 0;
-                    double totalVal = 0.0;
-                    StringBuilder detailsJson = new StringBuilder("[");
-                    if (shipment.getDetails() != null) {
-                        for (int i = 0; i < shipment.getDetails().size(); i++) {
-                            ShipmentDetail d = shipment.getDetails().get(i);
-                            int qty = d.getQuantity() != null ? d.getQuantity() : 0;
-                            double price = (d.getProduct() != null && d.getProduct().getPrice() != null) ? d.getProduct().getPrice() : 0.0;
-                            double lineVal = qty * price;
-                            totalQty += qty;
-                            totalVal += lineVal;
-                            
-                            if (i > 0) detailsJson.append(",");
-                            detailsJson.append("{");
-                            detailsJson.append("\"id\":").append(d.getId()).append(",");
-                            detailsJson.append("\"sku\":\"").append(d.getProduct() != null ? escapeJson(d.getProduct().getSku()) : "").append("\",");
-                            detailsJson.append("\"productName\":\"").append(d.getProduct() != null ? escapeJson(d.getProduct().getName()) : "").append("\",");
-                            detailsJson.append("\"unit\":\"").append(d.getProduct() != null ? escapeJson(d.getProduct().getUnit()) : "").append("\",");
-                            detailsJson.append("\"batchCode\":\"").append(escapeJson(d.getBatchCode())).append("\",");
-                            detailsJson.append("\"barcode\":\"").append(escapeJson(d.getBarcode())).append("\",");
-                            detailsJson.append("\"quantity\":").append(qty).append(",");
-                            detailsJson.append("\"price\":").append(price).append(",");
-                            detailsJson.append("\"totalVal\":").append(lineVal);
-                            detailsJson.append("}");
-                        }
-                    }
-                    detailsJson.append("]");
-                    
-                    json.append("\"totalQty\":").append(totalQty).append(",");
-                    json.append("\"totalVal\":").append(totalVal).append(",");
-                    json.append("\"details\":").append(detailsJson);
-                    json.append("}");
-                    
-                    response.getWriter().write(json.toString());
+                    response.getWriter().write(reportService.getShipmentDetailJson(id));
                 } catch (Exception e) {
-                    response.getWriter().write("{\"error\":\"" + escapeJson(e.getMessage()) + "\"}");
+                    response.getWriter().write("{\"error\":\"" + reportService.escapeJson(e.getMessage()) + "\"}");
                 }
                 return;
             }
@@ -196,49 +70,9 @@ public class ReportServlet extends HttpServlet {
                 }
                 try {
                     long productId = Long.parseLong(productIdStr);
-                    Map<String, Object> detail = reportDAO.getInventoryProductDetail(productId);
-                    if (detail == null) {
-                        response.getWriter().write("{\"error\":\"Không tìm thấy thông tin tồn kho cho sản phẩm này\"}");
-                        return;
-                    }
-                    
-                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
-                    StringBuilder json = new StringBuilder();
-                    json.append("{");
-                    json.append("\"productId\":").append(detail.get("productId")).append(",");
-                    json.append("\"sku\":\"").append(escapeJson((String) detail.get("sku"))).append("\",");
-                    json.append("\"productName\":\"").append(escapeJson((String) detail.get("productName"))).append("\",");
-                    json.append("\"unit\":\"").append(escapeJson((String) detail.get("unit"))).append("\",");
-                    json.append("\"price\":").append(detail.get("price")).append(",");
-                    json.append("\"brandName\":\"").append(escapeJson((String) detail.get("brandName"))).append("\",");
-                    json.append("\"productLineName\":\"").append(escapeJson((String) detail.get("productLineName"))).append("\",");
-                    json.append("\"totalStock\":").append(detail.get("totalStock")).append(",");
-                    json.append("\"minStockLevel\":").append(detail.get("minStockLevel")).append(",");
-                    json.append("\"totalValuation\":").append(detail.get("totalValuation")).append(",");
-                    json.append("\"isLow\":").append(detail.get("isLow")).append(",");
-                    
-                    List<Map<String, Object>> batches = (List<Map<String, Object>>) detail.get("batches");
-                    StringBuilder batchesJson = new StringBuilder("[");
-                    for (int i = 0; i < batches.size(); i++) {
-                        Map<String, Object> b = batches.get(i);
-                        if (i > 0) batchesJson.append(",");
-                        batchesJson.append("{");
-                        batchesJson.append("\"id\":").append(b.get("id")).append(",");
-                        batchesJson.append("\"batchCode\":\"").append(escapeJson((String) b.get("batchCode"))).append("\",");
-                        batchesJson.append("\"barcode\":\"").append(escapeJson((String) b.get("barcode"))).append("\",");
-                        batchesJson.append("\"location\":\"").append(escapeJson((String) b.get("location"))).append("\",");
-                        batchesJson.append("\"quantity\":").append(b.get("quantity")).append(",");
-                        java.sql.Timestamp ts = (java.sql.Timestamp) b.get("createdAt");
-                        batchesJson.append("\"createdAt\":\"").append(ts != null ? sdf.format(ts) : "").append("\"");
-                        batchesJson.append("}");
-                    }
-                    batchesJson.append("]");
-                    json.append("\"batches\":").append(batchesJson);
-                    json.append("}");
-                    
-                    response.getWriter().write(json.toString());
+                    response.getWriter().write(reportService.getInventoryDetailJson(productId));
                 } catch (Exception e) {
-                    response.getWriter().write("{\"error\":\"" + escapeJson(e.getMessage()) + "\"}");
+                    response.getWriter().write("{\"error\":\"" + reportService.escapeJson(e.getMessage()) + "\"}");
                 }
                 return;
             }
@@ -260,52 +94,9 @@ public class ReportServlet extends HttpServlet {
                 }
                 try {
                     long productId = Long.parseLong(productIdStr);
-                    Map<String, Object> detail = reportDAO.getNXTProductDetailHistory(productId, start, end);
-                    if (detail == null) {
-                        response.getWriter().write("{\"error\":\"Không tìm thấy thông tin Nhập Xuất Tồn cho sản phẩm này\"}");
-                        return;
-                    }
-                    
-                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
-                    StringBuilder json = new StringBuilder();
-                    json.append("{");
-                    json.append("\"productId\":").append(detail.get("productId")).append(",");
-                    json.append("\"sku\":\"").append(escapeJson((String) detail.get("sku"))).append("\",");
-                    json.append("\"productName\":\"").append(escapeJson((String) detail.get("productName"))).append("\",");
-                    json.append("\"unit\":\"").append(escapeJson((String) detail.get("unit"))).append("\",");
-                    json.append("\"price\":").append(detail.get("price")).append(",");
-                    json.append("\"brandName\":\"").append(escapeJson((String) detail.get("brandName"))).append("\",");
-                    json.append("\"productLineName\":\"").append(escapeJson((String) detail.get("productLineName"))).append("\",");
-                    json.append("\"startDate\":\"").append(escapeJson(start)).append("\",");
-                    json.append("\"endDate\":\"").append(escapeJson(end)).append("\",");
-                    json.append("\"beginningQty\":").append(detail.get("beginningQty")).append(",");
-                    json.append("\"inboundQty\":").append(detail.get("inboundQty")).append(",");
-                    json.append("\"outboundQty\":").append(detail.get("outboundQty")).append(",");
-                    json.append("\"endingQty\":").append(detail.get("endingQty")).append(",");
-                    json.append("\"endingValuation\":").append(detail.get("endingValuation")).append(",");
-                    
-                    List<Map<String, Object>> txs = (List<Map<String, Object>>) detail.get("transactions");
-                    StringBuilder txJson = new StringBuilder("[");
-                    for (int i = 0; i < txs.size(); i++) {
-                        Map<String, Object> t = txs.get(i);
-                        if (i > 0) txJson.append(",");
-                        txJson.append("{");
-                        txJson.append("\"type\":\"").append(t.get("type")).append("\",");
-                        txJson.append("\"code\":\"").append(escapeJson((String) t.get("code"))).append("\",");
-                        java.sql.Timestamp ts = (java.sql.Timestamp) t.get("createdAt");
-                        txJson.append("\"createdAt\":\"").append(ts != null ? sdf.format(ts) : "").append("\",");
-                        txJson.append("\"qty\":").append(t.get("qty")).append(",");
-                        txJson.append("\"partner\":\"").append(escapeJson((String) t.get("partner"))).append("\",");
-                        txJson.append("\"creator\":\"").append(escapeJson((String) t.get("creator"))).append("\"");
-                        txJson.append("}");
-                    }
-                    txJson.append("]");
-                    json.append("\"transactions\":").append(txJson);
-                    json.append("}");
-                    
-                    response.getWriter().write(json.toString());
+                    response.getWriter().write(reportService.getNXTDetailJson(productId, start, end));
                 } catch (Exception e) {
-                    response.getWriter().write("{\"error\":\"" + escapeJson(e.getMessage()) + "\"}");
+                    response.getWriter().write("{\"error\":\"" + reportService.escapeJson(e.getMessage()) + "\"}");
                 }
                 return;
             }
@@ -338,7 +129,7 @@ public class ReportServlet extends HttpServlet {
                 java.text.SimpleDateFormat dateFmt = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
 
                 if ("inbound".equals(reportType)) {
-                    List<Map<String, Object>> list = reportDAO.getDetailedInboundReport(startDate, endDate);
+                    List<Map<String, Object>> list = reportService.getDetailedInboundReport(startDate, endDate);
                     int totalQty = 0;
                     double totalVal = 0.0;
                     for (Map<String, Object> r : list) {
@@ -387,7 +178,7 @@ public class ReportServlet extends HttpServlet {
                     out.println("</table>");
 
                 } else if ("outbound".equals(reportType)) {
-                    List<Map<String, Object>> list = reportDAO.getDetailedOutboundReport(startDate, endDate);
+                    List<Map<String, Object>> list = reportService.getDetailedOutboundReport(startDate, endDate);
                     int totalQty = 0;
                     double totalVal = 0.0;
                     for (Map<String, Object> r : list) {
@@ -436,7 +227,7 @@ public class ReportServlet extends HttpServlet {
                     out.println("</table>");
 
                 } else if ("inventory".equals(reportType)) {
-                    List<Map<String, Object>> list = reportDAO.getDetailedInventoryReport();
+                    List<Map<String, Object>> list = reportService.getDetailedInventoryReport();
                     int totalQty = 0;
                     double totalVal = 0.0;
                     int lowStockCount = 0;
@@ -512,7 +303,7 @@ public class ReportServlet extends HttpServlet {
                         try { productLineId = Long.parseLong(productLineIdStr); } catch (NumberFormatException ignored) {}
                     }
 
-                    List<Map<String, Object>> list = reportDAO.getNXTReport(finalStartDate, finalEndDate, sku, brandId, productLineId);
+                    List<Map<String, Object>> list = reportService.getNXTReport(finalStartDate, finalEndDate, sku, brandId, productLineId);
                     int totalBeg = 0;
                     int totalIn = 0;
                     int totalOut = 0;
@@ -599,25 +390,16 @@ public class ReportServlet extends HttpServlet {
             request.setAttribute("limit", limit);
 
             // Always fetch overview to keep quick stats available
-            Map<String, Object> overviewStats = reportDAO.getOverviewStats();
+            Map<String, Object> overviewStats = reportService.getOverviewStats();
             request.setAttribute("overview", overviewStats);
 
             if ("overview".equals(reportType)) {
-                // Get Inbound/Outbound Monthly stats
-                List<Map<String, Object>> monthlyStats = reportDAO.getMonthlyInboundOutboundStats();
-                request.setAttribute("monthlyStats", monthlyStats);
-
-                // Get Brand Valuation stats
-                List<Map<String, Object>> brandValuation = reportDAO.getBrandValuationStats();
-                request.setAttribute("brandValuation", brandValuation);
-
-                // Get Top Moving Products
-                List<Map<String, Object>> topMoving = reportDAO.getTopMovingProducts();
-                request.setAttribute("topMoving", topMoving);
+                request.setAttribute("monthlyStats", reportService.getMonthlyStats());
+                request.setAttribute("brandValuation", reportService.getBrandValuationStats());
+                request.setAttribute("topMoving", reportService.getTopMovingProducts());
             } else if ("inbound".equals(reportType)) {
-                List<Map<String, Object>> fullInbound = reportDAO.getDetailedInboundReport(startDate, endDate);
+                List<Map<String, Object>> fullInbound = reportService.getDetailedInboundReport(startDate, endDate);
                 
-                // Calculate summaries
                 int totalInboundQty = 0;
                 double totalInboundVal = 0.0;
                 for (Map<String, Object> r : fullInbound) {
@@ -633,12 +415,11 @@ public class ReportServlet extends HttpServlet {
                 request.setAttribute("totalItems", totalItems);
                 request.setAttribute("totalPages", totalPages);
                 
-                List<Map<String, Object>> inboundReport = reportDAO.getDetailedInboundReport(startDate, endDate, page, limit);
+                List<Map<String, Object>> inboundReport = reportService.getDetailedInboundReport(startDate, endDate, page, limit);
                 request.setAttribute("inboundReport", inboundReport);
             } else if ("outbound".equals(reportType)) {
-                List<Map<String, Object>> fullOutbound = reportDAO.getDetailedOutboundReport(startDate, endDate);
+                List<Map<String, Object>> fullOutbound = reportService.getDetailedOutboundReport(startDate, endDate);
 
-                // Calculate summaries
                 int totalOutboundQty = 0;
                 double totalOutboundVal = 0.0;
                 for (Map<String, Object> r : fullOutbound) {
@@ -654,12 +435,11 @@ public class ReportServlet extends HttpServlet {
                 request.setAttribute("totalItems", totalItems);
                 request.setAttribute("totalPages", totalPages);
 
-                List<Map<String, Object>> outboundReport = reportDAO.getDetailedOutboundReport(startDate, endDate, page, limit);
+                List<Map<String, Object>> outboundReport = reportService.getDetailedOutboundReport(startDate, endDate, page, limit);
                 request.setAttribute("outboundReport", outboundReport);
             } else if ("inventory".equals(reportType)) {
-                List<Map<String, Object>> fullInventory = reportDAO.getDetailedInventoryReport();
+                List<Map<String, Object>> fullInventory = reportService.getDetailedInventoryReport();
 
-                // Calculate summaries
                 int totalInvQty = 0;
                 double totalInvVal = 0.0;
                 int totalLowStock = 0;
@@ -683,7 +463,7 @@ public class ReportServlet extends HttpServlet {
                 request.setAttribute("totalItems", totalItems);
                 request.setAttribute("totalPages", totalPages);
 
-                List<Map<String, Object>> inventoryReport = reportDAO.getDetailedInventoryReport(page, limit);
+                List<Map<String, Object>> inventoryReport = reportService.getDetailedInventoryReport(page, limit);
                 request.setAttribute("inventoryReport", inventoryReport);
             } else if ("nxt".equals(reportType)) {
                 String finalStartDate = startDate;
@@ -708,9 +488,8 @@ public class ReportServlet extends HttpServlet {
                     try { productLineId = Long.parseLong(productLineIdStr); } catch (NumberFormatException ignored) {}
                 }
                 
-                List<Map<String, Object>> fullNXT = reportDAO.getNXTReport(finalStartDate, finalEndDate, sku, brandId, productLineId);
+                List<Map<String, Object>> fullNXT = reportService.getNXTReport(finalStartDate, finalEndDate, sku, brandId, productLineId);
                 
-                // Calculate summaries
                 int totalBeg = 0;
                 int totalIn = 0;
                 int totalOut = 0;
@@ -734,13 +513,12 @@ public class ReportServlet extends HttpServlet {
                 request.setAttribute("totalItems", totalItems);
                 request.setAttribute("totalPages", totalPages);
                 
-                List<Map<String, Object>> nxtReport = reportDAO.getNXTReport(finalStartDate, finalEndDate, sku, brandId, productLineId, page, limit);
+                List<Map<String, Object>> nxtReport = reportService.getNXTReport(finalStartDate, finalEndDate, sku, brandId, productLineId, page, limit);
                 request.setAttribute("nxtReport", nxtReport);
                 
-                request.setAttribute("brands", brandDAO.getAll());
-                request.setAttribute("productLines", productLineDAO.getAll());
+                request.setAttribute("brands", reportService.getAllBrands());
+                request.setAttribute("productLines", reportService.getAllProductLines());
                 
-                // Override startDate/endDate with defaults if they were not set originally
                 request.setAttribute("startDate", finalStartDate);
                 request.setAttribute("endDate", finalEndDate);
             }

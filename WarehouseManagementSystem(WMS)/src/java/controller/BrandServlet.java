@@ -1,7 +1,7 @@
 package controller;
 
-import dao.BrandDAO;
 import model.Brand;
+import service.BrandService;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -12,7 +12,7 @@ import java.sql.SQLException;
 
 public class BrandServlet extends HttpServlet {
 
-    private final BrandDAO brandDAO = new BrandDAO();
+    private final BrandService brandService = new BrandService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -47,7 +47,6 @@ public class BrandServlet extends HttpServlet {
         if (pageStr != null && !pageStr.isEmpty()) {
             try {
                 page = Integer.parseInt(pageStr);
-                if (page < 1) page = 1;
             } catch (NumberFormatException ignored) {}
         }
         
@@ -56,22 +55,16 @@ public class BrandServlet extends HttpServlet {
         if (limitStr != null && !limitStr.isEmpty()) {
             try {
                 limit = Integer.parseInt(limitStr);
-                if (limit < 1) limit = 10;
             } catch (NumberFormatException ignored) {}
         }
         
-        int totalItems = brandDAO.count(search);
-        int totalPages = (int) Math.ceil((double) totalItems / limit);
-        if (page > totalPages && totalPages > 0) {
-            page = totalPages;
-        }
-        int offset = (page - 1) * limit;
-        
-        request.setAttribute("brands", brandDAO.findPaginated(search, offset, limit));
-        request.setAttribute("currentPage", page);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("totalItems", totalItems);
-        request.setAttribute("limit", limit);
+        BrandService.BrandPageResult result = brandService.getBrandsPaginated(search, page, limit);
+
+        request.setAttribute("brands", result.getBrands());
+        request.setAttribute("currentPage", result.getCurrentPage());
+        request.setAttribute("totalPages", result.getTotalPages());
+        request.setAttribute("totalItems", result.getTotalItems());
+        request.setAttribute("limit", result.getLimit());
         request.setAttribute("search", search);
         
         request.getRequestDispatcher("/jsp/manage/brands.jsp").forward(request, response);
@@ -80,7 +73,7 @@ public class BrandServlet extends HttpServlet {
     private void showDetail(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        Brand brand = brandDAO.getById(id);
+        Brand brand = brandService.getById(id);
         if (brand == null) {
             WebUtil.setFlashError(request, "Không tìm thấy hãng");
             WebUtil.redirect(request, response, "/manage/brands");
@@ -98,7 +91,7 @@ public class BrandServlet extends HttpServlet {
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        Brand brand = brandDAO.getById(id);
+        Brand brand = brandService.getById(id);
         if (brand == null) {
             WebUtil.setFlashError(request, "Không tìm thấy hãng");
             WebUtil.redirect(request, response, "/manage/brands");
@@ -120,12 +113,7 @@ public class BrandServlet extends HttpServlet {
                 default -> WebUtil.redirect(request, response, "/manage/brands");
             }
         } catch (SQLException ex) {
-            String msg = ex.getMessage();
-            if (ex.getErrorCode() == 1062 || (msg != null && msg.contains("Duplicate entry"))) {
-                WebUtil.setFlashError(request, "Lỗi: Hãng này đã tồn tại (Mã hãng đã được sử dụng)!");
-            } else {
-                WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + msg);
-            }
+            WebUtil.setFlashError(request, "Lỗi cơ sở dữ liệu: " + ex.getMessage());
             WebUtil.redirect(request, response, "/manage/brands");
         }
     }
@@ -136,75 +124,37 @@ public class BrandServlet extends HttpServlet {
         String name = WebUtil.param(request, "name");
         String description = WebUtil.param(request, "description");
 
-        // Validate beforehand
-        if (brandDAO.getByCode(code) != null) {
-            WebUtil.setFlashError(request, "Lỗi: Hãng này đã tồn tại (Mã hãng '" + code + "' đã được sử dụng)!");
-            WebUtil.redirect(request, response, "/manage/brands?action=create");
-            return;
-        }
-
-        Brand brand = new Brand();
-        brand.setCode(code);
-        brand.setName(name);
-        brand.setDescription(description);
-
         try {
-            brandDAO.insert(brand);
+            brandService.createBrand(code, name, description);
             WebUtil.setFlashSuccess(request, "Đã thêm hãng thành công");
             WebUtil.redirect(request, response, "/manage/brands");
-        } catch (SQLException ex) {
-            if (ex.getErrorCode() == 1062 || (ex.getMessage() != null && ex.getMessage().contains("Duplicate entry"))) {
-                WebUtil.setFlashError(request, "Lỗi: Hãng này đã tồn tại (Mã hãng '" + code + "' đã được sử dụng)!");
-                WebUtil.redirect(request, response, "/manage/brands?action=create");
-            } else {
-                throw ex;
-            }
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
+            WebUtil.redirect(request, response, "/manage/brands?action=create");
         }
     }
 
     private void updateBrand(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        Brand brand = brandDAO.getById(id);
-        if (brand != null) {
-            String newCode = WebUtil.param(request, "code");
-            
-            // Check if code has changed and if the new code already exists
-            if (!brand.getCode().equalsIgnoreCase(newCode)) {
-                Brand existing = brandDAO.getByCode(newCode);
-                if (existing != null && existing.getId() != id) {
-                    WebUtil.setFlashError(request, "Lỗi: Hãng này đã tồn tại (Mã hãng '" + newCode + "' đã được sử dụng)!");
-                    WebUtil.redirect(request, response, "/manage/brands?action=edit&id=" + id);
-                    return;
-                }
-            }
+        String newCode = WebUtil.param(request, "code");
+        String name = WebUtil.param(request, "name");
+        String description = WebUtil.param(request, "description");
 
-            brand.setCode(newCode);
-            brand.setName(WebUtil.param(request, "name"));
-            brand.setDescription(WebUtil.param(request, "description"));
-            
-            try {
-                brandDAO.update(brand);
-                WebUtil.setFlashSuccess(request, "Đã cập nhật hãng");
-                WebUtil.redirect(request, response, "/manage/brands");
-            } catch (SQLException ex) {
-                if (ex.getErrorCode() == 1062 || (ex.getMessage() != null && ex.getMessage().contains("Duplicate entry"))) {
-                    WebUtil.setFlashError(request, "Lỗi: Hãng này đã tồn tại (Mã hãng '" + newCode + "' đã được sử dụng)!");
-                    WebUtil.redirect(request, response, "/manage/brands?action=edit&id=" + id);
-                } else {
-                    throw ex;
-                }
-            }
-        } else {
-            WebUtil.setFlashError(request, "Không tìm thấy hãng");
+        try {
+            brandService.updateBrand(id, newCode, name, description);
+            WebUtil.setFlashSuccess(request, "Đã cập nhật hãng");
             WebUtil.redirect(request, response, "/manage/brands");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
+            WebUtil.redirect(request, response, "/manage/brands?action=edit&id=" + id);
         }
     }
 
     private void deleteBrand(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        brandDAO.delete(id);
+        brandService.deleteBrand(id);
         WebUtil.setFlashSuccess(request, "Đã xóa hãng");
         WebUtil.redirect(request, response, "/manage/brands");
     }

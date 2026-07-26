@@ -1,10 +1,7 @@
 package controller;
 
-import dao.InventoryDAO;
-import dao.ProductLineDAO;
-import dao.BrandDAO;
 import model.Inventory;
-import model.InventoryHistory;
+import service.InventoryService;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -12,14 +9,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class InventoryServlet extends HttpServlet {
 
-    private final InventoryDAO inventoryDAO = new InventoryDAO();
-    private final ProductLineDAO productLineDAO = new ProductLineDAO();
-    private final BrandDAO brandDAO = new BrandDAO();
+    private final InventoryService inventoryService = new InventoryService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -78,23 +71,20 @@ public class InventoryServlet extends HttpServlet {
         String barcode = request.getParameter("barcode");
         if (barcode != null) barcode = barcode.trim();
         
-        List<Inventory> inventories = inventoryDAO.findPaginated(page, limit, sku, brandId, productLineId, batchCode, barcode);
-        int totalItems = inventoryDAO.count(sku, brandId, productLineId, batchCode, barcode);
-        int totalPages = (int) Math.ceil((double) totalItems / limit);
-        
-        request.setAttribute("inventories", inventories);
-        request.setAttribute("totalItems", totalItems);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("currentPage", page);
-        request.setAttribute("limit", limit);
+        InventoryService.InventoryPageResult result = inventoryService.getInventoriesPaginated(page, limit, sku, brandId, productLineId, batchCode, barcode);
+
+        request.setAttribute("inventories", result.getInventories());
+        request.setAttribute("totalItems", result.getTotalItems());
+        request.setAttribute("totalPages", result.getTotalPages());
+        request.setAttribute("currentPage", result.getCurrentPage());
+        request.setAttribute("limit", result.getLimit());
         request.setAttribute("sku", sku);
         request.setAttribute("brandId", brandId);
         request.setAttribute("productLineId", productLineId);
         request.setAttribute("batchCode", batchCode);
         request.setAttribute("barcode", barcode);
-        
-        request.setAttribute("brands", brandDAO.getAll());
-        request.setAttribute("productLines", productLineDAO.getAll());
+        request.setAttribute("brands", result.getAllBrands());
+        request.setAttribute("productLines", result.getAllProductLines());
         
         request.getRequestDispatcher("/jsp/manage/inventories.jsp").forward(request, response);
     }
@@ -102,24 +92,14 @@ public class InventoryServlet extends HttpServlet {
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         String idStr = request.getParameter("id");
-        Inventory inventory = null;
-        if (idStr != null && !idStr.isEmpty()) {
-            inventory = inventoryDAO.getById(Long.parseLong(idStr));
-        } else {
-            String productIdStr = request.getParameter("productId");
-            if (productIdStr != null && !productIdStr.isEmpty()) {
-                inventory = inventoryDAO.getByProductId(Long.parseLong(productIdStr));
-            }
-        }
+        String productIdStr = request.getParameter("productId");
+
+        Inventory inventory = inventoryService.getInventoryForForm(idStr, productIdStr);
         if (inventory == null) {
             WebUtil.setFlashError(request, "Không tìm thấy tồn kho");
             WebUtil.redirect(request, response, "/manage/inventories");
             return;
         }
-        
-        // Calculate the total quantity of this product in this batch
-        int totalQty = inventoryDAO.getQuantityByProductAndBatch(inventory.getProductId(), inventory.getBatchCode());
-        inventory.setQuantityInStock(totalQty);
         
         request.setAttribute("inventory", inventory);
         request.getRequestDispatcher("/jsp/manage/inventory-form.jsp").forward(request, response);
@@ -128,37 +108,30 @@ public class InventoryServlet extends HttpServlet {
     private void showBatchDetail(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         String idStr = request.getParameter("id");
-        Inventory inventory = null;
-        if (idStr != null && !idStr.isEmpty()) {
-            inventory = inventoryDAO.getById(Long.parseLong(idStr));
-        } else {
-            String productIdStr = request.getParameter("productId");
-            if (productIdStr != null && !productIdStr.isEmpty()) {
-                inventory = inventoryDAO.getByProductId(Long.parseLong(productIdStr));
-            }
-        }
-        if (inventory == null) {
+        String productIdStr = request.getParameter("productId");
+
+        InventoryService.BatchDetailResult result = inventoryService.getBatchDetail(idStr, productIdStr);
+        if (result == null) {
             WebUtil.setFlashError(request, "Không tìm thấy thông tin tồn kho");
             WebUtil.redirect(request, response, "/manage/inventories");
             return;
         }
         
-        List<Inventory> itemizedList = inventoryDAO.getItemizedListByProductAndBatch(inventory.getProductId(), inventory.getBatchCode());
-        int totalQuantity = inventoryDAO.getQuantityByProductAndBatch(inventory.getProductId(), inventory.getBatchCode());
-        
-        request.setAttribute("inventory", inventory);
-        request.setAttribute("itemizedList", itemizedList);
-        request.setAttribute("totalQuantity", totalQuantity);
+        request.setAttribute("inventory", result.getInventory());
+        request.setAttribute("itemizedList", result.getItemizedList());
+        request.setAttribute("totalQuantity", result.getTotalQuantity());
         request.getRequestDispatcher("/jsp/manage/inventory-detail.jsp").forward(request, response);
     }
 
     private void showItemDetail(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, ServletException, IOException {
         String idStr = request.getParameter("id");
-        Inventory inventory = null;
-        if (idStr != null && !idStr.isEmpty()) {
-            inventory = inventoryDAO.getById(Long.parseLong(idStr));
+        if (idStr == null || idStr.trim().isEmpty()) {
+            WebUtil.redirect(request, response, "/manage/inventories");
+            return;
         }
+
+        Inventory inventory = inventoryService.getItemDetail(Long.parseLong(idStr.trim()));
         if (inventory == null) {
             WebUtil.setFlashError(request, "Không tìm thấy thông tin chi tiết của sản phẩm đơn lẻ này");
             WebUtil.redirect(request, response, "/manage/inventories");
@@ -168,8 +141,6 @@ public class InventoryServlet extends HttpServlet {
         request.setAttribute("inventory", inventory);
         request.getRequestDispatcher("/jsp/manage/inventory-item-detail.jsp").forward(request, response);
     }
-
-
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -190,39 +161,14 @@ public class InventoryServlet extends HttpServlet {
     private void updateInventory(HttpServletRequest request, HttpServletResponse response)
         throws SQLException, IOException {
         String idStr = request.getParameter("id");
-        Inventory i = null;
-        if (idStr != null && !idStr.isEmpty()) {
-            i = inventoryDAO.getById(Long.parseLong(idStr));
-        } else {
-            String productIdStr = request.getParameter("productId");
-            if (productIdStr != null && !productIdStr.isEmpty()) {
-                i = inventoryDAO.getByProductId(Long.parseLong(productIdStr));
-            }
-        }
-        if (i != null) {
-            try {
-                int minStockLevel = Integer.parseInt(WebUtil.param(request, "minStockLevel"));
-                if (minStockLevel < 0) {
-                    WebUtil.setFlashError(request, "Lỗi: Mức tồn kho tối thiểu không được nhỏ hơn 0!");
-                    WebUtil.redirect(request, response, "/manage/inventories?action=edit&id=" + i.getId());
-                    return;
-                }
-                long productId = i.getProductId();
-                String oldBatchCode = i.getBatchCode();
-                
-                i.setMinStockLevel(minStockLevel);
-                
-                inventoryDAO.update(i);
-                
-                // Also update min_stock_level for all other items of the same product and batch
-                inventoryDAO.updateMinStockLevelForProductAndBatch(productId, oldBatchCode, minStockLevel);
-                
-                WebUtil.setFlashSuccess(request, "Đã cập nhật cấu hình cảnh báo tồn kho");
-            } catch (NumberFormatException e) {
-                WebUtil.setFlashError(request, "Lỗi: Mức tồn kho tối thiểu không hợp lệ!");
-                WebUtil.redirect(request, response, "/manage/inventories?action=edit&id=" + i.getId());
-                return;
-            }
+        String productIdStr = request.getParameter("productId");
+        String minStockLevelStr = WebUtil.param(request, "minStockLevel");
+
+        try {
+            inventoryService.updateMinStockLevel(idStr, productIdStr, minStockLevelStr);
+            WebUtil.setFlashSuccess(request, "Đã cập nhật cấu hình cảnh báo tồn kho");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
         }
         WebUtil.redirect(request, response, "/manage/inventories");
     }

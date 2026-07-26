@@ -1,8 +1,6 @@
 package controller;
 
-import dao.UserDAO;
-import dao.PasswordResetDAO;
-import util.PasswordUtil;
+import service.AuthService;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -14,22 +12,15 @@ import java.sql.SQLException;
 
 public class ResetPasswordServlet extends HttpServlet {
 
-    private final UserDAO userDAO = new UserDAO();
-    private final PasswordResetDAO passwordResetDAO = new PasswordResetDAO();
+    private final AuthService authService = new AuthService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
         String token = WebUtil.param(request, "token");
 
-        if (token.isEmpty()) {
-            WebUtil.setFlashError(request, "Mã xác minh (token) bị thiếu.");
-            WebUtil.redirect(request, response, "/forgot-password");
-            return;
-        }
-
         try {
-            Long userId = passwordResetDAO.getUserIdByValidToken(token);
+            Long userId = authService.validateResetToken(token);
             if (userId == null) {
                 WebUtil.setFlashError(request, "Liên kết đã hết hạn, đã được sử dụng hoặc không hợp lệ.");
                 WebUtil.redirect(request, response, "/forgot-password");
@@ -52,39 +43,9 @@ public class ResetPasswordServlet extends HttpServlet {
         String newPassword = WebUtil.param(request, "newPassword");
         String confirmPassword = WebUtil.param(request, "confirmPassword");
 
-        if (token.isEmpty()) {
-            WebUtil.setFlashError(request, "Mã xác minh (token) không hợp lệ.");
-            WebUtil.redirect(request, response, "/forgot-password");
-            return;
-        }
-
         try {
-            Long userId = passwordResetDAO.getUserIdByValidToken(token);
-            if (userId == null) {
-                WebUtil.setFlashError(request, "Liên kết khôi phục đã hết hạn hoặc không còn hiệu lực.");
-                WebUtil.redirect(request, response, "/forgot-password");
-                return;
-            }
+            authService.resetPassword(token, newPassword, confirmPassword);
 
-            if (newPassword.length() < 8 || !newPassword.matches(".*[a-z].*") || !newPassword.matches(".*[A-Z].*") || !newPassword.matches(".*\\d.*")) {
-                request.setAttribute("flashError", "Mật khẩu mới phải từ 8 ký tự, bao gồm chữ hoa, chữ thường và chữ số.");
-                request.setAttribute("token", token);
-                request.getRequestDispatcher("/jsp/auth/reset-password.jsp").forward(request, response);
-                return;
-            }
-
-            if (!newPassword.equals(confirmPassword)) {
-                request.setAttribute("flashError", "Mật khẩu xác nhận không khớp.");
-                request.setAttribute("token", token);
-                request.getRequestDispatcher("/jsp/auth/reset-password.jsp").forward(request, response);
-                return;
-            }
-
-            // Update user password and invalidate token
-            userDAO.updatePassword(userId, PasswordUtil.hash(newPassword));
-            passwordResetDAO.markTokenAsUsed(token);
-
-            // Invalidate current session (forces logout of this client if they were logged in)
             HttpSession session = request.getSession(false);
             if (session != null) {
                 session.invalidate();
@@ -93,6 +54,10 @@ public class ResetPasswordServlet extends HttpServlet {
             WebUtil.setFlashSuccess(request, "Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.");
             WebUtil.redirect(request, response, "/login");
 
+        } catch (IllegalArgumentException ex) {
+            request.setAttribute("flashError", ex.getMessage());
+            request.setAttribute("token", token);
+            request.getRequestDispatcher("/jsp/auth/reset-password.jsp").forward(request, response);
         } catch (SQLException ex) {
             request.setAttribute("flashError", "Lỗi hệ thống: " + ex.getMessage());
             request.setAttribute("token", token);

@@ -1,11 +1,8 @@
 package controller;
 
-import dao.ReceiptDAO;
-import dao.SupplierDAO;
-import dao.ProductDAO;
 import model.Receipt;
-import model.ReceiptDetail;
 import model.User;
+import service.ReceiptService;
 import util.WebUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -23,9 +20,7 @@ import java.util.List;
 )
 public class ReceiptServlet extends HttpServlet {
 
-    private final ReceiptDAO receiptDAO = new ReceiptDAO();
-    private final SupplierDAO supplierDAO = new SupplierDAO();
-    private final ProductDAO productDAO = new ProductDAO();
+    private final ReceiptService receiptService = new ReceiptService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -38,16 +33,11 @@ public class ReceiptServlet extends HttpServlet {
             request.setAttribute("currentUser", WebUtil.currentUser(request));
             WebUtil.consumeFlash(request);
             switch (action) {
-                case "create" ->
-                    showCreateForm(request, response);
-                case "view" ->
-                    viewReceipt(request, response);
-                case "delete" ->
-                    deleteDraft(request, response);
-                case "deleteReceivingImage" ->
-                    deleteReceivingImage(request, response);
-                default ->
-                    listReceipts(request, response);
+                case "create" -> showCreateForm(request, response);
+                case "view" -> viewReceipt(request, response);
+                case "delete" -> deleteDraft(request, response);
+                case "deleteReceivingImage" -> deleteReceivingImage(request, response);
+                default -> listReceipts(request, response);
             }
         } catch (SQLException ex) {
             throw new ServletException(ex);
@@ -56,124 +46,77 @@ public class ReceiptServlet extends HttpServlet {
 
     private void listReceipts(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
-
-        // 1. Get all to calculate stats counts
-        List<Receipt> allReceipts = receiptDAO.getAll();
-        int pendingCount = 0;
-        int processingCount = 0;
-        int completedCount = 0;
-        for (Receipt r : allReceipts) {
-            if ("PENDING_APPROVAL".equals(r.getStatus())) {
-                pendingCount++;
-            } else if ("APPROVED".equals(r.getStatus()) || "RECEIVING".equals(r.getStatus()) || "RECEIVED".equals(r.getStatus())) {
-                processingCount++;
-            } else if ("COMPLETED".equals(r.getStatus())) {
-                completedCount++;
-            }
-        }
-        request.setAttribute("pendingCount", pendingCount);
-        request.setAttribute("processingCount", processingCount);
-        request.setAttribute("completedCount", completedCount);
-
-        // 2. Pagination parameters
         int page = 1;
         int limit = 10;
         String pageParam = request.getParameter("page");
         String limitParam = request.getParameter("limit");
 
         if (pageParam != null && !pageParam.isEmpty()) {
-            try {
-                page = Integer.parseInt(pageParam);
-            } catch (NumberFormatException ignored) {
-            }
+            try { page = Integer.parseInt(pageParam); } catch (NumberFormatException ignored) {}
         }
         if (limitParam != null && !limitParam.isEmpty()) {
-            try {
-                limit = Integer.parseInt(limitParam);
-            } catch (NumberFormatException ignored) {
-            }
+            try { limit = Integer.parseInt(limitParam); } catch (NumberFormatException ignored) {}
         }
 
         String search = request.getParameter("search");
-        if (search != null) {
-            search = search.trim();
-        }
+        if (search != null) search = search.trim();
 
         String status = request.getParameter("status");
-        if (status != null) {
-            status = status.trim();
-        }
+        if (status != null) status = status.trim();
 
         Long supplierId = null;
         String supplierIdParam = request.getParameter("supplierId");
         if (supplierIdParam != null && !supplierIdParam.isEmpty()) {
-            try {
-                supplierId = Long.parseLong(supplierIdParam);
-            } catch (NumberFormatException ignored) {
-            }
+            try { supplierId = Long.parseLong(supplierIdParam); } catch (NumberFormatException ignored) {}
         }
 
         Long creatorId = null;
         String creatorIdParam = request.getParameter("creatorId");
         if (creatorIdParam != null && !creatorIdParam.isEmpty()) {
-            try {
-                creatorId = Long.parseLong(creatorIdParam);
-            } catch (NumberFormatException ignored) {
-            }
+            try { creatorId = Long.parseLong(creatorIdParam); } catch (NumberFormatException ignored) {}
         }
 
         String startDate = request.getParameter("startDate");
-        if (startDate != null) {
-            startDate = startDate.trim();
-        }
+        if (startDate != null) startDate = startDate.trim();
 
         String endDate = request.getParameter("endDate");
-        if (endDate != null) {
-            endDate = endDate.trim();
-        }
+        if (endDate != null) endDate = endDate.trim();
 
-        // 3. Query paginated list
-        List<Receipt> paginatedReceipts = receiptDAO.findPaginated(page, limit, search, status, supplierId, creatorId, startDate, endDate);
-        int totalItems = receiptDAO.count(search, status, supplierId, creatorId, startDate, endDate);
-        int totalPages = (int) Math.ceil((double) totalItems / limit);
-        if (totalPages < 1) {
-            totalPages = 1;
-        }
+        ReceiptService.ReceiptPageResult result = receiptService.getReceiptsPaginated(page, limit, search, status, supplierId, creatorId, startDate, endDate);
 
-        request.setAttribute("receipts", paginatedReceipts);
-        request.setAttribute("totalItems", totalItems);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("currentPage", page);
-        request.setAttribute("limit", limit);
+        request.setAttribute("pendingCount", result.getPendingCount());
+        request.setAttribute("processingCount", result.getProcessingCount());
+        request.setAttribute("completedCount", result.getCompletedCount());
+        request.setAttribute("receipts", result.getReceipts());
+        request.setAttribute("totalItems", result.getTotalItems());
+        request.setAttribute("totalPages", result.getTotalPages());
+        request.setAttribute("currentPage", result.getCurrentPage());
+        request.setAttribute("limit", result.getLimit());
         request.setAttribute("search", search);
         request.setAttribute("selectedStatus", status);
         request.setAttribute("selectedSupplierId", supplierId);
         request.setAttribute("selectedCreatorId", creatorId);
         request.setAttribute("startDate", startDate);
         request.setAttribute("endDate", endDate);
-
-        request.setAttribute("suppliers", supplierDAO.getAll());
-        request.setAttribute("creators", receiptDAO.getCreators());
+        request.setAttribute("suppliers", result.getAllSuppliers());
+        request.setAttribute("creators", result.getCreators());
 
         request.getRequestDispatcher("/jsp/manage/receipts.jsp").forward(request, response);
     }
 
     private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
-        request.setAttribute("suppliers", supplierDAO.getAll());
-        request.setAttribute("products", productDAO.getAll());
-
-        // Generate a random code for initial draft or use auto generated
+        request.setAttribute("suppliers", receiptService.getAllSuppliers());
+        request.setAttribute("products", receiptService.getAllProducts());
         String generatedCode = "PN-" + System.currentTimeMillis();
         request.setAttribute("generatedCode", generatedCode);
-
         request.getRequestDispatcher("/jsp/manage/receipt-form.jsp").forward(request, response);
     }
 
     private void viewReceipt(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
-        Receipt receipt = receiptDAO.getById(id);
+        Receipt receipt = receiptService.getById(id);
         if (receipt == null) {
             WebUtil.setFlashError(request, "Không tìm thấy phiếu nhập");
             WebUtil.redirect(request, response, "/manage/receipts");
@@ -187,7 +130,7 @@ public class ReceiptServlet extends HttpServlet {
             throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         try {
-            receiptDAO.deleteDraft(id);
+            receiptService.deleteDraft(id);
             WebUtil.setFlashSuccess(request, "Xóa phiếu nhập nháp thành công");
         } catch (SQLException ex) {
             WebUtil.setFlashError(request, "Lỗi khi xóa phiếu: " + ex.getMessage());
@@ -240,205 +183,38 @@ public class ReceiptServlet extends HttpServlet {
 
     private void createReceipt(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException, ServletException {
-
         User currentUser = WebUtil.currentUser(request);
-
-        Receipt r = new Receipt();
-        r.setReceiptCode(WebUtil.param(request, "receiptCode"));
-        r.setSupplierId(Long.parseLong(WebUtil.param(request, "supplierId")));
-        r.setCreatedBy(currentUser.getId());
-        r.setNotes(WebUtil.param(request, "notes"));
-        r.setInvoiceImage(handleFileUpload(request));
-        if (r.getInvoiceImage() == null || r.getInvoiceImage().trim().isEmpty()) {
-            WebUtil.setFlashError(request, "Lỗi: Bắt buộc phải có ảnh hóa đơn yêu cầu nhập kho!");
-            WebUtil.redirect(request, response, "/manage/receipts?action=create");
-            return;
-        }
-
+        String receiptCode = WebUtil.param(request, "receiptCode");
+        long supplierId = Long.parseLong(WebUtil.param(request, "supplierId"));
+        String notes = WebUtil.param(request, "notes");
+        String invoiceImage = handleFileUpload(request);
         String status = WebUtil.param(request, "status");
-        if (status == null || status.trim().isEmpty()) {
-            status = "PENDING_APPROVAL";
-        }
-        r.setStatus(status);
-
         String[] productIds = request.getParameterValues("productId[]");
         String[] quantities = request.getParameterValues("quantity[]");
 
-        if (productIds == null || productIds.length == 0) {
-            WebUtil.setFlashError(request, "Lỗi: Vui lòng chọn ít nhất 1 sản phẩm nhập kho!");
+        try {
+            String msg = receiptService.createReceipt(receiptCode, supplierId, currentUser, notes, invoiceImage, status, productIds, quantities);
+            WebUtil.setFlashSuccess(request, msg);
+            WebUtil.redirect(request, response, "/manage/receipts");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
             WebUtil.redirect(request, response, "/manage/receipts?action=create");
-            return;
         }
-
-        for (int i = 0; i < productIds.length; i++) {
-            if (productIds[i] != null && !productIds[i].trim().isEmpty()) {
-                if (quantities != null && i < quantities.length && quantities[i] != null) {
-                    int qty = Integer.parseInt(quantities[i]);
-                    if (qty > 0) {
-                        ReceiptDetail rd = new ReceiptDetail();
-                        rd.setProductId(Long.parseLong(productIds[i]));
-                        rd.setQuantity(qty);
-                        // Batch Code and Barcode are confirmed later by Warehouse Staff
-                        // during the RECEIVING step. They must remain NULL at creation time.
-                        rd.setBatchCode(null);
-                        rd.setBarcode(null);
-                        r.getDetails().add(rd);
-                    }
-                }
-            }
-        }
-
-        if (r.getDetails().isEmpty()) {
-            WebUtil.setFlashError(request, "Lỗi: Vui lòng thêm ít nhất 1 sản phẩm với số lượng > 0");
-            WebUtil.redirect(request, response, "/manage/receipts?action=create");
-            return;
-        }
-
-        receiptDAO.insertWithDetails(r);
-
-        String msg = "DRAFT".equals(status) ? "Đã tạo bản nháp phiếu nhập kho thành công" : "Đã gửi yêu cầu phê duyệt phiếu nhập kho thành công";
-        WebUtil.setFlashSuccess(request, msg);
-        WebUtil.redirect(request, response, "/manage/receipts");
     }
 
     private void updateReceiptStatus(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         String status = WebUtil.param(request, "status");
-
-        if (status == null || status.trim().isEmpty()) {
-            Receipt receiptCheck = receiptDAO.getById(id);
-            if (receiptCheck != null && "RECEIVING".equals(receiptCheck.getStatus())) {
-                status = "RECEIVED";
-            } else if (receiptCheck != null) {
-                status = receiptCheck.getStatus();
-            }
-        }
-
         User currentUser = WebUtil.currentUser(request);
-        long userId = currentUser != null ? currentUser.getId() : 1L;
+        String uploadedImages = handleMultipleFilesUpload(request, "receivingImagesFiles");
 
-        if ("RECEIVED".equals(status)) {
-            Receipt receipt = receiptDAO.getById(id);
-            String existingImages = (receipt != null) ? receipt.getReceivingImages() : null;
-            String newUploadedImages = handleMultipleFilesUpload(request, "receivingImagesFiles");
-
-            String receivingImages = existingImages;
-            if (newUploadedImages != null && !newUploadedImages.trim().isEmpty()) {
-                if (existingImages != null && !existingImages.trim().isEmpty()) {
-                    receivingImages = existingImages + "," + newUploadedImages;
-                } else {
-                    receivingImages = newUploadedImages;
-                }
-            }
-
-            if (receivingImages == null || receivingImages.trim().isEmpty()) {
-                WebUtil.setFlashError(request, "Lỗi: Bắt buộc phải chụp/tải lên ảnh hàng hóa đã nhận làm bằng chứng khi xác nhận nhận hàng!");
-                WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
-                return;
-            }
-            List<ReceiptDetail> updatedDetails = new ArrayList<>();
-            if (receipt == null || receipt.getDetails() == null || receipt.getDetails().isEmpty()) {
-                WebUtil.setFlashError(request, "Lỗi: Phiếu nhập không có sản phẩm để xác nhận.");
-                WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
-                return;
-            }
-
-            java.util.Set<String> allReceiptBarcodes = new java.util.HashSet<>();
-
-            for (ReceiptDetail detail : receipt.getDetails()) {
-                String quantityValue = request.getParameter("actualQuantity_" + detail.getId());
-                String batchCode = trimToNull(request.getParameter("batchCode_" + detail.getId()));
-                String[] submittedBarcodes = request.getParameterValues("barcode_" + detail.getId());
-
-                int actualQty;
-                if (quantityValue == null || quantityValue.trim().isEmpty()) {
-                    actualQty = (detail.getQuantity() != null && detail.getQuantity() > 0) ? detail.getQuantity() : 1;
-                } else {
-                    try {
-                        actualQty = Integer.parseInt(quantityValue.trim());
-                    } catch (NumberFormatException e) {
-                        actualQty = (detail.getQuantity() != null && detail.getQuantity() > 0) ? detail.getQuantity() : 1;
-                    }
-                }
-
-                if (actualQty <= 0) {
-                    WebUtil.setFlashError(request,
-                            "Lỗi: Số lượng thực nhận phải lớn hơn 0 cho sản phẩm " + detail.getProduct().getName());
-                    WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
-                    return;
-                }
-
-                if (batchCode == null || batchCode.trim().isEmpty()) {
-                    batchCode = "BAT-" + receipt.getReceiptCode() + "-" + detail.getId();
-                }
-
-                List<String> barcodeList = new ArrayList<>();
-                if (submittedBarcodes != null) {
-                    for (String submittedBarcode : submittedBarcodes) {
-                        String barcode = trimToNull(submittedBarcode);
-                        if (barcode != null) {
-                            barcodeList.add(barcode);
-                        }
-                    }
-                }
-
-                if (barcodeList.size() != actualQty) {
-                    barcodeList = new ArrayList<>();
-                    for (int k = 1; k <= actualQty; k++) {
-                        barcodeList.add("BC-" + receipt.getReceiptCode() + "-" + detail.getId() + "-" + k);
-                    }
-                }
-
-                java.util.Set<String> detailBarcodeSet = new java.util.HashSet<>();
-                for (String barcode : barcodeList) {
-                    String normalizedBarcode = barcode.toUpperCase();
-                    if (!detailBarcodeSet.add(normalizedBarcode)) {
-                        WebUtil.setFlashError(request,
-                                "Lỗi: Barcode " + barcode + " đang bị trùng trong sản phẩm "
-                                + detail.getProduct().getName() + ".");
-                        WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
-                        return;
-                    }
-                    if (!allReceiptBarcodes.add(normalizedBarcode)) {
-                        WebUtil.setFlashError(request,
-                                "Lỗi: Barcode " + barcode + " đang bị trùng trong phiếu nhập.");
-                        WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
-                        return;
-                    }
-                }
-
-                ReceiptDetail updated = new ReceiptDetail();
-                updated.setId(detail.getId());
-                updated.setProductId(detail.getProductId());
-                updated.setQuantity(actualQty);
-                updated.setBatchCode(batchCode);
-                // Lưu danh sách Barcode trong cột barcode, phân cách bằng dấu phẩy.
-                updated.setBarcode(String.join(",", barcodeList));
-                updatedDetails.add(updated);
-            }
-
-            receiptDAO.updateStatus(id, status, receivingImages, userId, updatedDetails);
-        } else {
-            receiptDAO.updateStatus(id, status, userId);
+        try {
+            String msg = receiptService.updateReceiptStatus(id, status, uploadedImages, currentUser, request.getParameterMap());
+            WebUtil.setFlashSuccess(request, msg);
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
         }
-
-        String msg = "Đã cập nhật trạng thái phiếu nhập";
-        if ("PENDING_APPROVAL".equals(status)) {
-            msg = "Đã gửi yêu cầu phê duyệt phiếu nhập";
-        } else if ("APPROVED".equals(status)) {
-            msg = "Đã phê duyệt phiếu nhập";
-        } else if ("RECEIVING".equals(status)) {
-            msg = "Bắt đầu nhận hàng vào kho";
-        } else if ("RECEIVED".equals(status)) {
-            msg = "Đã tạo đơn nhận hàng thành công và ghi nhận thực nhận";
-        } else if ("COMPLETED".equals(status)) {
-            msg = "Đã hoàn thành nhập kho (cất hàng) và cập nhật tồn kho";
-        } else if ("CANCELLED".equals(status)) {
-            msg = "Đã hủy phiếu nhập";
-        }
-
-        WebUtil.setFlashSuccess(request, msg);
         WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
     }
 
@@ -446,11 +222,11 @@ public class ReceiptServlet extends HttpServlet {
             throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         String imageUrl = handleFileUpload(request);
-        if (imageUrl != null) {
-            receiptDAO.updateInvoiceImage(id, imageUrl);
+        try {
+            receiptService.updateInvoiceImage(id, imageUrl);
             WebUtil.setFlashSuccess(request, "Đã cập nhật ảnh hóa đơn thành công");
-        } else {
-            WebUtil.setFlashError(request, "Lỗi: Không thể tải ảnh lên hoặc ảnh trống");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
         }
         WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
     }
@@ -459,15 +235,11 @@ public class ReceiptServlet extends HttpServlet {
             throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         String imageUrls = handleMultipleFilesUpload(request, "receivingImagesFiles");
-        if (imageUrls != null && !imageUrls.trim().isEmpty()) {
-            Receipt receipt = receiptDAO.getById(id);
-            if (receipt != null && receipt.getReceivingImages() != null && !receipt.getReceivingImages().trim().isEmpty()) {
-                imageUrls = receipt.getReceivingImages() + "," + imageUrls;
-            }
-            receiptDAO.updateReceivingImages(id, imageUrls);
+        try {
+            receiptService.updateReceivingImages(id, imageUrls);
             WebUtil.setFlashSuccess(request, "Đã cập nhật ảnh nhận hàng thành công");
-        } else {
-            WebUtil.setFlashError(request, "Lỗi: Không thể tải ảnh lên hoặc số lượng ảnh trống");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
         }
         WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
     }
@@ -476,24 +248,31 @@ public class ReceiptServlet extends HttpServlet {
             throws SQLException, IOException, ServletException {
         long id = Long.parseLong(WebUtil.param(request, "id"));
         String imageUrl = WebUtil.param(request, "imageUrl");
-
-        Receipt receipt = receiptDAO.getById(id);
-        if (receipt != null && imageUrl != null) {
-            List<String> list = receipt.getReceivingImagesList();
-            list.remove(imageUrl.trim());
-            String newImages = String.join(",", list);
-            receiptDAO.updateReceivingImages(id, newImages.trim().isEmpty() ? null : newImages);
-            WebUtil.setFlashSuccess(request, "Đã xóa ảnh bằng chứng thành công");
-        }
+        receiptService.deleteReceivingImage(id, imageUrl);
+        WebUtil.setFlashSuccess(request, "Đã xóa ảnh bằng chứng thành công");
         WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
     }
 
-    private String trimToNull(String value) {
-        if (value == null) {
-            return null;
+    private void cancelReceipt(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, IOException {
+        long id;
+        try {
+            id = Long.parseLong(WebUtil.param(request, "id"));
+        } catch (Exception e) {
+            WebUtil.setFlashError(request, "ID phiếu nhập không hợp lệ.");
+            WebUtil.redirect(request, response, "/manage/receipts");
+            return;
         }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
+
+        User currentUser = WebUtil.currentUser(request);
+
+        try {
+            receiptService.cancelReceipt(id, currentUser);
+            WebUtil.setFlashSuccess(request, "Đã hủy phiếu nhập thành công.");
+        } catch (IllegalArgumentException ex) {
+            WebUtil.setFlashError(request, ex.getMessage());
+        }
+        WebUtil.redirect(request, response, "/manage/receipts?action=view&id=" + id);
     }
 
     private String handleFileUpload(HttpServletRequest request) throws ServletException, IOException {
@@ -562,7 +341,7 @@ public class ReceiptServlet extends HttpServlet {
                 if (part.getName().equals(fieldName) && part.getSize() > 0) {
                     fileCount++;
                     if (fileCount > 4) {
-                        break; // Limit to max 4 images
+                        break;
                     }
                     String fileName = java.nio.file.Paths.get(part.getSubmittedFileName()).getFileName().toString();
                     String extension = "";
@@ -610,68 +389,4 @@ public class ReceiptServlet extends HttpServlet {
         }
         return String.join(",", uploadedPaths);
     }
-
-private void cancelReceipt(
-        HttpServletRequest request,
-        HttpServletResponse response)
-        throws SQLException, IOException {
-
-    long id;
-
-    try {
-        id = Long.parseLong(WebUtil.param(request, "id"));
-    } catch (Exception e) {
-        WebUtil.setFlashError(request, "ID phiếu nhập không hợp lệ.");
-        WebUtil.redirect(request, response, "/manage/receipts");
-        return;
-    }
-
-    User currentUser = WebUtil.currentUser(request);
-
-    if (currentUser == null) {
-        WebUtil.setFlashError(request, "Bạn chưa đăng nhập.");
-        WebUtil.redirect(request, response, "/login");
-        return;
-    }
-
-    Receipt receipt = receiptDAO.getById(id);
-
-    if (receipt == null) {
-        WebUtil.setFlashError(request, "Không tìm thấy phiếu nhập.");
-        WebUtil.redirect(request, response, "/manage/receipts");
-        return;
-    }
-
-    if ("COMPLETED".equals(receipt.getStatus())
-            || "CANCELLED".equals(receipt.getStatus())) {
-
-        WebUtil.setFlashError(
-            request,
-            "Không thể hủy phiếu ở trạng thái " + receipt.getStatus()
-        );
-
-        WebUtil.redirect(
-            request,
-            response,
-            "/manage/receipts?action=view&id=" + id
-        );
-        return;
-    }
-
-    receiptDAO.updateStatus(
-        id,
-        "CANCELLED",
-        currentUser.getId()
-    );
-
-    WebUtil.setFlashSuccess(
-        request,
-        "Đã hủy phiếu nhập thành công."
-    );
-
-    WebUtil.redirect(
-        request,
-        response,
-        "/manage/receipts?action=view&id=" + id
-    );
-}}
+}
